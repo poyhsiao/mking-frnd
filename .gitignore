@@ -1,3 +1,7 @@
+# Git directory (should never be tracked)
+.git/
+.git
+
 # Logs
 logs
 *.log
