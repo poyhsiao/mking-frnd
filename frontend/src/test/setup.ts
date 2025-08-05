@@ -12,18 +12,18 @@ afterEach(() => {
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
+  constructor(): void {}
+  disconnect(): void {}
+  observe(): void {}
+  unobserve(): void {}
 };
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
+  constructor(): void {}
+  disconnect(): void {}
+  observe(): void {}
+  unobserve(): void {}
 };
 
 // Mock matchMedia
@@ -33,10 +33,10 @@ Object.defineProperty(window, 'matchMedia', {
     matches: false,
     media: query,
     onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
+    addListener: (): void => {},
+    removeListener: (): void => {},
+    addEventListener: (): void => {},
+    removeEventListener: (): void => {},
+    dispatchEvent: (): boolean => false,
   }),
 });

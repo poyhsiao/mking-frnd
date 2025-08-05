@@ -51,7 +51,7 @@ const About: React.FC = () => {
             About MKing Friend
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We're on a mission to help people find meaningful friendships and build
+            We&apos;re on a mission to help people find meaningful friendships and build
             lasting connections in an increasingly digital world.
           </p>
         </div>
@@ -72,13 +72,13 @@ const About: React.FC = () => {
                   the need for a platform that goes beyond superficial connections.
                 </p>
                 <p>
-                  Founded in 2024, we've been dedicated to creating a space where people
+                  Founded in 2024, we&apos;ve been dedicated to creating a space where people
                   can discover others who share their passions, values, and interests.
                   Our algorithm focuses on compatibility and shared experiences rather
                   than just proximity.
                 </p>
                 <p>
-                  Today, we're proud to have helped thousands of people find their
+                  Today, we&apos;re proud to have helped thousands of people find their
                   perfect friend match and build communities that matter.
                 </p>
               </div>
@@ -166,7 +166,7 @@ const About: React.FC = () => {
             Get in Touch
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Have questions or feedback? We'd love to hear from you.
+            Have questions or feedback? We&apos;d love to hear from you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
@@ -175,12 +175,11 @@ const About: React.FC = () => {
             >
               Contact Us
             </a>
-            <a
-              href="#"
+            <button
               className="btn border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3"
             >
               Join Our Community
-            </a>
+            </button>
           </div>
         </div>
       </section>
