@@ -12,15 +12,21 @@ afterEach(() => {
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-  constructor(): void {}
+  root = null;
+  rootMargin = '';
+  thresholds = [];
+  constructor() {}
   disconnect(): void {}
   observe(): void {}
   unobserve(): void {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
 };
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
-  constructor(): void {}
+  constructor() {}
   disconnect(): void {}
   observe(): void {}
   unobserve(): void {}
