@@ -1,0 +1,45 @@
+# Development-specific Dockerfile for Backend
+FROM node:18-alpine
+
+# Install development tools
+RUN apk add --no-cache \
+    git \
+    curl \
+    bash \
+    vim \
+    && npm install -g pnpm@8.15.1 nodemon
+
+# Create app user for development
+RUN addgroup -g 1001 -S nodejs \
+    && adduser -S backend -u 1001 -G nodejs
+
+# Set working directory
+WORKDIR /app
+
+# Change ownership of the app directory
+RUN chown -R backend:nodejs /app
+
+# Switch to app user
+USER backend
+
+# Copy package files
+COPY --chown=backend:nodejs package.json pnpm-lock.yaml* ./
+
+# Install all dependencies (including dev dependencies)
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY --chown=backend:nodejs . .
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Expose application port and debugger port
+EXPOSE 3001 9229
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
+
+# Development command with hot reload and debugging
+CMD ["pnpm", "dev"]

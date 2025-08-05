@@ -1,0 +1,176 @@
+version: '3.8'
+
+services:
+  # Backend Development Service
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: mking-backend-dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mking_dev
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev-jwt-secret-change-in-production
+      - CORS_ORIGIN=http://localhost:3000
+    ports:
+      - "3001:3001"
+      - "9229:9229"  # Node.js debugger port
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - backend_dev_logs:/app/logs
+    networks:
+      - mking-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Frontend Development Service
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: mking-frontend-dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3001
+      - VITE_APP_NAME=MKing Development
+      - CHOKIDAR_USEPOLLING=true  # For file watching in Docker
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - frontend_dev_logs:/app/logs
+    networks:
+      - mking-network
+    depends_on:
+      - backend-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # PostgreSQL Database (Development)
+  postgres:
+    image: postgres:15-alpine
+    container_name: mking-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mking_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - mking-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mking_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # Redis Cache (Development)
+  redis:
+    image: redis:7-alpine
+    container_name: mking-redis-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_dev_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - mking-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_dev_password", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+  # Development Tools Container
+  dev-tools:
+    image: node:18-alpine
+    container_name: mking-dev-tools
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - dev_tools_cache:/root/.cache
+    networks:
+      - mking-network
+    command: tail -f /dev/null  # Keep container running
+    profiles:
+      - tools  # Only start when explicitly requested
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  backend_dev_logs:
+    driver: local
+  frontend_dev_logs:
+    driver: local
+  dev_tools_cache:
+    driver: local
+
+networks:
+  mking-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

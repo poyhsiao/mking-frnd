@@ -1,0 +1,163 @@
+# Docker Compose Override for Local Development
+# This file is automatically loaded by docker-compose and overrides settings in docker-compose.yml
+# It's designed for local development convenience
+
+version: '3.8'
+
+services:
+  # Override PostgreSQL for development
+  postgres:
+    environment:
+      POSTGRES_DB: mking_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+      - ./database/dev-seeds:/docker-entrypoint-initdb.d/seeds:ro
+
+  # Override Redis for development
+  redis:
+    command: redis-server --appendonly yes --requirepass redis_dev_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+
+  # Override MinIO for development
+  minio:
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_dev_data:/data
+
+  # Override Typesense for development
+  typesense:
+    environment:
+      TYPESENSE_API_KEY: dev-typesense-api-key
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_ENABLE_CORS: true
+    ports:
+      - "8108:8108"
+    volumes:
+      - typesense_dev_data:/data
+
+  # Override Prometheus for development
+  prometheus:
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/dev.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_dev_data:/prometheus
+
+  # Override Grafana for development
+  grafana:
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: true
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_dev_data:/var/lib/grafana
+      - ./monitoring/grafana/dev:/etc/grafana/provisioning:ro
+
+  # Override Loki for development
+  loki:
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki/dev-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_dev_data:/loki
+
+  # Override Promtail for development
+  promtail:
+    volumes:
+      - ./monitoring/promtail/dev-config.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - ./logs:/app/logs:ro
+
+  # Override Nginx for development
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl/dev:/etc/nginx/ssl:ro
+
+  # Add development-specific services
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mking-mailhog-dev
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - mking-network
+    profiles:
+      - dev-tools
+
+  # Database administration tool
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mking-pgadmin-dev
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@mking-dev.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_dev_data:/var/lib/pgadmin
+    networks:
+      - mking-network
+    depends_on:
+      - postgres
+    profiles:
+      - dev-tools
+
+  # Redis administration tool
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: mking-redis-commander-dev
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:redis_dev_password
+      HTTP_USER: admin
+      HTTP_PASSWORD: admin
+    ports:
+      - "8081:8081"
+    networks:
+      - mking-network
+    depends_on:
+      - redis
+    profiles:
+      - dev-tools
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  minio_dev_data:
+    driver: local
+  typesense_dev_data:
+    driver: local
+  prometheus_dev_data:
+    driver: local
+  grafana_dev_data:
+    driver: local
+  loki_dev_data:
+    driver: local
+  pgadmin_dev_data:
+    driver: local
