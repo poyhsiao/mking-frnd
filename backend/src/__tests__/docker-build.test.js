@@ -9,9 +9,29 @@ import path from 'path';
 import { afterAll, describe, expect, test } from 'vitest';
 
 describe('Docker Build Tests', () => {
-  const rootDir = path.resolve(__dirname, '../../../');
+  // 更可靠的根目錄查找方法
+  const findProjectRoot = () => {
+    let currentDir = __dirname;
+    while (currentDir !== path.dirname(currentDir)) {
+      const packageJsonPath = path.join(currentDir, 'package.json');
+      const workspacePath = path.join(currentDir, 'pnpm-workspace.yaml');
+      if (existsSync(packageJsonPath) && existsSync(workspacePath)) {
+        return currentDir;
+      }
+      currentDir = path.dirname(currentDir);
+    }
+    // 如果找不到，回退到原來的方法
+    return path.resolve(__dirname, '../../../');
+  };
+
+  const rootDir = findProjectRoot();
   const backendDir = path.join(rootDir, 'backend');
   const frontendDir = path.join(rootDir, 'frontend');
+
+  // 驗證路徑解析是否正確
+  if (!existsSync(rootDir) || !existsSync(backendDir) || !existsSync(frontendDir)) {
+    throw new Error(`Invalid project structure detected. Root: ${rootDir}, Backend: ${backendDir}, Frontend: ${frontendDir}`);
+  }
 
   describe('pnpm workspace configuration', () => {
     test('should have pnpm-lock.yaml in root directory', () => {
@@ -38,6 +58,11 @@ describe('Docker Build Tests', () => {
   describe('Dockerfile validation', () => {
     test('backend Dockerfile should be able to access root lockfile', () => {
       const dockerfilePath = path.join(backendDir, 'Dockerfile');
+      
+      if (!existsSync(dockerfilePath)) {
+        throw new Error(`Backend Dockerfile not found at ${dockerfilePath}`);
+      }
+      
       const dockerfileContent = readFileSync(dockerfilePath, 'utf8');
 
       // 檢查 Dockerfile 是否正確引用了根目錄的文件
@@ -46,6 +71,11 @@ describe('Docker Build Tests', () => {
 
     test('frontend Dockerfile should be able to access root lockfile', () => {
       const dockerfilePath = path.join(frontendDir, 'Dockerfile');
+      
+      if (!existsSync(dockerfilePath)) {
+        throw new Error(`Frontend Dockerfile not found at ${dockerfilePath}`);
+      }
+      
       const dockerfileContent = readFileSync(dockerfilePath, 'utf8');
 
       // 檢查 Dockerfile 是否正確引用了根目錄的文件
