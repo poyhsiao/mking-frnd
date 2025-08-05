@@ -10,6 +10,11 @@ and this project adheres to
 
 ### Fixed
 
+- 修復 GitHub Actions CI 中 backend tests 的路徑解析問題
+  - 改進 `docker-build.test.js` 中的項目根目錄檢測邏輯
+  - 使用 `pnpm-workspace.yaml` 文件來可靠地定位項目根目錄
+  - 添加更好的錯誤處理和文件存在性檢查
+  - 確保測試在本地和 CI 環境中都能正常運行
 - 修復 GitHub Actions Docker 構建失敗問題
   - 修改 `backend/Dockerfile` 和 `frontend/Dockerfile` 使用正確的 pnpm
     monorepo 配置
