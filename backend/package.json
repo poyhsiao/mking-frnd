@@ -44,7 +44,7 @@
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "@vitest/coverage-v8": "^1.1.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.32.0",
     "prettier": "^3.1.1",
     "prisma": "^5.7.1",
     "supertest": "^6.3.4",
