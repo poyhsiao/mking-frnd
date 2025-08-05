@@ -70,17 +70,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
       
-      - name: Validate lockfile
+      - name: Validate lockfile (dry-run)
         run: |
-          echo "Checking lockfile synchronization..."
-          if ! pnpm install --frozen-lockfile; then
+          echo "Checking lockfile synchronization (dry-run)..."
+          if ! pnpm install --frozen-lockfile --reporter=silent --dry-run; then
             echo "❌ Lockfile is out of sync with package.json files"
             echo "💡 To fix this locally, run: pnpm install"
             echo "📝 Then commit the updated pnpm-lock.yaml"
             exit 1
           fi
           echo "✅ Lockfile is synchronized"
-      
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
