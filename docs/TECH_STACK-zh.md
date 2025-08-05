@@ -41,6 +41,8 @@
 - **單元測試**: Jest + React Testing Library
 - **E2E測試**: Cypress
 - **測試覆蓋率**: 最低 80%
+- **覆蓋率報告**: Codecov 與 CI/CD 集成
+- **CI/CD 測試**: 每次提交自動執行測試
 
 ### 國際化
 - **react-i18next**: React 國際化庫

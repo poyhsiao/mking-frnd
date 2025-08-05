@@ -1,17 +1,25 @@
 # Multi-stage build for Node.js backend
 FROM node:18-alpine AS base
 
-# Install pnpm
-RUN npm install -g pnpm@8.15.1
+# Install pnpm using corepack (recommended approach)
+RUN corepack enable pnpm
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy workspace configuration files from root
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+# Copy backend package.json
+COPY backend/package.json ./backend/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Use pnpm fetch for better Docker layer caching
+RUN pnpm fetch --filter=backend
+
+# Copy all source files
+COPY . .
+
+# Install dependencies using offline mode (files already fetched)
+RUN pnpm install --filter=backend --frozen-lockfile --offline
 
 # Development stage
 FROM base AS development
