@@ -203,10 +203,10 @@ This document outlines the comprehensive testing strategy for the MKing Friend s
 ### CI/CD Integration
 - **Build Tools**: Jenkins, GitHub Actions, GitLab CI
 - **Code Quality**: SonarQube, ESLint, Prettier
-- **Coverage Reporting**: Codecov integration (✅ Fixed upload issues)
-- **Test Execution**: Automated pipeline integration
+- **Coverage Reporting**: Codecov Action v5 integration (✅ Upgraded from v4 with enhanced reliability)
+- **Test Execution**: Automated pipeline integration with fail_ci_if_error enabled
 - **Deployment**: Blue-green deployment with testing
-- **Coverage Upload**: Automated coverage reports to Codecov on every commit
+- **Coverage Upload**: Automated coverage reports to Codecov with environment variables and optimized file discovery
 
 ## Test Environment Strategy
 

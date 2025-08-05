@@ -35,7 +35,8 @@ This project adopts a microservices architecture and uses a modern technology st
 ### 🧪 Testing & Deployment
 - [`testing/`](./testing/) - Testing Strategy and Standards
 - [`deployment/`](./deployment/) - Deployment and Operations Documentation
-- [`codecov-fix.md`](./codecov-fix.md) - Codecov Integration Fix Documentation ✅ Recently Fixed
+- [`codecov-fix.md`](./codecov-fix.md) - Codecov Integration Fix Documentation ✅ Enhanced with Action v5
+- [`codecov-fix-zh.md`](./codecov-fix-zh.md) - Codecov 集成修復文檔 ✅ 升級到 Action v5
 
 ### 📊 Project Management
 - [`project-management/`](./project-management/) - Project Management and Task Planning
