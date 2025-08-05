@@ -146,6 +146,8 @@ This document organizes all development tasks for the MKing Friend project in a 
 - [x] Automated testing pipeline setup (✅ Codecov Action v5 integrated)
 - [x] Code quality check configuration (✅ Enhanced with fail_ci_if_error and environment variables)
 - [x] Docker build configuration (✅ Fixed pnpm workspace monorepo build issues)
+- [x] CI lockfile synchronization (✅ Fixed ERR_PNPM_OUTDATED_LOCKFILE using TDD methodology)
+- [x] PNPM specifier mismatch resolution (✅ Fixed dependency version conflicts with comprehensive TDD suite)
 - [ ] Automated deployment pipeline
 - [ ] Environment separation strategy
 

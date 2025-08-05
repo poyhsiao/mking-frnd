@@ -409,6 +409,67 @@ Implement comprehensive observability with:
 - Code quality and maintainability
 - Team satisfaction and learning
 
+## ADR-012: PNPM Lockfile CI/CD Error Resolution Using TDD
+
+### Status
+✅ **Decided** - Implement TDD-based approach for CI/CD lockfile issues
+
+### Background
+CI pipeline was failing with `ERR_PNPM_OUTDATED_LOCKFILE` error, causing deployment blockages and developer productivity issues.
+
+### Decision
+Adopt Test-Driven Development (TDD) methodology to:
+1. Create comprehensive test suites for lockfile validation
+2. Implement targeted fixes based on test requirements
+3. Ensure robust prevention of future lockfile issues
+
+### Implementation
+**Test Suites Created:**
+- `tests/ci/pnpm-lockfile-sync.test.ts` - Lockfile synchronization validation
+- `tests/ci/pnpm-frozen-lockfile.test.ts` - CI compatibility testing
+
+**CI Configuration Updates:**
+- Fixed pnpm version mismatch (CI: '8' → '8.15.1')
+- Added lockfile validation step with helpful error messages
+- Enhanced error handling and developer guidance
+
+### Rationale
+**Advantages:**
+- Proactive issue detection before CI deployment
+- Comprehensive validation coverage
+- Clear error resolution guidance
+- Automated prevention of regression
+- Improved developer experience
+
+**TDD Benefits:**
+- Tests define exact requirements
+- Targeted fixes based on failing tests
+- Confidence in solution completeness
+- Documentation through test cases
+
+### Consequences
+**Positive:**
+- Eliminated CI lockfile failures
+- Robust prevention measures
+- Enhanced developer productivity
+- Improved CI pipeline reliability
+
+**Considerations:**
+- Additional test maintenance overhead
+- Initial time investment in comprehensive testing
+- Need for regular test suite updates
+
+### Success Metrics
+- ✅ All 52 tests passing across 5 test files
+- ✅ Zero CI failures due to lockfile issues
+- ✅ Improved error resolution time
+- ✅ Enhanced developer confidence in CI pipeline
+
+### Related Documentation
+- [PNPM Lockfile TDD Fix](./pnpm-lockfile-tdd-fix.md)
+- [Development Tasks](./development-tasks.md)
+- [TDD Guidelines](./development/tdd-guidelines.md)
+
 ---
 
 **Note**: These ADRs are living documents that should be updated as the project evolves and new requirements emerge. Regular reviews ensure that our technical decisions continue to align with business goals and industry best practices.

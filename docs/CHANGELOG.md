@@ -28,6 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Added Prisma ORM modern database toolkit
   - Added MinIO S3-compatible object storage
 
+- 🔧 **CI/CD Pipeline Improvements**
+  - Fixed ERR_PNPM_OUTDATED_LOCKFILE error using TDD methodology
+  - Added comprehensive lockfile synchronization test suites
+  - Enhanced CI error handling with clear resolution guidance
+  - Implemented pnpm version consistency validation
+  - Added automated lockfile validation step in GitHub Actions
+
 - 🚀 **Deployment and Operations**
   - Added Kubernetes container orchestration support
   - Added Prometheus + Grafana complete monitoring system
@@ -43,6 +50,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Fixed nginx.conf path reference in frontend Dockerfile
   - Added comprehensive test suite `tests/docker/docker-build-fix.test.ts` with TDD approach
   - Resolved workspace configuration issues in Docker production stages
+
+- 🔐 **GitHub Actions Permissions for Container Registry**
+  - Fixed "denied: installation not allowed to Create organization package" error in CI/CD pipeline
+  - Added required `packages: write` permission to build job for GHCR push access
+  - Added `contents: read` permission for repository checkout
+  - Added `id-token: write` permission for OIDC authentication
+  - Added comprehensive test suite `tests/ci/github-actions-permissions.test.ts` with TDD approach
+  - Resolved Docker image push failures to GitHub Container Registry
 
 - 📋 **Product Planning and Documentation**
   - Added detailed admin system requirements planning
