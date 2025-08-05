@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('errorHandler');
@@ -11,7 +11,9 @@ export interface AppError extends Error {
 export const errorHandler = (
   err: AppError,
   req: Request,
-  res: Response
+  res: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _next: NextFunction
 ): void => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
