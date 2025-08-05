@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Added Loki + Promtail unified log management
   - Added Sentry error tracking and performance monitoring
   - Added Keycloak enterprise-grade identity authentication
+  - Fixed Docker build issues for pnpm workspace monorepo structure
 
 - 📋 **Product Planning and Documentation**
   - Added detailed admin system requirements planning

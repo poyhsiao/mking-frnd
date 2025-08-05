@@ -2,165 +2,166 @@
 
 ## Problem Description
 
-The following error occurred during the `build` stage in GitHub Actions:
+The following error occurred during the `build docker images` step in GitHub Actions:
 
 ```
-Dockerfile:14
+Dockerfile:62
 --------------------
-  12 |
-  13 |     # Install dependencies
-  14 | >>> RUN pnpm install --frozen-lockfile
-  15 |
-  16 |     # Development stage
+  60 |     
+  61 |     # Install production dependencies only
+  62 | >>> RUN pnpm install --frozen-lockfile --prod
+  63 |     
+  64 |     # Copy built application
 --------------------
-ERROR: failed to build: failed to solve: process "/bin/sh -c pnpm install --frozen-lockfile" did not complete successfully: exit code: 1
+ERROR: failed to solve: process "/bin/sh -c pnpm install --frozen-lockfile --prod" did not complete successfully: exit code: 1
 ```
 
 ## Root Cause Analysis
 
-1. **Incorrect Docker Build Context**: CI/CD configuration uses `context: ./backend` and
-   `context: ./frontend`, but `pnpm-lock.yaml` file is located in the root directory
-2. **Incorrect pnpm Workspace Configuration**: Dockerfile attempts to copy
-   `pnpm-lock.yaml` from subdirectory, but in pnpm monorepo, lockfile only exists in root directory
-3. **Unoptimized Docker Layer Caching**: Not using `pnpm fetch` to improve build performance
+1. **Missing Workspace Configuration Files**: The production stage in Dockerfile was missing essential workspace configuration files (`pnpm-workspace.yaml`, root `package.json`) needed for pnpm to understand the monorepo structure
+2. **Husky Installation Failure**: The `prepare` script was attempting to run `husky install` during production dependency installation, which fails in Docker environment where husky is not needed
+3. **Incomplete Backend Package Configuration**: The production stage wasn't copying the backend's `package.json` file, preventing pnpm from properly resolving workspace dependencies
 
 ## Solution
 
-### 1. Modify Dockerfile Configuration
+### Test-Driven Development (TDD) Approach
 
-#### Backend Dockerfile Changes
+Following TDD methodology, we first created comprehensive tests to validate the Docker build process:
+
+1. **Created Test Suite**: `tests/docker/backend-dockerfile-production.test.ts`
+   - Tests for valid Dockerfile existence
+   - Tests for successful production stage build
+   - Tests for correct dependency installation
+   - Tests for workspace configuration files presence
+   - Tests for application startup capability
+
+2. **Red Phase**: Tests initially failed, confirming the Docker build issue
+3. **Green Phase**: Fixed the Dockerfile to make all tests pass
+4. **Refactor Phase**: Ensured clean, maintainable code with proper documentation
+
+### 1. Backend Dockerfile Production Stage Fix
+
+#### Changes Made
 
 ```dockerfile
-# Before
-FROM node:18-alpine AS base
-RUN npm install -g pnpm@8.15.1
+# Before (Failing)
+FROM node:18-alpine AS production
+# ... user setup ...
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --prod
 
-# After
-FROM node:18-alpine AS base
-RUN corepack enable pnpm  # Use corepack (recommended approach)
+# After (Working)
+FROM node:18-alpine AS production
+# ... user setup ...
 WORKDIR /app
-# Copy workspace configuration files from root directory
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+# Copy workspace configuration files
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# Copy backend package.json
 COPY backend/package.json ./backend/
-# Use pnpm fetch to improve Docker layer caching
-RUN pnpm fetch --filter=backend
-COPY . .
-# Use offline mode for installation (files already fetched)
-RUN pnpm install --filter=backend --frozen-lockfile --offline
+# Install production dependencies (skip prepare scripts to avoid husky)
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 ```
 
-#### Frontend Dockerfile Changes
+#### Key Changes Explained
 
-```dockerfile
-# Before
-FROM node:18-alpine AS base
-RUN npm install -g pnpm@8.15.1
-WORKDIR /app
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+1. **Workspace Configuration Files**: Added copying of `pnpm-workspace.yaml` and root `package.json` to help pnpm understand the monorepo structure
+2. **Backend Package Configuration**: Added copying of `backend/package.json` to ensure proper workspace dependency resolution
+3. **Ignore Scripts Flag**: Added `--ignore-scripts` to prevent husky installation failures during production build
 
-# After
-FROM node:18-alpine AS base
-RUN corepack enable pnpm  # Use corepack (recommended approach)
-WORKDIR /app
-# Copy workspace configuration files from root directory
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY frontend/package.json ./frontend/
-# Use pnpm fetch to improve Docker layer caching
-RUN pnpm fetch --filter=frontend
-COPY . .
-# Use offline mode for installation (files already fetched)
-RUN pnpm install --filter=frontend --frozen-lockfile --offline
-```
+### 2. Test Results
 
-### 2. Modify CI/CD Configuration
+```bash
+✓ tests/docker/backend-dockerfile-production.test.ts (5) 17927ms
+  ✓ Backend Dockerfile Production Stage (5) 17927ms
+    ✓ should have a valid Dockerfile
+    ✓ should build production stage successfully 5267ms
+    ✓ should install production dependencies correctly 6590ms
+    ✓ should have correct workspace configuration files 2965ms
+    ✓ should run the application successfully 3084ms
 
-```yaml
-# Before
-- name: Build and push backend image
-  uses: docker/build-push-action@v5
-  with:
-    context: ./backend # ❌ Wrong: subdirectory context
-    file: ./backend/Dockerfile
-
-# After
-- name: Build and push backend image
-  uses: docker/build-push-action@v5
-  with:
-    context: . # ✅ Correct: root directory context
-    file: ./backend/Dockerfile
+Test Files  1 passed (1)
+     Tests  5 passed (5)
 ```
 
 ## Technical Improvements
 
-### 1. Use corepack
+### 1. Workspace Configuration Management
 
-- **Advantages**: Built-in Node.js tool, more consistent version management
-- **Replaces**: `npm install -g pnpm@8.15.1`
+- **Implementation**: Proper copying of workspace files (`pnpm-workspace.yaml`, root `package.json`)
+- **Effect**: Enables pnpm to understand monorepo structure in Docker environment
 
-### 2. pnpm fetch Optimization
+### 2. Script Execution Control
 
-- **Function**: Pre-fetch packages to virtual store, improve Docker layer caching
-- **Effect**: Only re-download dependencies when lockfile changes
+- **Implementation**: `--ignore-scripts` flag during production installation
+- **Effect**: Prevents husky and other development scripts from running in production environment
 
-### 3. Workspace Filtering
+### 3. Package Structure Preservation
 
-- **Usage**: `--filter=backend` and `--filter=frontend`
-- **Effect**: Only install specific packages and their dependencies
-
-### 4. Offline Installation
-
-- **Usage**: `--offline` flag
-- **Effect**: Use pre-fetched packages, avoid network requests
+- **Implementation**: Copying `backend/package.json` to maintain workspace dependency resolution
+- **Effect**: Ensures proper dependency installation for workspace packages
 
 ## Testing and Verification
 
-### TDD Approach
+### TDD Approach Used
 
-1. **Create Tests**: Write Docker build tests
-2. **Run Tests**: Confirm problem exists
-3. **Fix Code**: Implement solution
-4. **Verify Fix**: Tests pass
+1. **Red Phase**: Created comprehensive test suite (`tests/docker/backend-dockerfile-production.test.ts`) that initially failed
+2. **Green Phase**: Fixed the Dockerfile to make tests pass
+3. **Refactor Phase**: Cleaned up and optimized the solution
 
-### Verification Script
+### Test Suite Coverage
+
+The test suite verifies:
+- Valid Dockerfile syntax
+- Successful production stage build
+- Correct production dependency installation
+- Presence of workspace configuration files
+- Application startup functionality
+
+### Running Tests
 
 ```bash
-# Run verification script
-./scripts/verify-docker-build.sh
+# Run the Docker build tests
+npx vitest tests/docker/backend-dockerfile-production.test.ts
+
+# Or run all tests
+pnpm test
 ```
 
 ## Best Practices Reference
 
 - [pnpm Docker Official Documentation](https://pnpm.io/docker)
-- [pnpm fetch Command](https://pnpm.io/cli/fetch)
-- [pnpm deploy Command](https://pnpm.io/cli/deploy)
-- [GitHub Issue: pnpm monorepo Docker Best Practices](https://github.com/pnpm/pnpm/issues/3114)
+- [pnpm Workspaces Documentation](https://pnpm.io/workspaces)
+- [Docker Multi-stage Builds](https://docs.docker.com/develop/dev-best-practices/)
 
-## Performance Improvements
+## Key Learnings
 
-1. **Build Time**: Use `pnpm fetch` to improve cache efficiency
-2. **Image Size**: Use `--filter` to install only necessary dependencies
-3. **Network Usage**: `--offline` mode reduces network requests
-4. **Cache Efficiency**: Correct layer ordering maximizes Docker cache utilization
+1. **Workspace Files**: Always copy workspace configuration files (`pnpm-workspace.yaml`, root `package.json`) when building monorepo packages
+2. **Script Management**: Use `--ignore-scripts` in production builds to avoid development tool conflicts
+3. **Package Structure**: Maintain proper package.json hierarchy for workspace dependency resolution
+4. **Testing**: Implement comprehensive Docker build tests to catch issues early
 
 ## Troubleshooting
 
-### Common Issues
+### Common Issues and Solutions
 
-1. **pnpm-lock.yaml Not Found**: Ensure Docker context is root directory
-2. **Workspace Dependency Issues**: Ensure `pnpm-workspace.yaml` is properly copied
-3. **Permission Issues**: Use `--chown=node:node` to set correct permissions
+1. **Husky Installation Errors**: Add `--ignore-scripts` to pnpm install command
+2. **Workspace Not Found**: Ensure `pnpm-workspace.yaml` is copied to Docker working directory
+3. **Package Dependencies**: Copy individual package.json files to maintain workspace structure
+4. **Build Context**: Use root directory as Docker build context for monorepo projects
 
 ### Debug Commands
 
 ```bash
-# Test Docker build
-docker build -f backend/Dockerfile -t test-backend . --target base
-docker build -f frontend/Dockerfile -t test-frontend . --target base
+# Test production build
+docker build -f backend/Dockerfile -t test-backend-build . --target production
 
-# Check build context
-docker build -f backend/Dockerfile . --no-cache --progress=plain
+# Check build context and detailed output
+docker build -f backend/Dockerfile . --no-cache --progress=plain --target production
+
+# Run tests
+npx vitest tests/docker/backend-dockerfile-production.test.ts
+
+# Clean up test images
+docker rmi test-backend-build
 ```

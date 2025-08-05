@@ -145,6 +145,7 @@ This document organizes all development tasks for the MKing Friend project in a 
 #### 8.1 GitHub Actions
 - [x] Automated testing pipeline setup (✅ Codecov Action v5 integrated)
 - [x] Code quality check configuration (✅ Enhanced with fail_ci_if_error and environment variables)
+- [x] Docker build configuration (✅ Fixed pnpm workspace monorepo build issues)
 - [ ] Automated deployment pipeline
 - [ ] Environment separation strategy
 
