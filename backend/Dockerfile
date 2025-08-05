@@ -35,7 +35,8 @@ CMD ["pnpm", "dev"]
 # Build stage
 FROM base AS build
 COPY . .
-RUN pnpm build
+# Run build with workspace filtering to ensure correct package is built
+RUN pnpm --filter=backend build
 
 # Production stage
 FROM node:18-alpine AS production
@@ -64,8 +65,8 @@ COPY backend/package.json ./backend/
 # Install production dependencies only (skip prepare scripts to avoid husky)
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
-# Copy built application
-COPY --from=build --chown=backend:nodejs /app/dist ./dist
+# Copy built application from backend subdirectory
+COPY --from=build --chown=backend:nodejs /app/backend/dist ./dist
 
 # Switch to non-root user
 USER backend

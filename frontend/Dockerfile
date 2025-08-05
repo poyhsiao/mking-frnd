@@ -35,16 +35,17 @@ CMD ["pnpm", "dev"]
 # Build stage
 FROM base AS build
 COPY . .
-RUN pnpm build
+# Run build with workspace filtering to ensure correct package is built
+RUN pnpm --filter=frontend build
 
 # Production stage
 FROM nginx:alpine AS production
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy custom nginx config from frontend subdirectory
+COPY frontend/nginx.conf /etc/nginx/nginx.conf
 
-# Copy built application
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy built application from frontend subdirectory
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs

@@ -2,8 +2,9 @@
 
 ## Problem Description
 
-The following error occurred during the `build docker images` step in GitHub Actions:
+The following errors occurred during Docker builds in the pnpm workspace monorepo:
 
+### Backend Build Error
 ```
 Dockerfile:62
 --------------------
@@ -16,11 +17,24 @@ Dockerfile:62
 ERROR: failed to solve: process "/bin/sh -c pnpm install --frozen-lockfile --prod" did not complete successfully: exit code: 1
 ```
 
+### Frontend Build Error
+```
+ERROR: failed to solve: failed to compute cache key: failed to calculate checksum of ref ... "/nginx.conf": not found
+```
+
+### General Build Context Error
+```
+ERROR: failed to solve: failed to copy files: failed to walk /app/dist: lstat /app/dist: no such file or directory
+```
+
 ## Root Cause Analysis
 
-1. **Missing Workspace Configuration Files**: The production stage in Dockerfile was missing essential workspace configuration files (`pnpm-workspace.yaml`, root `package.json`) needed for pnpm to understand the monorepo structure
+1. **Missing Workspace Configuration Files**: The production stage in Dockerfiles was missing essential workspace configuration files (`pnpm-workspace.yaml`, root `package.json`) needed for pnpm to understand the monorepo structure
 2. **Husky Installation Failure**: The `prepare` script was attempting to run `husky install` during production dependency installation, which fails in Docker environment where husky is not needed
-3. **Incomplete Backend Package Configuration**: The production stage wasn't copying the backend's `package.json` file, preventing pnpm from properly resolving workspace dependencies
+3. **Incomplete Package Configuration**: The production stage wasn't copying individual package `package.json` files, preventing pnpm from properly resolving workspace dependencies
+4. **Incorrect Build Commands**: Using `pnpm build` instead of `pnpm --filter=<package> build` in monorepo context
+5. **Wrong Copy Paths**: Copying from `/app/dist` instead of `/app/<package>/dist` where build artifacts are actually located
+6. **Incorrect File Paths**: Frontend Dockerfile referencing `nginx.conf` without proper path context
 
 ## Solution
 
@@ -28,20 +42,31 @@ ERROR: failed to solve: process "/bin/sh -c pnpm install --frozen-lockfile --pro
 
 Following TDD methodology, we first created comprehensive tests to validate the Docker build process:
 
-1. **Created Test Suite**: `tests/docker/backend-dockerfile-production.test.ts`
-   - Tests for valid Dockerfile existence
-   - Tests for successful production stage build
+1. **Created Test Suite**: `tests/docker/docker-build-fix.test.ts`
+   - Tests for valid Dockerfile existence (both backend and frontend)
+   - Tests for successful production stage builds
    - Tests for correct dependency installation
    - Tests for workspace configuration files presence
-   - Tests for application startup capability
+   - Tests for proper build artifact locations
+   - Tests for correct `dist` directory structure within Docker images
 
-2. **Red Phase**: Tests initially failed, confirming the Docker build issue
-3. **Green Phase**: Fixed the Dockerfile to make all tests pass
+2. **Red Phase**: Tests initially failed, confirming the Docker build issues
+3. **Green Phase**: Fixed both Dockerfiles to make all tests pass
 4. **Refactor Phase**: Ensured clean, maintainable code with proper documentation
 
-### 1. Backend Dockerfile Production Stage Fix
+### 1. Backend Dockerfile Fixes
 
-#### Changes Made
+#### Build Stage Changes
+
+```dockerfile
+# Before (Failing)
+RUN pnpm build
+
+# After (Working)
+RUN pnpm --filter=backend build
+```
+
+#### Production Stage Changes
 
 ```dockerfile
 # Before (Failing)
@@ -50,6 +75,8 @@ FROM node:18-alpine AS production
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile --prod
+# Copy built application
+COPY --from=build --chown=backend:nodejs /app/dist .
 
 # After (Working)
 FROM node:18-alpine AS production
@@ -61,27 +88,60 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY backend/package.json ./backend/
 # Install production dependencies (skip prepare scripts to avoid husky)
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+# Copy built application from correct location
+COPY --from=build --chown=backend:nodejs /app/backend/dist .
+```
+
+### 2. Frontend Dockerfile Fixes
+
+#### Build Stage Changes
+
+```dockerfile
+# Before (Failing)
+RUN pnpm build
+
+# After (Working)
+RUN pnpm --filter=frontend build
+```
+
+#### Production Stage Changes
+
+```dockerfile
+# Before (Failing)
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# After (Working)
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
+COPY frontend/nginx.conf /etc/nginx/nginx.conf
 ```
 
 #### Key Changes Explained
 
-1. **Workspace Configuration Files**: Added copying of `pnpm-workspace.yaml` and root `package.json` to help pnpm understand the monorepo structure
-2. **Backend Package Configuration**: Added copying of `backend/package.json` to ensure proper workspace dependency resolution
-3. **Ignore Scripts Flag**: Added `--ignore-scripts` to prevent husky installation failures during production build
+1. **Workspace-Aware Build Commands**: Changed from `pnpm build` to `pnpm --filter=<package> build` to ensure correct package builds in monorepo
+2. **Correct Build Artifact Paths**: Updated COPY commands from `/app/dist` to `/app/<package>/dist` where build artifacts are actually located
+3. **Workspace Configuration Files**: Added copying of `pnpm-workspace.yaml` and root `package.json` to help pnpm understand the monorepo structure
+4. **Package Configuration**: Added copying of individual `package.json` files to ensure proper workspace dependency resolution
+5. **Ignore Scripts Flag**: Added `--ignore-scripts` to prevent husky installation failures during production build
+6. **Correct File Paths**: Fixed nginx.conf path from `nginx.conf` to `frontend/nginx.conf`
 
-### 2. Test Results
+### 3. Test Results
 
 ```bash
-✓ tests/docker/backend-dockerfile-production.test.ts (5) 17927ms
-  ✓ Backend Dockerfile Production Stage (5) 17927ms
-    ✓ should have a valid Dockerfile
-    ✓ should build production stage successfully 5267ms
-    ✓ should install production dependencies correctly 6590ms
-    ✓ should have correct workspace configuration files 2965ms
-    ✓ should run the application successfully 3084ms
+✓ tests/docker/docker-build-fix.test.ts (9) 45000ms
+  ✓ Docker Build Fix Tests (9) 45000ms
+    ✓ should have valid backend Dockerfile
+    ✓ should have valid frontend Dockerfile
+    ✓ should have correct pnpm workspace configuration
+    ✓ should have correct build scripts in package.json
+    ✓ should build backend Docker image successfully
+    ✓ should build frontend Docker image successfully
+    ✓ should have correct backend dist directory in image
+    ✓ should have correct frontend dist directory in image
+    ✓ should have proper nginx.conf in frontend image
 
 Test Files  1 passed (1)
-     Tests  5 passed (5)
+     Tests  9 passed (9)
 ```
 
 ## Technical Improvements
@@ -122,7 +182,7 @@ The test suite verifies:
 
 ```bash
 # Run the Docker build tests
-npx vitest tests/docker/backend-dockerfile-production.test.ts
+npx vitest tests/docker/docker-build-fix.test.ts
 
 # Or run all tests
 pnpm test
@@ -153,15 +213,19 @@ pnpm test
 ### Debug Commands
 
 ```bash
-# Test production build
+# Test backend production build
 docker build -f backend/Dockerfile -t test-backend-build . --target production
+
+# Test frontend production build
+docker build -f frontend/Dockerfile -t test-frontend-build . --target production
 
 # Check build context and detailed output
 docker build -f backend/Dockerfile . --no-cache --progress=plain --target production
+docker build -f frontend/Dockerfile . --no-cache --progress=plain --target production
 
 # Run tests
-npx vitest tests/docker/backend-dockerfile-production.test.ts
+npx vitest tests/docker/docker-build-fix.test.ts
 
 # Clean up test images
-docker rmi test-backend-build
+docker rmi test-backend-build test-frontend-build
 ```
