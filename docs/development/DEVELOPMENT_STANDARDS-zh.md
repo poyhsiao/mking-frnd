@@ -243,6 +243,12 @@ pnpm --filter frontend add react
 - `perf`: 性能優化
 - `ci`: CI/CD 相關變更
 
+#### 最新 CI/CD 改進
+
+- **Codecov 整合**: 更新為使用 `fail_ci_if_error: false` 提升 CI 可靠性
+- **錯誤處理**: 增強覆蓋率報告流水線的錯誤恢復能力
+- **測試覆蓋**: 透過 TDD 進行全面驗證，包含 24+ 個測試案例
+
 #### 範例
 
 ```bash
