@@ -7,7 +7,8 @@ const options = {
   timeout: 2000,
 };
 
-const request = http.request(options, (res) => {
+const request = http.request(options, res => {
+  // eslint-disable-next-line no-console
   console.log(`Health check status: ${res.statusCode}`);
   if (res.statusCode === 200) {
     process.exit(0);
@@ -16,7 +17,8 @@ const request = http.request(options, (res) => {
   }
 });
 
-request.on('error', (err) => {
+request.on('error', err => {
+  // eslint-disable-next-line no-console
   console.error('Health check failed:', err.message);
   process.exit(1);
 });
