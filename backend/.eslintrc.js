@@ -6,8 +6,8 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
-    '@typescript-eslint/recommended',
-    '@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-type-checked',
     'prettier',
   ],
   parser: '@typescript-eslint/parser',
@@ -23,7 +23,6 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'error',
     '@typescript-eslint/explicit-function-return-type': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/prefer-const': 'error',
     '@typescript-eslint/no-var-requires': 'error',
     
     // General rules
@@ -42,6 +41,17 @@ module.exports = {
     ],
   },
   overrides: [
+    {
+      files: ['**/*.js'],
+      extends: ['eslint:recommended'],
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+      },
+      env: {
+        node: true,
+      },
+    },
     {
       files: ['**/*.test.ts', '**/*.spec.ts'],
       env: {
