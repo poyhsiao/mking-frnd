@@ -72,14 +72,37 @@ jobs:
       
       - name: Validate lockfile
         run: |
-          echo "Checking lockfile synchronization..."
+          echo "🔍 Checking lockfile synchronization..."
+          
+          # Check pnpm version
+          echo "📦 PNPM version: $(pnpm --version)"
+          
+          # Validate lockfile with detailed error reporting
           if ! pnpm install --frozen-lockfile; then
-            echo "❌ Lockfile is out of sync with package.json files"
-            echo "💡 To fix this locally, run: pnpm install"
-            echo "📝 Then commit the updated pnpm-lock.yaml"
+            echo "❌ Lockfile validation failed"
+            echo "📋 Diagnostic information:"
+            echo "   - PNPM version: $(pnpm --version)"
+            echo "   - Node version: $(node --version)"
+            echo "   - OS: ${{ runner.os }}"
+            
+            # Check for common issues
+            if [ ! -f "pnpm-lock.yaml" ]; then
+              echo "💡 Issue: pnpm-lock.yaml file is missing"
+              echo "🔧 Solution: Run 'pnpm install' to generate the lockfile"
+            else
+              echo "💡 Issue: Lockfile is out of sync with package.json files"
+              echo "🔧 Solution: Run 'pnpm install' locally and commit the updated pnpm-lock.yaml"
+            fi
+            
+            echo "📝 Steps to fix:"
+            echo "   1. Run 'pnpm install' in your local environment"
+            echo "   2. Commit the updated pnpm-lock.yaml file"
+            echo "   3. Push the changes to trigger a new build"
+            
             exit 1
           fi
-          echo "✅ Lockfile is synchronized"
+          
+          echo "✅ Lockfile is properly synchronized"
       
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
