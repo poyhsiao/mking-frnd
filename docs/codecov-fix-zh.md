@@ -10,14 +10,35 @@ Error: Codecov: Failed to properly upload: The process '/home/runner/work/_actio
 
 ## 解決方案
 
-### 1. 使用 TDD 方法診斷問題
+使用測試驅動開發 (TDD) 方法診斷和修復 CI 配置：
+
+### 1. 診斷階段
+- 識別缺失的測試覆蓋率配置
+- 發現不正確的 Codecov 上傳路徑
+- 發現缺失的環境變量
+- 分析 Codecov Action v4 與 v5 的差異
+
+### 2. 實施階段
+- 更新 CI 工作流以包含適當的測試執行
+- 配置覆蓋率報告生成
+- 升級到 Codecov Action v5 以提高可靠性
+- 使用環境變量和目錄設置增強配置
+- 啟用 fail_ci_if_error 以實現更嚴格的質量門檻
+
+### 3. 驗證階段
+- 驗證 CI 中的測試執行
+- 確認覆蓋率報告生成
+- 驗證 Codecov 上傳成功
+- 測試增強的錯誤處理和報告
+
+### 4. 使用 TDD 方法診斷問題
 
 我們採用測試驅動開發 (TDD) 方法來診斷和修復 Codecov 配置問題：
 
 - `tests/ci/codecov-upload.test.ts` - 基本配置驗證
 - `tests/ci/codecov-integration.test.ts` - 集成測試和最佳實踐驗證
 
-### 2. 修正 CI 配置
+### 5. 修正 CI 配置
 
 在 `.github/workflows/ci.yml` 中更新了 Codecov 配置：
 
@@ -36,6 +57,11 @@ Error: Codecov: Failed to properly upload: The process '/home/runner/work/_actio
 
 ## 關鍵修正點
 
+### 版本升級
+- **升級到 Codecov Action v5**: 提高可靠性和性能
+- **環境變量支持**: 添加 OS 和 NODE_VERSION 環境變量以提供更好的上下文
+- **改進的文件發現**: 配置 `disable_search: false` 以增強覆蓋率文件檢測
+
 ### 錯誤處理
 - **`fail_ci_if_error: false`**: 防止 Codecov 上傳失敗導致整個 CI 流程中斷
 - **`handle_no_reports_found: true`**: 優雅處理覆蓋率文件缺失的情況
@@ -48,6 +74,11 @@ Error: Codecov: Failed to properly upload: The process '/home/runner/work/_actio
 ### 安全性
 - 使用 `secrets.CODECOV_TOKEN` 安全地傳遞認證令牌
 - 避免在日誌中暴露敏感信息
+
+### 最佳實踐實施
+- **遵循 Codecov Action v5 推薦配置**: 採用最新的配置標準
+- **增強錯誤報告**: 提供更詳細的失敗診斷信息
+- **改進覆蓋率文件處理**: 更可靠的文件檢測和驗證機制
 
 ## 測試覆蓋
 

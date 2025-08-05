@@ -120,15 +120,18 @@ jobs:
           retention-days: 30
       
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./backend/coverage/lcov.info,./frontend/coverage/lcov.info
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           handle_no_reports_found: true
           verbose: true
           flags: unittests
           name: codecov-umbrella
+          env_vars: OS,NODE_VERSION
+          directory: ./
+          disable_search: false
 
   build:
     name: Build Docker Images

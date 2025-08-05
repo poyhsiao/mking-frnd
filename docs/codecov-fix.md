@@ -16,6 +16,25 @@ Error: Codecov: Failed to properly create commit: The process '/home/runner/work
 - `tests/ci/codecov-upload.test.ts` - 基本配置驗證
 - `tests/ci/codecov-integration.test.ts` - 集成測試和最佳實踐驗證
 
+#### 診斷階段
+- 識別缺失的測試覆蓋率配置
+- 發現不正確的 Codecov 上傳路徑
+- 發現缺失的環境變量
+- 分析 Codecov Action v4 與 v5 的差異
+
+#### 實施階段
+- 更新 CI 工作流以包含適當的測試執行
+- 配置覆蓋率報告生成
+- 升級到 Codecov Action v5 以提高可靠性
+- 使用環境變量和目錄設置增強配置
+- 啟用 fail_ci_if_error 以實現更嚴格的質量門檻
+
+#### 驗證階段
+- 驗證 CI 中的測試執行
+- 確認覆蓋率報告生成
+- 驗證 Codecov 上傳成功
+- 測試增強的錯誤處理和報告
+
 ### 2. 修正 CI 配置
 
 在 `.github/workflows/ci.yml` 中更新了 Codecov 配置：
@@ -47,6 +66,12 @@ Error: Codecov: Failed to properly create commit: The process '/home/runner/work
 #### C. 安全性
 - 使用 `${{ secrets.CODECOV_TOKEN }}` 安全地傳遞 token
 - 不在日誌中暴露敏感信息
+
+#### D. 版本升級和最佳實踐
+- **升級到 Codecov Action v5**: 提供更好的可靠性和性能
+- **環境變量配置**: 添加 OS 和 NODE_VERSION 環境變量以提供更好的上下文
+- **文件發現優化**: 使用 `disable_search: false` 確保正確的覆蓋率文件發現
+- **嚴格錯誤處理**: 在生產環境中啟用 `fail_ci_if_error: true` 以實現更嚴格的質量門檻
 
 ### 4. 測試覆蓋
 
