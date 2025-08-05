@@ -41,6 +41,8 @@ This document defines the confirmed technology stack and development standards f
 - **Unit Testing**: Jest + React Testing Library
 - **E2E Testing**: Cypress
 - **Test Coverage**: Minimum 80%
+- **Coverage Reporting**: Codecov integration with CI/CD
+- **CI/CD Testing**: Automated test execution on every commit
 
 ### Internationalization
 - **react-i18next**: React internationalization library

@@ -32,6 +32,7 @@
 ### 🧪 測試與部署
 - [`testing/`](./testing/) - 測試策略和規範
 - [`deployment/`](./deployment/) - 部署和運維文檔
+- [`codecov-fix.md`](./codecov-fix.md) - Codecov 集成修復文檔 ✅ 最近修復
 
 ### 📊 項目管理
 - [`project-management/`](./project-management/) - 項目管理和任務規劃
