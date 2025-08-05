@@ -104,7 +104,7 @@ describe('PNPM Frozen Lockfile CI Compatibility', () => {
     expect(rootPackageJson.workspaces, 'Root package.json should define workspaces').toBeDefined();
     
     // Verify workspace paths
-    const workspaces = rootPackageJson.workspaces;
+    const {workspaces} = rootPackageJson;
     expect(workspaces, 'Workspaces should include backend and frontend').toEqual(
       expect.arrayContaining(['backend', 'frontend'])
     );

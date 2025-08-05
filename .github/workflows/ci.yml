@@ -70,7 +70,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
       
-      - name: Validate lockfile
+      - name: Validate lockfile (dry-run)
         run: |
           echo "🔍 Checking lockfile synchronization..."
           
@@ -103,7 +103,6 @@ jobs:
           fi
           
           echo "✅ Lockfile is properly synchronized"
-      
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
