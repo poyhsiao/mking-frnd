@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String     @unique @db.VarChar(255)
+  passwordHash  String?    @map("password_hash") @db.VarChar(255)
+  emailVerified Boolean    @default(false) @map("email_verified")
+  phone         String?    @db.VarChar(20)
+  phoneVerified Boolean    @default(false) @map("phone_verified")
+  status        UserStatus @default(ACTIVE)
+  role          UserRole   @default(USER)
+  lastLoginAt   DateTime?  @map("last_login_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  deletedAt     DateTime?  @map("deleted_at")
+
+  // Relations
+  profile          Profile?
+  sentMessages     Message[]     @relation("MessageSender")
+  receivedMessages Message[]     @relation("MessageReceiver")
+  interactions     Interaction[]
+
+  @@map("users")
+}
+
+model Profile {
+  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String              @unique @map("user_id") @db.Uuid
+  displayName        String              @map("display_name") @db.VarChar(100)
+  firstName          String?             @map("first_name") @db.VarChar(50)
+  lastName           String?             @map("last_name") @db.VarChar(50)
+  avatar             String?             @db.VarChar(500)
+  bio                String?             @db.Text
+  dateOfBirth        DateTime?           @map("date_of_birth") @db.Date
+  gender             Gender?
+  location           String?             @db.VarChar(100)
+  interests          String[]            @db.VarChar(50)
+  languages          String[]            @db.VarChar(10)
+  occupation         String?             @db.VarChar(100)
+  education          String?             @db.VarChar(100)
+  height             Int?                @db.SmallInt
+  relationshipStatus RelationshipStatus? @map("relationship_status")
+  lookingFor         LookingFor[]        @map("looking_for")
+  privacySettings    Json                @default("{}") @map("privacy_settings")
+  preferences        Json                @default("{}") @map("preferences")
+  isVerified         Boolean             @default(false) @map("is_verified")
+  verificationBadges String[]            @map("verification_badges") @db.VarChar(50)
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Message {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  senderId    String      @map("sender_id") @db.Uuid
+  receiverId  String      @map("receiver_id") @db.Uuid
+  content     String      @db.Text
+  messageType MessageType @default(TEXT) @map("message_type")
+  attachments Json?       @default("[]")
+  isRead      Boolean     @default(false) @map("is_read")
+  readAt      DateTime?   @map("read_at")
+  isDeleted   Boolean     @default(false) @map("is_deleted")
+  deletedAt   DateTime?   @map("deleted_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  sender   User @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Interaction {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String          @map("user_id") @db.Uuid
+  targetUserId    String          @map("target_user_id") @db.Uuid
+  interactionType InteractionType @map("interaction_type")
+  isActive        Boolean         @default(true) @map("is_active")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetUserId, interactionType])
+  @@map("interactions")
+}
+
+// Enums
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum RelationshipStatus {
+  SINGLE
+  IN_RELATIONSHIP
+  MARRIED
+  DIVORCED
+  WIDOWED
+  COMPLICATED
+  PREFER_NOT_TO_SAY
+}
+
+enum LookingFor {
+  FRIENDSHIP
+  DATING
+  RELATIONSHIP
+  MARRIAGE
+  NETWORKING
+  ACTIVITY_PARTNER
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  FILE
+  LOCATION
+  STICKER
+  GIF
+}
+
+enum InteractionType {
+  LIKE
+  SUPER_LIKE
+  PASS
+  BLOCK
+  REPORT
+  FAVORITE
+  VISIT
+}

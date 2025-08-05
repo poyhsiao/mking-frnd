@@ -1,0 +1,22 @@
+# pnpm workspace configuration
+# Defines the packages that are part of this workspace
+
+packages:
+  # Main application packages
+  - 'backend'
+  - 'frontend'
+  
+  # Shared packages and libraries
+  - 'packages/*'
+  
+  # Tools and utilities
+  - 'tools/*'
+  
+  # Documentation (if it has package.json)
+  - 'docs'
+  
+  # Exclude patterns
+  - '!**/node_modules/**'
+  - '!**/dist/**'
+  - '!**/build/**'
+  - '!**/.next/**'

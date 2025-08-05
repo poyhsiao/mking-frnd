@@ -1,3 +1,7 @@
+# Git directory (should never be tracked)
+.git/
+.git
+
 # Logs
 logs
 *.log
@@ -137,3 +141,33 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Backend logs
+backend/logs/
+
+# Vitest results
+**/node_modules/.vite/
+
+dev-debug.log
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+.DS_Store
+
+.trae/rules
+
+# Task files
+# tasks.json
+# tasks/
+.cursor/
+.taskmaster/
+.windsurf/
+.trae/
+.kiro/

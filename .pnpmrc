@@ -1,0 +1,37 @@
+# pnpm configuration file
+
+# Store directory for better performance
+store-dir=~/.pnpm-store
+
+# Verify store integrity
+verify-store-integrity=true
+
+# Strict peer dependencies (set to false for compatibility)
+strict-peer-dependencies=false
+
+# Auto install peer dependencies
+auto-install-peers=true
+
+# Use hard links for better performance
+link-workspace-packages=true
+
+# Shamefully hoist for compatibility with some packages
+shamefully-hoist=false
+
+# Enable side effects cache
+side-effects-cache=true
+
+# Registry configuration
+registry=https://registry.npmjs.org/
+
+# Save exact versions
+save-exact=true
+
+# Engine strict mode
+engine-strict=true
+
+# Node linker
+node-linker=isolated
+
+# Prefer workspace packages
+prefer-workspace-packages=true
