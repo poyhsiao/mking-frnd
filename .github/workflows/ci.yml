@@ -9,7 +9,7 @@ on:
 
 env:
   NODE_VERSION: '18'
-  PNPM_VERSION: '8'
+  PNPM_VERSION: '8.15.1'
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -69,6 +69,17 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+      
+      - name: Validate lockfile
+        run: |
+          echo "Checking lockfile synchronization..."
+          if ! pnpm install --frozen-lockfile; then
+            echo "❌ Lockfile is out of sync with package.json files"
+            echo "💡 To fix this locally, run: pnpm install"
+            echo "📝 Then commit the updated pnpm-lock.yaml"
+            exit 1
+          fi
+          echo "✅ Lockfile is synchronized"
       
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
