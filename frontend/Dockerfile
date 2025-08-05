@@ -2,7 +2,12 @@
 FROM node:18-alpine AS base
 
 # Install pnpm using corepack (recommended approach)
-RUN corepack enable pnpm
+RUN corepack enable
+RUN corepack prepare pnpm@8.15.0 --activate
+
+# Set pnpm environment variables
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 
 # Set working directory
 WORKDIR /app

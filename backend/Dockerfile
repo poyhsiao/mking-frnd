@@ -1,8 +1,13 @@
 # Multi-stage build for Node.js backend
 FROM node:18-alpine AS base
 
-# Install pnpm using corepack (recommended approach)
-RUN corepack enable pnpm
+# Enable corepack and prepare specific pnpm version
+RUN corepack enable
+RUN corepack prepare pnpm@8.15.0 --activate
+
+# Set PNPM environment variables
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 
 # Set working directory
 WORKDIR /app
@@ -35,8 +40,13 @@ RUN pnpm build
 # Production stage
 FROM node:18-alpine AS production
 
-# Install pnpm
-RUN npm install -g pnpm@8.15.1
+# Enable corepack and prepare specific pnpm version
+RUN corepack enable
+RUN corepack prepare pnpm@8.15.0 --activate
+
+# Set PNPM environment variables
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 
 # Create app user
 RUN addgroup -g 1001 -S nodejs
@@ -45,11 +55,14 @@ RUN adduser -S backend -u 1001
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy workspace configuration files
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Copy backend package.json
+COPY backend/package.json ./backend/
+
+# Install production dependencies only (skip prepare scripts to avoid husky)
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Copy built application
 COPY --from=build --chown=backend:nodejs /app/dist ./dist
