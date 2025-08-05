@@ -44,6 +44,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Added comprehensive test suite `tests/docker/docker-build-fix.test.ts` with TDD approach
   - Resolved workspace configuration issues in Docker production stages
 
+- 🔐 **GitHub Actions Permissions for Container Registry**
+  - Fixed "denied: installation not allowed to Create organization package" error in CI/CD pipeline
+  - Added required `packages: write` permission to build job for GHCR push access
+  - Added `contents: read` permission for repository checkout
+  - Added `id-token: write` permission for OIDC authentication
+  - Added comprehensive test suite `tests/ci/github-actions-permissions.test.ts` with TDD approach
+  - Resolved Docker image push failures to GitHub Container Registry
+
 - 📋 **Product Planning and Documentation**
   - Added detailed admin system requirements planning
   - Added MVP feature priority classification (P0-P3)
