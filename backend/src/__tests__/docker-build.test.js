@@ -9,7 +9,7 @@ import path from 'path';
 import { afterAll, describe, expect, test } from 'vitest';
 
 describe('Docker Build Tests', () => {
-  const rootDir = path.resolve(__dirname, '../../../../');
+  const rootDir = path.resolve(__dirname, '../../../');
   const backendDir = path.join(rootDir, 'backend');
   const frontendDir = path.join(rootDir, 'frontend');
 
