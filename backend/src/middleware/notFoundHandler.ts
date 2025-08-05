@@ -3,7 +3,7 @@ import { createError } from './errorHandler';
 
 export const notFoundHandler = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void => {
   const error = createError(

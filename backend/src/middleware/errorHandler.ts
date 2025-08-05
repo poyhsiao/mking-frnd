@@ -38,7 +38,7 @@ export const errorHandler = (
     success: false,
     error: {
       message,
-      ...(process.env.NODE_ENV === 'development' && {
+      ...(process.env['NODE_ENV'] === 'development' && {
         stack: err.stack,
         details: err,
       }),

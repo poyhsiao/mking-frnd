@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
@@ -10,8 +10,8 @@ import { requestLogger } from './middleware/requestLogger';
 // Load environment variables
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+const app: Express = express();
+const PORT = process.env['PORT'] || 3001;
 const logger = createLogger('app');
 
 // Middleware
@@ -24,10 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
-    environment: process.env.NODE_ENV || 'development',
+    environment: process.env['NODE_ENV'] || 'development',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
@@ -40,7 +40,7 @@ app.use('*', notFoundHandler);
 app.use(errorHandler);
 
 // Start server
-if (process.env.NODE_ENV !== 'test') {
+if (process.env['NODE_ENV'] !== 'test') {
   app.listen(PORT, () => {
     logger.info(`Server running on port ${PORT}`);
   });
