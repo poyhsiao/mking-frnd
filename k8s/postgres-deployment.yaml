@@ -42,6 +42,31 @@ spec:
             secretKeyRef:
               name: mking-friend-secrets
               key: POSTGRES_PASSWORD
+        - name: AUTH_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mking-friend-secrets
+              key: AUTH_DB_PASSWORD
+        - name: USER_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mking-friend-secrets
+              key: USER_DB_PASSWORD
+        - name: CHAT_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mking-friend-secrets
+              key: CHAT_DB_PASSWORD
+        - name: MEDIA_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mking-friend-secrets
+              key: MEDIA_DB_PASSWORD
+        - name: ADMIN_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mking-friend-secrets
+              key: ADMIN_DB_PASSWORD
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
         volumeMounts:
@@ -139,12 +164,12 @@ data:
     CREATE DATABASE media_service;
     CREATE DATABASE admin_service;
     
-    -- Create users for each service
-    CREATE USER auth_user WITH PASSWORD 'auth_password_123';
-    CREATE USER user_user WITH PASSWORD 'user_password_123';
-    CREATE USER chat_user WITH PASSWORD 'chat_password_123';
-    CREATE USER media_user WITH PASSWORD 'media_password_123';
-    CREATE USER admin_user WITH PASSWORD 'admin_password_123';
+    -- Create users for each service using environment variables
+    CREATE USER auth_user WITH PASSWORD '${AUTH_DB_PASSWORD}';
+    CREATE USER user_user WITH PASSWORD '${USER_DB_PASSWORD}';
+    CREATE USER chat_user WITH PASSWORD '${CHAT_DB_PASSWORD}';
+    CREATE USER media_user WITH PASSWORD '${MEDIA_DB_PASSWORD}';
+    CREATE USER admin_user WITH PASSWORD '${ADMIN_DB_PASSWORD}';
     
     -- Grant privileges
     GRANT ALL PRIVILEGES ON DATABASE auth_service TO auth_user;

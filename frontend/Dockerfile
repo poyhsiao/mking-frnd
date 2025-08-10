@@ -32,6 +32,18 @@ COPY . .
 EXPOSE 3000
 CMD ["pnpm", "dev"]
 
+# Test stage
+FROM base AS test
+COPY . .
+# Install dev dependencies for testing
+RUN pnpm install --filter=frontend --frozen-lockfile
+# Set test environment
+ENV NODE_ENV=test
+# Expose port for testing
+EXPOSE 3000
+# Default command for tests
+CMD ["pnpm", "test"]
+
 # Build stage
 FROM base AS build
 COPY . .

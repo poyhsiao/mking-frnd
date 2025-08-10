@@ -2,6 +2,70 @@
 .git/
 .git
 
+# =============================================================================
+# SECURITY: SENSITIVE FILES - NEVER COMMIT THESE!
+# =============================================================================
+# Environment files with real secrets
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.test
+
+# Backup environment files
+.env.*.backup
+.env.backup.*
+
+# Secret management files
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Kubernetes secrets with actual values (keep templates)
+k8s/secrets.dev.yaml
+k8s/secrets.staging.yaml
+k8s/secrets.prod.yaml
+k8s/secrets.local.yaml
+.env.secrets
+*.secrets.yaml
+*-secrets.yaml
+!secrets.template.yaml
+!secrets.yaml
+
+# Security scanner configuration (should be tracked)
+!.gitleaksignore
+
+# Database dumps with potential sensitive data
+*.sql
+*.dump
+*.backup
+
+# Configuration files that might contain secrets
+config/production.json
+config/staging.json
+config/secrets.json
+
+# IDE and editor files that might store credentials
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
 # Logs
 logs
 *.log

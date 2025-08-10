@@ -1,0 +1,93 @@
+# Pre-commit hooks for security and code quality
+# Install with: pip install pre-commit && pre-commit install
+
+repos:
+  # Secret detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package-lock.json
+
+  # Git leaks detection
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+
+  # Basic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: no-commit-to-branch
+        args: ['--branch', 'main', '--branch', 'master']
+
+  # Security linting for JavaScript/TypeScript
+  - repo: https://github.com/eslint/eslint
+    rev: v8.57.0
+    hooks:
+      - id: eslint
+        files: \.(js|ts|jsx|tsx)$
+        args: ['--fix']
+        additional_dependencies:
+          - '@typescript-eslint/eslint-plugin@^6.0.0'
+          - '@typescript-eslint/parser@^6.0.0'
+          - 'eslint-plugin-security@^1.7.1'
+
+  # Docker security
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: ['--ignore', 'DL3008', '--ignore', 'DL3009']
+
+  # Environment file validation
+  - repo: local
+    hooks:
+      - id: check-env-files
+        name: Check .env files for secrets
+        entry: bash -c 'if grep -r "CHANGE_ME" .env* 2>/dev/null; then echo "ERROR: Found CHANGE_ME placeholders in .env files. Please set real values."; exit 1; fi'
+        language: system
+        files: '\.env.*'
+        pass_filenames: false
+
+      - id: validate-docker-compose
+        name: Validate Docker Compose files
+        entry: docker-compose
+        args: ['-f', 'docker-compose.yml', 'config', '-q']
+        language: system
+        files: 'docker-compose.*\.ya?ml$'
+        pass_filenames: false
+
+  # Kubernetes security
+  - repo: https://github.com/stackrox/kube-linter
+    rev: 0.6.8
+    hooks:
+      - id: kube-linter
+        files: '\.ya?ml$'
+        args: ['lint']
+
+# Global configuration
+default_stages: [commit, push]
+fail_fast: true
+
+# CI configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false

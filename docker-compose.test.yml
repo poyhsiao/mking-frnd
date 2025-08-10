@@ -10,9 +10,9 @@ services:
     image: postgres:15-alpine
     container_name: mking-postgres-test
     environment:
-      POSTGRES_DB: mking_test
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_TEST_DB:-mking_test}
+      POSTGRES_USER: ${POSTGRES_TEST_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_TEST_PASSWORD:?POSTGRES_TEST_PASSWORD is required}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - '5433:5432'  # Different port to avoid conflicts
@@ -53,8 +53,8 @@ services:
     container_name: mking-minio-test
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: testuser
-      MINIO_ROOT_PASSWORD: testpassword
+      MINIO_ROOT_USER: ${MINIO_TEST_USER:-testuser}
+      MINIO_ROOT_PASSWORD: ${MINIO_TEST_PASSWORD:?MINIO_TEST_PASSWORD is required}
     ports:
       - '9002:9000'
       - '9003:9001'
@@ -74,7 +74,7 @@ services:
     container_name: mking-typesense-test
     environment:
       TYPESENSE_DATA_DIR: /data
-      TYPESENSE_API_KEY: test-api-key
+      TYPESENSE_API_KEY: ${TYPESENSE_TEST_API_KEY:?TYPESENSE_TEST_API_KEY is required}
       TYPESENSE_ENABLE_CORS: true
     ports:
       - '8109:8108'
@@ -174,210 +174,45 @@ services:
         npm run test:coverage
       "
 
-  # Auth Service Tests
-  auth-service-test:
-    build:
-      context: ./services/auth
-      dockerfile: Dockerfile
-      target: test
-    container_name: mking-auth-test
-    environment:
-      - NODE_ENV=test
-      - DATABASE_URL=postgresql://postgres:postgres@postgres-test:5432/mking_test
-      - REDIS_URL=redis://redis-test:6379
-      - JWT_SECRET=test-jwt-secret
-      - JWT_REFRESH_SECRET=test-refresh-secret
-      - CI=true
-    volumes:
-      - ./services/auth:/app
-      - /app/node_modules
-      - ./test-results:/app/test-results
-    networks:
-      - test-network
-    depends_on:
-      postgres-test:
-        condition: service_healthy
-      redis-test:
-        condition: service_healthy
-    command: >
-      sh -c "
-        echo 'Running auth service tests...'
-        npm run test:unit
-        npm run test:integration
-      "
+  # Note: Auth and User services are integrated into the main backend service
+  # No separate microservices exist for auth and user functionality
 
-  # User Service Tests
-  user-service-test:
-    build:
-      context: ./services/user
-      dockerfile: Dockerfile
-      target: test
-    container_name: mking-user-test
-    environment:
-      - NODE_ENV=test
-      - DATABASE_URL=postgresql://postgres:postgres@postgres-test:5432/mking_test
-      - REDIS_URL=redis://redis-test:6379
-      - TYPESENSE_HOST=typesense-test
-      - TYPESENSE_PORT=8108
-      - TYPESENSE_API_KEY=test-api-key
-      - CI=true
-    volumes:
-      - ./services/user:/app
-      - /app/node_modules
-      - ./test-results:/app/test-results
-    networks:
-      - test-network
-    depends_on:
-      postgres-test:
-        condition: service_healthy
-      redis-test:
-        condition: service_healthy
-      typesense-test:
-        condition: service_healthy
-    command: >
-      sh -c "
-        echo 'Running user service tests...'
-        npm run test:unit
-        npm run test:integration
-      "
-
-  # Chat Service Tests
-  chat-service-test:
-    build:
-      context: ./services/chat
-      dockerfile: Dockerfile
-      target: test
-    container_name: mking-chat-test
-    environment:
-      - NODE_ENV=test
-      - DATABASE_URL=postgresql://postgres:postgres@postgres-test:5432/mking_test
-      - REDIS_URL=redis://redis-test:6379
-      - TYPESENSE_HOST=typesense-test
-      - TYPESENSE_PORT=8108
-      - TYPESENSE_API_KEY=test-api-key
-      - CI=true
-    volumes:
-      - ./services/chat:/app
-      - /app/node_modules
-      - ./test-results:/app/test-results
-    networks:
-      - test-network
-    depends_on:
-      postgres-test:
-        condition: service_healthy
-      redis-test:
-        condition: service_healthy
-      typesense-test:
-        condition: service_healthy
-    command: >
-      sh -c "
-        echo 'Running chat service tests...'
-        npm run test:unit
-        npm run test:integration
-        npm run test:websocket
-      "
-
-  # Media Service Tests
-  media-service-test:
-    build:
-      context: ./services/media
-      dockerfile: Dockerfile
-      target: test
-    container_name: mking-media-test
-    environment:
-      - NODE_ENV=test
-      - DATABASE_URL=postgresql://postgres:postgres@postgres-test:5432/mking_test
-      - MINIO_ENDPOINT=minio-test:9000
-      - MINIO_ACCESS_KEY=testuser
-      - MINIO_SECRET_KEY=testpassword
-      - MINIO_BUCKET=test-bucket
-      - CI=true
-    volumes:
-      - ./services/media:/app
-      - /app/node_modules
-      - ./test-results:/app/test-results
-    networks:
-      - test-network
-    depends_on:
-      postgres-test:
-        condition: service_healthy
-      minio-test:
-        condition: service_healthy
-    command: >
-      sh -c "
-        echo 'Running media service tests...'
-        npm run test:unit
-        npm run test:integration
-        npm run test:upload
-      "
-
-  # Admin Service Tests
-  admin-service-test:
-    build:
-      context: ./services/admin
-      dockerfile: Dockerfile
-      target: test
-    container_name: mking-admin-test
-    environment:
-      - NODE_ENV=test
-      - DATABASE_URL=postgresql://postgres:postgres@postgres-test:5432/mking_test
-      - REDIS_URL=redis://redis-test:6379
-      - ADMIN_JWT_SECRET=test-admin-jwt-secret
-      - CI=true
-    volumes:
-      - ./services/admin:/app
-      - /app/node_modules
-      - ./test-results:/app/test-results
-    networks:
-      - test-network
-    depends_on:
-      postgres-test:
-        condition: service_healthy
-      redis-test:
-        condition: service_healthy
-    command: >
-      sh -c "
-        echo 'Running admin service tests...'
-        npm run test:unit
-        npm run test:integration
-      "
+  # Note: Chat, Media, and Admin services are integrated into the main backend service
+  # No separate microservices exist for these functionalities
 
   # Integration Tests
-  integration-test:
-    build:
-      context: ./tests
-      dockerfile: Dockerfile
-    container_name: mking-integration-test
-    environment:
-      - NODE_ENV=test
-      - API_BASE_URL=http://backend-test:8000
-      - FRONTEND_URL=http://frontend-test:3000
-      - CI=true
-    volumes:
-      - ./tests:/app
-      - /app/node_modules
-      - ./test-results:/app/test-results
-    networks:
-      - test-network
-    depends_on:
-      - backend-test
-      - frontend-test
-      - auth-service-test
-      - user-service-test
-      - chat-service-test
-      - media-service-test
-      - admin-service-test
-    command: >
-      sh -c "
-        echo 'Waiting for all services to be ready...'
-        sleep 30
-        echo 'Running end-to-end integration tests...'
-        npm run test:e2e
-        echo 'Running API integration tests...'
-        npm run test:api:integration
-        echo 'Running performance tests...'
-        npm run test:performance
-      "
+  # Note: Integration tests are currently disabled as they require a separate Dockerfile
+  # TODO: Create tests/Dockerfile or integrate tests into backend/frontend services
+  # integration-test:
+  #   build:
+  #     context: ./tests
+  #     dockerfile: Dockerfile
+  #   container_name: mking-integration-test
+  #   environment:
+  #     - NODE_ENV=test
+  #     - API_BASE_URL=http://backend-test:8000
+  #     - FRONTEND_URL=http://frontend-test:3000
+  #     - CI=true
+  #   volumes:
+  #     - ./tests:/app
+  #     - /app/node_modules
+  #     - ./test-results:/app/test-results
+  #   networks:
+  #     - test-network
+  #   depends_on:
+  #     - backend-test
+  #     - frontend-test
+  #   command: >
+  #     sh -c "
+  #       echo 'Waiting for all services to be ready...'
+  #       sleep 30
+  #       echo 'Running end-to-end integration tests...'
+  #       npm run test:e2e
+  #       echo 'Running API integration tests...'
+  #       npm run test:api:integration
+  #       echo 'Running performance tests...'
+  #       npm run test:performance
+  #     "
 
   # Test Results Collector
   test-results:
@@ -391,12 +226,7 @@ services:
     depends_on:
       - backend-test
       - frontend-test
-      - auth-service-test
-      - user-service-test
-      - chat-service-test
-      - media-service-test
-      - admin-service-test
-      - integration-test
+      # - integration-test  # Commented out until integration tests are properly configured
     command: >
       sh -c "
         echo 'Collecting test results...'

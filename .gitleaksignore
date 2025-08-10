@@ -1,0 +1,22 @@
+# GitLeaks ignore file
+# This file contains patterns to ignore false positives in secret detection
+
+# Ignore Kubernetes secret template files with safe placeholders
+k8s/secrets.yaml
+k8s/secrets.template.yaml
+
+# Ignore development environment files that may contain placeholder secrets
+*.env.example
+*.env.template
+docker-compose.override.yml.example
+
+# Ignore documentation files that may contain example secrets
+docs/**/*.md
+README.md
+CHANGELOG.md
+
+# Ignore test files with mock secrets
+**/*test*/**
+**/*spec*/**
+**/fixtures/**
+**/mocks/**

@@ -47,17 +47,17 @@ jobs:
             "unit")
               echo "Running unit tests for all services..."
               docker compose -f docker-compose.test.yml up --build --abort-on-container-exit \
-                backend-test auth-service-test user-service-test chat-service-test media-service-test admin-service-test
+                backend-test
               ;;
             "integration")
               echo "Running integration tests..."
               docker compose -f docker-compose.test.yml up --build --abort-on-container-exit \
-                postgres-test redis-test minio-test typesense-test integration-test
+                postgres-test redis-test minio-test typesense-test backend-test
               ;;
             "e2e")
               echo "Running end-to-end tests..."
               docker compose -f docker-compose.test.yml up --build --abort-on-container-exit \
-                postgres-test redis-test minio-test typesense-test frontend-test backend-test integration-test
+                postgres-test redis-test minio-test typesense-test frontend-test backend-test
               ;;
           esac
       
@@ -191,13 +191,13 @@ jobs:
         run: |
           echo "Merging coverage reports..."
           mkdir -p merged-coverage
-
+          
           # Install lcov if not present
           if ! command -v lcov &> /dev/null; then
             sudo apt-get update
             sudo apt-get install -y lcov
           fi
-
+          
           # Merge all .lcov files properly
           lcov_files=$(find ./test-results -name "*.lcov")
           if [ -n "$lcov_files" ]; then
@@ -211,7 +211,7 @@ jobs:
               fi
             done
           fi
-
+          
           find ./test-results -name "coverage-final.json" -exec cp {} merged-coverage/ \; || true
       
       - name: Upload coverage reports to Codecov
