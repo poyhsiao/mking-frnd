@@ -42,6 +42,7 @@ ENV NODE_ENV=test
 # Expose port for testing
 EXPOSE 3001
 # Default command for tests
+USER non-root
 CMD ["pnpm", "test"]
 
 # Build stage

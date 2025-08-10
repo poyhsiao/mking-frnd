@@ -288,9 +288,21 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
     });
 
     it('When I check for security scanning', () => {
-      // This test will pass initially and can be enhanced
-      // when security scanning tools are added
-      expect(true).toBe(true);
+      const ciConfig = readFileSync(ciConfigPath, 'utf-8');
+      // Check for common security scanning tools or steps in the CI config
+      expect(
+        ciConfig.match(/(npm|yarn) audit/) ||
+        ciConfig.includes('snyk') ||
+        ciConfig.includes('trivy') ||
+        ciConfig.includes('security scan')
+      ).toBeTruthy();
+
+      // Optionally, check for reporting of scan results
+      expect(
+        ciConfig.includes('upload-artifact') ||
+        ciConfig.includes('report') ||
+        ciConfig.includes('comment')
+      ).toBeTruthy();
     });
 
     it('Then the pipeline should validate security compliance', () => {
