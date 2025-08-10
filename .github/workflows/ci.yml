@@ -35,12 +35,45 @@ jobs:
           chmod 777 test-results coverage
       
       - name: Run ${{ matrix.test-type }} tests with Docker Compose
+        env:
+          # Test Database Configuration
+          POSTGRES_TEST_DB: mking_test
+          POSTGRES_TEST_USER: postgres
+          POSTGRES_TEST_PASSWORD: postgres
+          
+          # Test MinIO Configuration
+          MINIO_TEST_USER: testuser
+          MINIO_TEST_PASSWORD: testpassword
+          
+          # Test Typesense Configuration
+          TYPESENSE_TEST_API_KEY: test-api-key
+          
+          # General Test Configuration
+          TEST_TYPE: ${{ matrix.test-type }}
+          CI: true
+          NODE_ENV: test
         run: |
           echo "Running ${{ matrix.test-type }} tests..."
+          echo "Setting up test environment variables..."
           
-          # Set test environment variables
-          export TEST_TYPE=${{ matrix.test-type }}
-          export CI=true
+          # Export all test environment variables
+          export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
+          export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
+          export POSTGRES_TEST_PASSWORD="${POSTGRES_TEST_PASSWORD}"
+          export MINIO_TEST_USER="${MINIO_TEST_USER}"
+          export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
+          export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
+          export TEST_TYPE="${TEST_TYPE}"
+          export CI="${CI}"
+          export NODE_ENV="${NODE_ENV}"
+          
+          # Verify environment variables are set
+          echo "✅ Test environment variables configured:"
+          echo "   - POSTGRES_TEST_DB: ${POSTGRES_TEST_DB}"
+          echo "   - POSTGRES_TEST_USER: ${POSTGRES_TEST_USER}"
+          echo "   - MINIO_TEST_USER: ${MINIO_TEST_USER}"
+          echo "   - TYPESENSE_TEST_API_KEY: [REDACTED]"
+          echo "   - TEST_TYPE: ${TEST_TYPE}"
           
           # Run tests based on type
           case "${{ matrix.test-type }}" in
@@ -63,20 +96,88 @@ jobs:
       
       - name: Collect test results
         if: always()
+        env:
+          # Test Database Configuration
+          POSTGRES_TEST_DB: mking_test
+          POSTGRES_TEST_USER: postgres
+          POSTGRES_TEST_PASSWORD: postgres
+          
+          # Test MinIO Configuration
+          MINIO_TEST_USER: testuser
+          MINIO_TEST_PASSWORD: testpassword
+          
+          # Test Typesense Configuration
+          TYPESENSE_TEST_API_KEY: test-api-key
+          
+          # General Test Configuration
+          CI: true
+          NODE_ENV: test
         run: |
           echo "Collecting test results for ${{ matrix.test-type }}..."
-          docker compose -f docker-compose.test.yml up --no-deps test-results
+          
+          # Ensure test-results directory exists
+          mkdir -p test-results coverage
+          
+          # Export environment variables for docker-compose
+          export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
+          export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
+          export POSTGRES_TEST_PASSWORD="${POSTGRES_TEST_PASSWORD}"
+          export MINIO_TEST_USER="${MINIO_TEST_USER}"
+          export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
+          export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
+          export CI="${CI}"
+          export NODE_ENV="${NODE_ENV}"
+          
+          # Run test results collector with proper environment
+          docker compose -f docker-compose.test.yml up --no-deps test-results || echo "Test results collector completed"
           
           # Copy results from containers if they exist
           docker compose -f docker-compose.test.yml logs backend-test > test-results/backend-${{ matrix.test-type }}.log 2>&1 || true
           docker compose -f docker-compose.test.yml logs frontend-test > test-results/frontend-${{ matrix.test-type }}.log 2>&1 || true
-          docker compose -f docker-compose.test.yml logs integration-test > test-results/integration-${{ matrix.test-type }}.log 2>&1 || true
+          
+          # List collected files for debugging
+          echo "📋 Collected test results:"
+          find test-results -type f -name "*" 2>/dev/null | head -20 || echo "No test result files found"
+          find coverage -type f -name "*" 2>/dev/null | head -20 || echo "No coverage files found"
       
       - name: Cleanup test environment
         if: always()
+        env:
+          # Test Database Configuration
+          POSTGRES_TEST_DB: mking_test
+          POSTGRES_TEST_USER: postgres
+          POSTGRES_TEST_PASSWORD: postgres
+          
+          # Test MinIO Configuration
+          MINIO_TEST_USER: testuser
+          MINIO_TEST_PASSWORD: testpassword
+          
+          # Test Typesense Configuration
+          TYPESENSE_TEST_API_KEY: test-api-key
+          
+          # General Test Configuration
+          CI: true
+          NODE_ENV: test
         run: |
-          docker compose -f docker-compose.test.yml down -v --remove-orphans
-          docker system prune -f
+          echo "🧹 Cleaning up test environment..."
+          
+          # Export environment variables for docker-compose
+          export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
+          export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
+          export POSTGRES_TEST_PASSWORD="${POSTGRES_TEST_PASSWORD}"
+          export MINIO_TEST_USER="${MINIO_TEST_USER}"
+          export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
+          export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
+          export CI="${CI}"
+          export NODE_ENV="${NODE_ENV}"
+          
+          # Stop and remove all test containers and volumes
+          docker compose -f docker-compose.test.yml down -v --remove-orphans || echo "Some containers may have already been removed"
+          
+          # Clean up Docker system resources
+          docker system prune -f || echo "Docker system cleanup completed"
+          
+          echo "✅ Test environment cleanup completed"
       
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -113,7 +214,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
       
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
