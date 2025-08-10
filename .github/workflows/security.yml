@@ -1,5 +1,9 @@
 name: Security Scan
 
+# Restrict workflow permissions at the top level
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main, develop ]
@@ -13,6 +17,10 @@ jobs:
   secret-scan:
     name: Secret Detection
     runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,13 +28,13 @@ jobs:
           fetch-depth: 0
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v2.3.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
       - name: Run TruffleHog
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.63.2
         with:
           path: ./
           base: main
@@ -36,15 +44,19 @@ jobs:
   dependency-scan:
     name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      security-events: write
     strategy:
       matrix:
         directory: ['backend', 'frontend']
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.0.1
         with:
           node-version: '18'
 
@@ -54,7 +66,7 @@ jobs:
         run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
 
       - name: Setup npm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v3.3.2
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles(format('{0}/package-lock.json', matrix.directory)) }}
@@ -72,7 +84,7 @@ jobs:
           npm audit fix --dry-run
 
       - name: Run Snyk Security Scan
-        uses: snyk/actions/node@master
+        uses: snyk/actions/node@0.4.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
@@ -87,24 +99,24 @@ jobs:
       security-events: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v3.22.12
         with:
           languages: javascript, typescript
           queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v3.22.12
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v3.22.12
         with:
           category: "/language:javascript"
 
       - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
+        uses: returntocorp/semgrep-action@v1.55.2
         with:
           config: >
             p/security-audit
@@ -120,10 +132,14 @@ jobs:
   container-scan:
     name: Container Security Scan
     runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      security-events: write
     if: github.event_name == 'push' || github.event_name == 'schedule'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
 
       - name: Build Docker images
         run: |
@@ -131,27 +147,29 @@ jobs:
           docker build -f frontend/Dockerfile -t mking-frontend:latest ./frontend
 
       - name: Run Trivy vulnerability scanner - Backend
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.16.1
         with:
           image-ref: 'mking-backend:latest'
           format: 'sarif'
           output: 'trivy-backend-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
 
       - name: Run Trivy vulnerability scanner - Frontend
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.16.1
         with:
           image-ref: 'mking-frontend:latest'
           format: 'sarif'
           output: 'trivy-frontend-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v3.22.12
         if: always()
         with:
           sarif_file: 'trivy-backend-results.sarif'
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v3.22.12
         if: always()
         with:
           sarif_file: 'trivy-frontend-results.sarif'
@@ -159,12 +177,16 @@ jobs:
   infrastructure-scan:
     name: Infrastructure Security Scan
     runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
 
       - name: Run Checkov
-        uses: bridgecrewio/checkov-action@master
+        uses: bridgecrewio/checkov-action@v12.2582.0
         with:
           directory: .
           framework: dockerfile,kubernetes,docker_compose
@@ -174,7 +196,7 @@ jobs:
           soft_fail: true
 
       - name: Upload Checkov scan results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v3.22.12
         if: always()
         with:
           sarif_file: checkov-results.sarif
@@ -187,6 +209,10 @@ jobs:
   security-report:
     name: Security Report
     runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      actions: read
     needs: [secret-scan, dependency-scan, sast-scan, container-scan, infrastructure-scan]
     if: always()
     steps:
@@ -206,7 +232,7 @@ jobs:
 
       - name: Notify on security issues
         if: failure()
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@v3.16.2
         with:
           status: failure
           text: 'Security scan failed! Please check the GitHub Security tab for details.'
