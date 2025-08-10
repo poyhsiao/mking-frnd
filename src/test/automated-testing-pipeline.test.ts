@@ -243,14 +243,20 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
       expect(ciConfig).toContain('pnpm-store');
     });
 
-    it('When I check parallel execution', () => {
-      const vitestConfig = resolve(projectRoot, 'vitest.config.ts');
-      if (existsSync(vitestConfig)) {
-        const config = readFileSync(vitestConfig, 'utf-8');
-        
-        // Validate parallel test execution
-        expect(config).toContain('pool:');
-        expect(config).toContain('threads');
+    it('When I check parallel execution', async () => {
+      const vitestConfigPath = resolve(projectRoot, 'vitest.config.ts');
+      if (existsSync(vitestConfigPath)) {
+        // Dynamically import the config file using ESM import
+        const vitestConfigModule = await import(vitestConfigPath);
+        const config = vitestConfigModule.default;
+
+        // Validate parallel test execution by checking config values
+        expect(config.test.pool).toBeDefined();
+        expect(config.test.pool).toBe('threads');
+        expect(config.test.poolOptions.threads.maxThreads).toBeDefined();
+        expect(typeof config.test.poolOptions.threads.maxThreads).toBe('number');
+        expect(config.test.poolOptions.threads.maxThreads).toBeGreaterThan(1);
+        expect(config.test.poolOptions.threads.singleThread).toBe(false);
       }
     });
 

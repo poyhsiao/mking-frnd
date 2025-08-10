@@ -91,8 +91,8 @@ services:
   # Backend Tests
   backend-test:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
       target: test
     container_name: mking-backend-test
     environment:
@@ -109,8 +109,8 @@ services:
       - ENCRYPTION_KEY=test-encryption-key
       - CI=true
     volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - ./backend:/app/backend
+      - /app/backend/node_modules
       - ./test-results:/app/test-results
       - ./coverage:/app/coverage
     networks:
@@ -128,6 +128,7 @@ services:
       sh -c "
         echo 'Waiting for services to be ready...'
         sleep 5
+        cd /app/backend
         echo 'Running database migrations...'
         npm run db:migrate:test
         echo 'Seeding test data...'
@@ -145,8 +146,8 @@ services:
   # Frontend Tests
   frontend-test:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
       target: test
     container_name: mking-frontend-test
     environment:
@@ -154,8 +155,8 @@ services:
       - VITE_API_BASE_URL=http://backend-test:8000/api
       - CI=true
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
       - ./test-results:/app/test-results
       - ./coverage:/app/coverage
     networks:
@@ -164,6 +165,7 @@ services:
       - backend-test
     command: >
       sh -c "
+        cd /app/frontend
         echo 'Running frontend unit tests...'
         npm run test:unit
         echo 'Running component tests...'

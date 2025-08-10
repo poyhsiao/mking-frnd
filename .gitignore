@@ -37,6 +37,20 @@ k8s/secrets.local.yaml
 !secrets.template.yaml
 !secrets.yaml
 
+# Generated secrets directory and files
+k8s/generated/
+k8s/generated/**
+.env.generated
+sealed-secrets.yaml
+sealed-tls-secrets.yaml
+tls-secrets.yaml
+
+# Temporary secret files
+temp-secret.yaml
+*.temp.yaml
+mysecret.json
+mysealedsecret.json
+
 # Security scanner configuration (should be tracked)
 !.gitleaksignore
 
