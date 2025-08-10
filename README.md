@@ -54,6 +54,10 @@
 
 ## 🚀 快速開始
 
+### 🎯 Task 1.1 狀態: ✅ 已完成
+
+開發環境設置現已完全自動化！使用我們的一鍵設置腳本即可快速開始。
+
 ### 前置要求
 
 - **Docker** 20.10+ 和 **Docker Compose** 2.0+
@@ -61,7 +65,21 @@
 - 至少 **8GB** 可用內存
 - 至少 **20GB** 可用磁盤空間
 
-### 安裝步驟
+### 🚀 一鍵自動化設置 (推薦)
+
+```bash
+# 克隆項目
+git clone https://github.com/your-username/mking-frnd.git
+cd mking-frnd
+
+# 一鍵設置開發環境
+./scripts/setup-dev.sh
+
+# 運行測試
+./scripts/run-tests.sh
+```
+
+### 📋 手動安裝步驟 (可選)
 
 1. **克隆項目**
    ```bash

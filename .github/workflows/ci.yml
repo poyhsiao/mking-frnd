@@ -18,29 +18,79 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: mking_frnd_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+    strategy:
+      matrix:
+        test-type: [unit, integration, e2e]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Create test results directory
+        run: |
+          mkdir -p test-results coverage
+          chmod 777 test-results coverage
+      
+      - name: Run ${{ matrix.test-type }} tests with Docker Compose
+        run: |
+          echo "Running ${{ matrix.test-type }} tests..."
+          
+          # Set test environment variables
+          export TEST_TYPE=${{ matrix.test-type }}
+          export CI=true
+          
+          # Run tests based on type
+          case "${{ matrix.test-type }}" in
+            "unit")
+              echo "Running unit tests for all services..."
+              docker compose -f docker-compose.test.yml up --build --abort-on-container-exit \
+                backend-test auth-service-test user-service-test chat-service-test media-service-test admin-service-test
+              ;;
+            "integration")
+              echo "Running integration tests..."
+              docker compose -f docker-compose.test.yml up --build --abort-on-container-exit \
+                postgres-test redis-test minio-test typesense-test integration-test
+              ;;
+            "e2e")
+              echo "Running end-to-end tests..."
+              docker compose -f docker-compose.test.yml up --build --abort-on-container-exit \
+                postgres-test redis-test minio-test typesense-test frontend-test backend-test integration-test
+              ;;
+          esac
+      
+      - name: Collect test results
+        if: always()
+        run: |
+          echo "Collecting test results for ${{ matrix.test-type }}..."
+          docker compose -f docker-compose.test.yml up --no-deps test-results
+          
+          # Copy results from containers if they exist
+          docker compose -f docker-compose.test.yml logs backend-test > test-results/backend-${{ matrix.test-type }}.log 2>&1 || true
+          docker compose -f docker-compose.test.yml logs frontend-test > test-results/frontend-${{ matrix.test-type }}.log 2>&1 || true
+          docker compose -f docker-compose.test.yml logs integration-test > test-results/integration-${{ matrix.test-type }}.log 2>&1 || true
+      
+      - name: Cleanup test environment
+        if: always()
+        run: |
+          docker compose -f docker-compose.test.yml down -v --remove-orphans
+          docker system prune -f
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.test-type }}
+          path: |
+            test-results/
+            coverage/
+          retention-days: 30
+  
+  lint:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
@@ -70,7 +120,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
       
-      - name: Validate lockfile (dry-run)
+      - name: Validate lockfile and install dependencies
         run: |
           echo "🔍 Checking lockfile synchronization..."
           
@@ -103,8 +153,6 @@ jobs:
           fi
           
           echo "✅ Lockfile is properly synchronized"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       
       - name: Lint backend
         run: pnpm run lint
@@ -121,55 +169,51 @@ jobs:
       - name: Type check frontend
         run: pnpm run build
         working-directory: ./frontend
+  
+  coverage:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-      - name: Setup test environment
-        run: |
-          cp .env.example .env
-          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mking_frnd_test" >> .env
-          echo "REDIS_URL=redis://localhost:6379" >> .env
-      
-      - name: Run database migrations
-        run: pnpm exec prisma migrate deploy
-        working-directory: ./backend
-      
-      - name: Run backend tests
-        run: pnpm run test:ci
-        working-directory: ./backend
-      
-      - name: Run frontend tests
-        run: pnpm run test:ci
-        working-directory: ./frontend
-      
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
+      - name: Download test results
+        uses: actions/download-artifact@v4
         with:
-          name: test-results
-          path: |
-            backend/test-results/
-            frontend/test-results/
-            backend/coverage/
-            frontend/coverage/
-          retention-days: 30
+          pattern: test-results-*
+          merge-multiple: true
+          path: ./test-results
+      
+      - name: Merge coverage reports
+        run: |
+          echo "Merging coverage reports..."
+          mkdir -p merged-coverage
+          
+          # Find and merge all coverage files
+          find ./test-results -name "*.lcov" -exec cat {} \; > merged-coverage/lcov.info || true
+          find ./test-results -name "coverage-final.json" -exec cp {} merged-coverage/ \; || true
       
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./backend/coverage/lcov.info,./frontend/coverage/lcov.info
+          files: ./merged-coverage/lcov.info
           fail_ci_if_error: false
           handle_no_reports_found: true
           verbose: true
           flags: unittests
           name: codecov-umbrella
           env_vars: OS,NODE_VERSION
-          directory: ./
+          directory: ./merged-coverage
           disable_search: false
 
   build:
     name: Build Docker Images
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, lint, coverage]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     permissions:
       contents: read

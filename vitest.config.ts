@@ -9,15 +9,25 @@ export default defineConfig({
     // Global test setup
     globals: true,
 
-    // Include/exclude patterns
-    include: ['src/**/*.{test,spec}.{js,ts}'],
+    // Test file patterns
+    include: [
+      'src/**/*.{test,spec}.{js,ts}',
+      '**/*.{test,spec}.{js,ts}',
+      '**/test/**/*.{js,ts}',
+      '**/tests/**/*.{js,ts}',
+    ],
+    
+    // Exclude patterns
     exclude: [
       '**/node_modules/**',
       'node_modules/**',
       'dist/**',
       'build/**',
       'coverage/**',
-      '.git/**'
+      '.git/**',
+      'docker-volumes/',
+      'tmp/',
+      'test-results/',
     ],
     
     // Coverage configuration
@@ -46,24 +56,6 @@ export default defineConfig({
         }
       }
     },
-    
-    // Test file patterns
-    include: [
-      '**/*.{test,spec}.{js,ts}',
-      '**/test/**/*.{js,ts}',
-      '**/tests/**/*.{js,ts}',
-    ],
-    
-    // Exclude patterns
-    exclude: [
-      'node_modules/',
-      'dist/',
-      'build/',
-      'coverage/',
-      'docker-volumes/',
-      'tmp/',
-      'test-results/',
-    ],
     
     // Test timeout
     testTimeout: 10000,

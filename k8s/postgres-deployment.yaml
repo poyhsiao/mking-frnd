@@ -1,0 +1,175 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: mking-friend
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: mking-friend-platform
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: mking-friend-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: mking-friend-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mking-friend-secrets
+              key: POSTGRES_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-init
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+      - name: postgres-init
+        configMap:
+          name: postgres-init-scripts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: mking-friend
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres-service
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: mking-friend-platform
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: mking-friend
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres-pvc
+    app.kubernetes.io/component: storage
+    app.kubernetes.io/part-of: mking-friend-platform
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: mking-friend
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres-init-scripts
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: mking-friend-platform
+data:
+  01-init-databases.sql: |
+    -- Create additional databases for microservices
+    CREATE DATABASE auth_service;
+    CREATE DATABASE user_service;
+    CREATE DATABASE chat_service;
+    CREATE DATABASE media_service;
+    CREATE DATABASE admin_service;
+    
+    -- Create users for each service
+    CREATE USER auth_user WITH PASSWORD 'auth_password_123';
+    CREATE USER user_user WITH PASSWORD 'user_password_123';
+    CREATE USER chat_user WITH PASSWORD 'chat_password_123';
+    CREATE USER media_user WITH PASSWORD 'media_password_123';
+    CREATE USER admin_user WITH PASSWORD 'admin_password_123';
+    
+    -- Grant privileges
+    GRANT ALL PRIVILEGES ON DATABASE auth_service TO auth_user;
+    GRANT ALL PRIVILEGES ON DATABASE user_service TO user_user;
+    GRANT ALL PRIVILEGES ON DATABASE chat_service TO chat_user;
+    GRANT ALL PRIVILEGES ON DATABASE media_service TO media_user;
+    GRANT ALL PRIVILEGES ON DATABASE admin_service TO admin_user;
+    
+    -- Enable required extensions
+    \c auth_service;
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    
+    \c user_service;
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    
+    \c chat_service;
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    
+    \c media_service;
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    
+    \c admin_service;
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";

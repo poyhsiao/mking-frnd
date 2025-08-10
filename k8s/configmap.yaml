@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mking-friend-config
+  namespace: mking-friend
+  labels:
+    app.kubernetes.io/name: mking-friend-config
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: mking-friend-platform
+data:
+  # Application Environment
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  
+  # Database Configuration
+  POSTGRES_DB: "mking_friend"
+  POSTGRES_USER: "postgres"
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+  
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  
+  # Service Discovery
+  CONSUL_HOST: "consul-service"
+  CONSUL_PORT: "8500"
+  
+  # AWS Configuration
+  AWS_REGION: "us-west-2"
+  AWS_S3_BUCKET: "mking-friend-media"
+  
+  # MinIO Configuration
+  MINIO_ENDPOINT: "minio-service"
+  MINIO_PORT: "9000"
+  MINIO_BUCKET: "mking-friend-media"
+  
+  # Typesense Configuration
+  TYPESENSE_HOST: "typesense-service"
+  TYPESENSE_PORT: "8108"
+  
+  # Monitoring Configuration
+  PROMETHEUS_URL: "http://prometheus-service:9090"
+  GRAFANA_URL: "http://grafana-service:3000"
+  
+  # gRPC Service URLs
+  GRPC_AUTH_SERVICE_URL: "auth-service:50001"
+  GRPC_USER_SERVICE_URL: "user-service:50002"
+  GRPC_CHAT_SERVICE_URL: "chat-service:50003"
+  GRPC_MEDIA_SERVICE_URL: "media-service:50005"
+  GRPC_ADMIN_SERVICE_URL: "admin-service:50006"
+  
+  # API Gateway Configuration
+  API_GATEWAY_PORT: "3000"
+  API_GATEWAY_GRPC_PORT: "50000"
+  
+  # CORS Configuration
+  CORS_ORIGIN: "https://app.mking-friend.com,https://admin.mking-friend.com"
+  
+  # Rate Limiting
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_REQUESTS: "100"
