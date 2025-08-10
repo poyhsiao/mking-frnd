@@ -191,9 +191,27 @@ jobs:
         run: |
           echo "Merging coverage reports..."
           mkdir -p merged-coverage
-          
-          # Find and merge all coverage files
-          find ./test-results -name "*.lcov" -exec cat {} \; > merged-coverage/lcov.info || true
+
+          # Install lcov if not present
+          if ! command -v lcov &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y lcov
+          fi
+
+          # Merge all .lcov files properly
+          lcov_files=$(find ./test-results -name "*.lcov")
+          if [ -n "$lcov_files" ]; then
+            first=1
+            for file in $lcov_files; do
+              if [ $first -eq 1 ]; then
+                cp "$file" merged-coverage/lcov.info
+                first=0
+              else
+                lcov --add-tracefile merged-coverage/lcov.info --add-tracefile "$file" --output-file merged-coverage/lcov.info
+              fi
+            done
+          fi
+
           find ./test-results -name "coverage-final.json" -exec cp {} merged-coverage/ \; || true
       
       - name: Upload coverage reports to Codecov
