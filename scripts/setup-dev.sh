@@ -110,13 +110,18 @@ check_prerequisites() {
     fi
     
     # Check if required files exist
-    local required_files=("docker-compose.yml" "docker-compose.override.yml" ".env.example")
+    local required_files=("docker-compose.yml" ".env.example")
     for file in "${required_files[@]}"; do
         if [ ! -f "$file" ]; then
             print_error "Required file $file not found. Please ensure you're in the project root."
             exit 1
         fi
     done
+
+    # Warn if optional docker-compose.override.yml is missing
+    if [ ! -f "docker-compose.override.yml" ]; then
+        print_info "Optional file docker-compose.override.yml not found. Continuing without it."
+    fi
     
     print_success "Prerequisites check passed"
 }
