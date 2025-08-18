@@ -33,7 +33,7 @@ permissions:
 **修复**：将所有 actions 固定到特定版本：
 - `actions/checkout@v4.1.1`
 - `actions/setup-node@v4.0.1`
-- `actions/cache@v3.3.2`
+- `actions/cache@v4`
 - `gitleaks/gitleaks-action@v2.3.6`
 - `trufflesecurity/trufflehog@v3.63.2`
 - `snyk/actions/node@0.4.0`

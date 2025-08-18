@@ -40,7 +40,7 @@ The error occurred because:
   run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
 
 - name: Setup npm cache
-  uses: actions/cache@v3.3.2
+  uses: actions/cache@v4
   with:
     path: ${{ steps.npm-cache-dir.outputs.dir }}
     key: ${{ runner.os }}-node-${{ hashFiles(format('{0}/package-lock.json', matrix.directory)) }}
@@ -70,7 +70,7 @@ The error occurred because:
   run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
 - name: Setup pnpm cache
-  uses: actions/cache@v3.3.2
+  uses: actions/cache@v4
   with:
     path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
     key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
