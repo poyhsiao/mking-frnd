@@ -29,6 +29,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
+      - name: Install dependencies for health checks
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+      
       - name: Create test results directory
         run: |
           mkdir -p test-results coverage
@@ -52,6 +57,10 @@ jobs:
           TEST_TYPE: ${{ matrix.test-type }}
           CI: true
           NODE_ENV: test
+          
+          # Container health check configuration
+          COMPOSE_HTTP_TIMEOUT: 300
+          DOCKER_CLIENT_TIMEOUT: 300
         run: |
           echo "Running ${{ matrix.test-type }} tests..."
           echo "Setting up test environment variables..."
@@ -66,6 +75,8 @@ jobs:
           export TEST_TYPE="${TEST_TYPE}"
           export CI="${CI}"
           export NODE_ENV="${NODE_ENV}"
+          export COMPOSE_HTTP_TIMEOUT="${COMPOSE_HTTP_TIMEOUT}"
+          export DOCKER_CLIENT_TIMEOUT="${DOCKER_CLIENT_TIMEOUT}"
           
           # Verify environment variables are set
           echo "✅ Test environment variables configured:"
@@ -74,23 +85,109 @@ jobs:
           echo "   - MINIO_TEST_USER: ${MINIO_TEST_USER}"
           echo "   - TYPESENSE_TEST_API_KEY: [REDACTED]"
           echo "   - TEST_TYPE: ${TEST_TYPE}"
+          echo "   - COMPOSE_HTTP_TIMEOUT: ${COMPOSE_HTTP_TIMEOUT}s"
           
-          # Run tests based on type
+          # Function to check container health with detailed logging
+          check_container_health() {
+            local service_name=$1
+            local max_attempts=30
+            local attempt=1
+            
+            echo "🔍 Checking health of ${service_name}..."
+            
+            while [ $attempt -le $max_attempts ]; do
+              health_status=$(docker compose -f docker-compose.test.yml ps --format json | jq -r ".[] | select(.Service == \"${service_name}\") | .Health")
+              
+              case "$health_status" in
+                "healthy")
+                  echo "✅ ${service_name} is healthy (attempt ${attempt}/${max_attempts})"
+                  return 0
+                  ;;
+                "unhealthy")
+                  echo "❌ ${service_name} is unhealthy (attempt ${attempt}/${max_attempts})"
+                  echo "📋 Container logs for ${service_name}:"
+                  docker compose -f docker-compose.test.yml logs --tail=20 "${service_name}" || true
+                  ;;
+                "starting")
+                  echo "⏳ ${service_name} is starting (attempt ${attempt}/${max_attempts})"
+                  ;;
+                *)
+                  echo "❓ ${service_name} health status unknown: ${health_status} (attempt ${attempt}/${max_attempts})"
+                  ;;
+              esac
+              
+              sleep 10
+              attempt=$((attempt + 1))
+            done
+            
+            echo "💥 ${service_name} failed to become healthy after ${max_attempts} attempts"
+            echo "📋 Final container logs for ${service_name}:"
+            docker compose -f docker-compose.test.yml logs "${service_name}" || true
+            return 1
+          }
+          
+          # Run tests based on type with improved error handling
           case "${{ matrix.test-type }}" in
             "unit")
               echo "Running unit tests for all services..."
-              docker compose -f docker-compose.test.yml up --build --abort-on-container-exit \
-                backend-test
+              if ! docker compose -f docker-compose.test.yml up --build --abort-on-container-exit backend-test; then
+                echo "❌ Unit tests failed"
+                docker compose -f docker-compose.test.yml logs backend-test
+                exit 1
+              fi
               ;;
             "integration")
               echo "Running integration tests..."
-              docker compose -f docker-compose.test.yml up --build --abort-on-container-exit \
-                postgres-test redis-test minio-test typesense-test backend-test
+              echo "🚀 Starting dependency services..."
+              
+              # Start dependency services first
+              docker compose -f docker-compose.test.yml up -d --build postgres-test redis-test minio-test typesense-test
+              
+              # Wait for all services to be healthy
+              echo "⏳ Waiting for services to become healthy..."
+              check_container_health "postgres-test" && \
+              check_container_health "redis-test" && \
+              check_container_health "minio-test" && \
+              check_container_health "typesense-test"
+              
+              if [ $? -eq 0 ]; then
+                echo "✅ All dependency services are healthy, starting backend tests..."
+                if ! docker compose -f docker-compose.test.yml up --abort-on-container-exit backend-test; then
+                  echo "❌ Integration tests failed"
+                  docker compose -f docker-compose.test.yml logs backend-test
+                  exit 1
+                fi
+              else
+                echo "❌ One or more dependency services failed to start properly"
+                exit 1
+              fi
               ;;
             "e2e")
               echo "Running end-to-end tests..."
-              docker compose -f docker-compose.test.yml up --build --abort-on-container-exit \
-                postgres-test redis-test minio-test typesense-test frontend-test backend-test
+              echo "🚀 Starting all services..."
+              
+              # Start all services
+              docker compose -f docker-compose.test.yml up -d --build postgres-test redis-test minio-test typesense-test backend-test
+              
+              # Wait for all services to be healthy
+              echo "⏳ Waiting for services to become healthy..."
+              check_container_health "postgres-test" && \
+              check_container_health "redis-test" && \
+              check_container_health "minio-test" && \
+              check_container_health "typesense-test" && \
+              check_container_health "backend-test"
+              
+              if [ $? -eq 0 ]; then
+                echo "✅ All services are healthy, starting frontend tests..."
+                if ! docker compose -f docker-compose.test.yml up --abort-on-container-exit frontend-test; then
+                  echo "❌ E2E tests failed"
+                  docker compose -f docker-compose.test.yml logs frontend-test
+                  exit 1
+                fi
+              else
+                echo "❌ One or more services failed to start properly"
+                exit 1
+              fi
               ;;
           esac
       

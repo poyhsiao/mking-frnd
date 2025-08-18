@@ -75,15 +75,19 @@ services:
       TYPESENSE_DATA_DIR: /data
       TYPESENSE_API_KEY: ${TYPESENSE_TEST_API_KEY:?TYPESENSE_TEST_API_KEY is required}
       TYPESENSE_ENABLE_CORS: true
+      # Optimize for faster startup in test environment
+      TYPESENSE_LOG_LEVEL: WARN
     ports:
       - '8109:8108'
     networks:
       - test-network
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:8108/health']
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      # Use wget instead of curl for better reliability in Alpine-based images
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:8108/health || exit 1']
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s  # Allow more time for initial startup
     tmpfs:
       - /data  # Use tmpfs for faster tests
 
@@ -125,8 +129,14 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        echo 'Waiting for services to be ready...'
-        sleep 5
+        echo 'Waiting for all services to be ready...'
+        echo 'Checking Typesense health...'
+        until wget --no-verbose --tries=1 --spider http://typesense-test:8108/health 2>/dev/null; do
+          echo 'Waiting for Typesense to be ready...'
+          sleep 5
+        done
+        echo 'All services are ready!'
+        sleep 10
         cd /app/backend
         echo 'Running database migrations...'
         npm run db:migrate:test
