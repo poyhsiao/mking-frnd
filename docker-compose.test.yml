@@ -117,6 +117,7 @@ services:
       - ./coverage:/app/coverage
     networks:
       - test-network
+    user: "1001:1001"
     depends_on:
       postgres-test:
         condition: service_healthy

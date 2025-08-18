@@ -61,6 +61,8 @@ jobs:
           # Container health check configuration
           COMPOSE_HTTP_TIMEOUT: 300
           DOCKER_CLIENT_TIMEOUT: 300
+          WAIT_COUNT: 30
+          MAX_WAIT: 300
         run: |
           echo "Running ${{ matrix.test-type }} tests..."
           echo "Setting up test environment variables..."

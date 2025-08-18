@@ -34,15 +34,27 @@ CMD ["pnpm", "dev"]
 
 # Test stage
 FROM base AS test
+
+# Create a non-root user for testing
+RUN addgroup -g 1001 -S testgroup && \
+    adduser -S testuser -u 1001 -G testgroup
+
 COPY . .
 # Install dev dependencies for testing
 RUN pnpm install --filter=backend --frozen-lockfile
+
+# Set proper ownership for the test user
+RUN chown -R testuser:testgroup /app
+
 # Set test environment
 ENV NODE_ENV=test
 # Expose port for testing
 EXPOSE 3001
+
+# Switch to non-root user
+USER testuser
+
 # Default command for tests
-USER non-root
 CMD ["pnpm", "test"]
 
 # Build stage
