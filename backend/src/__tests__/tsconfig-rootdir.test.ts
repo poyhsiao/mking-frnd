@@ -67,21 +67,21 @@ describe('TypeScript Configuration - RootDir Fix', () => {
     });
   });
 
-  it('should not have conflicting rootDir with parent tsconfig', () => {
-    // Given: The root tsconfig.json exists
-    const rootTsconfigPath = path.resolve(backendDir, '..', 'tsconfig.json');
-    expect(fs.existsSync(rootTsconfigPath)).toBe(true);
-    
-    // When: We read both configs
-    const rootTsconfig = JSON.parse(fs.readFileSync(rootTsconfigPath, 'utf8')) as {
-      compilerOptions?: { rootDir?: string };
-    };
+  it('should be self-contained without extending parent tsconfig', () => {
+    // Given: We read the backend tsconfig
     const backendTsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf8')) as {
-      compilerOptions?: { rootDir?: string };
+      extends?: string;
+      compilerOptions?: { rootDir?: string; baseUrl?: string; paths?: Record<string, string[]> };
     };
     
-    // Then: Backend should override the rootDir to avoid conflicts
-    expect(rootTsconfig.compilerOptions?.rootDir).toBe('./src'); // Root points to project root src
-    expect(backendTsconfig.compilerOptions?.rootDir).toBe('./src'); // Backend points to backend src
+    // Then: Backend tsconfig should be self-contained
+    expect(backendTsconfig.extends).toBeUndefined(); // Should not extend any parent config
+    expect(backendTsconfig.compilerOptions?.rootDir).toBe('./src'); // Should have its own rootDir
+    expect(backendTsconfig.compilerOptions?.baseUrl).toBe('.'); // Should have baseUrl for path resolution
+    expect(backendTsconfig.compilerOptions?.paths).toBeDefined(); // Should have path mappings
+    
+    // Should have essential path mappings for backend
+    expect(backendTsconfig.compilerOptions?.paths?.['@/*']).toEqual(['./src/*']);
+    expect(backendTsconfig.compilerOptions?.paths?.['@backend/*']).toEqual(['./src/*']);
   });
 });

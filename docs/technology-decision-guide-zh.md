@@ -472,27 +472,37 @@
 ## ADR-012: TypeScript 配置 rootDir 問題修復
 
 ### 狀態
-✅ **已決定** - 在後端 tsconfig.json 中明確設置 rootDir
+✅ **已決定** - 移除後端 tsconfig.json 對根配置的依賴，使其自包含
 
 ### 背景
 在 GitHub Actions CI/CD 流程中，後端 TypeScript 編譯失敗，出現以下錯誤：
 ```
-error TS6059: File '/home/runner/work/mking-frnd/mking-frnd/backend/src/healthcheck.ts' is not under 'rootDir' '/home/runner/work/mking-frnd/mking-frnd/src'. 'rootDir' is expected to contain all source files.
+Cannot find module '../tsconfig.json'
+Require stack:
+- /app/backend/tsconfig.json
 ```
 
 ### 問題分析
-- 根 tsconfig.json 設置了 `"rootDir": "./src"`，指向項目根目錄的 src
-- 後端 tsconfig.json 繼承了這個設置，但後端源文件在 `backend/src`
-- 導致 TypeScript 編譯器無法正確解析文件路徑
+- 後端 tsconfig.json 通過 `"extends": "../tsconfig.json"` 繼承根配置
+- 在 Docker 容器環境中，根目錄的 tsconfig.json 不可用
+- Vitest 和 Vite 在處理 TypeScript 配置時無法解析繼承關係
+- 導致測試和構建流程失敗
 
 ### 決策
-在後端的 tsconfig.json 中明確覆蓋 rootDir 設置：
+移除後端 tsconfig.json 對根配置的依賴，使其成為自包含的配置：
 ```json
 {
-  "extends": "../tsconfig.json",
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
     "rootDir": "./src",
-    // ... 其他配置
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@backend/*": ["./src/*"],
+      "@common/*": ["./src/common/*"]
+    },
+    // ... 完整的編譯器選項
   }
 }
 ```
@@ -500,58 +510,74 @@ error TS6059: File '/home/runner/work/mking-frnd/mking-frnd/backend/src/healthch
 ### 實施方法
 使用 BDD（行為驅動開發）方法論：
 
-1. **編寫 BDD 測試**：
-   - 創建 `tsconfig-rootdir.test.ts` 驗證配置正確性
-   - 創建 `build-integration.test.ts` 驗證構建流程
+1. **編寫 BDD 測試場景**：
+   - 創建 `tests/features/typescript-configuration.feature` 定義驗證場景
+   - 創建 `tests/step-definitions/typescript-configuration.steps.ts` 實現測試步驟
 
-2. **測試場景**：
+2. **BDD 測試場景**：
    ```gherkin
-   Feature: Backend TypeScript compilation should work correctly
-   Scenario: When building the backend, TypeScript should compile without rootDir errors
-   Given: The backend has its own tsconfig.json that extends the root config
-   When: The TypeScript compiler runs on the backend
-   Then: It should not throw rootDir mismatch errors
-   And: All source files should be correctly included in compilation
+   Feature: TypeScript Configuration Management
+   
+   Scenario: Backend TypeScript configuration should be self-contained
+     Given the backend directory exists
+     When I check the backend tsconfig.json
+     Then it should not extend any parent configuration
+     And it should have its own complete compiler options
+   
+   Scenario: Backend tests should work in Docker environment
+     Given the backend has a test configuration
+     When I run tests in a Docker container
+     Then there should be no "Cannot find module" errors
+     And all TypeScript files should compile successfully
    ```
 
-3. **修復實施**：
-   - 在 `backend/tsconfig.json` 中添加 `"rootDir": "./src"`
-   - 驗證 TypeScript 編譯成功
-   - 確認構建產物正確生成
+3. **修復實施步驟**：
+   - 移除 `backend/tsconfig.json` 中的 `"extends": "../tsconfig.json"`
+   - 添加完整的編譯器選項配置
+   - 更新 `backend/tsconfig.test.json` 使其也自包含
+   - 修復相關的單元測試
+   - 在 Docker 環境中驗證修復效果
 
 ### 理由
 **技術原因：**
-- 解決 monorepo 中 TypeScript 配置繼承問題
-- 確保每個子項目有正確的根目錄設置
-- 避免路徑解析衝突
+- 解決 Docker 容器環境中 TypeScript 配置繼承問題
+- 消除對外部配置文件的依賴，提高可移植性
+- 確保測試和構建環境的一致性
+- 避免 Vitest/Vite 工具鏈的配置解析問題
 
 **BDD 方法論優勢：**
-- 測試先行，確保修復有效性
+- 測試驅動的問題解決方法，確保修復有效性
 - 清晰的行為描述，便於理解和維護
-- 回歸測試保護，防止未來類似問題
+- 建立回歸測試保護，防止未來類似問題
+- 提供可執行的文檔，描述期望的系統行為
 
 ### 後果
 **正面影響：**
-- CI/CD 流程恢復正常
-- TypeScript 編譯錯誤解決
-- 構建流程穩定可靠
-- 建立了 BDD 測試基礎
+- CI/CD 流程恢復正常，測試通過率 100%
+- Docker 環境中的 TypeScript 編譯錯誤完全解決
+- 後端配置獨立性增強，減少跨項目依賴
+- 建立了完整的 BDD 測試框架
+- 提高了配置的可維護性和可理解性
 
-**技術債務：**
-- 需要在每個子項目中明確設置 rootDir
-- 增加了配置維護複雜度
+**潛在影響：**
+- 配置文件內容增加，需要維護更多編譯器選項
+- 失去了根配置的統一管理優勢
+- 需要手動同步跨項目的 TypeScript 配置變更
 
 ### 經驗教訓
-1. **Monorepo 配置管理**：子項目繼承根配置時需要謹慎處理路徑相關設置
-2. **BDD 測試價值**：通過測試驅動的方式修復問題，提高了解決方案的可靠性
-3. **CI/CD 重要性**：持續集成能夠及早發現配置問題
-4. **文檔化決策**：記錄技術決策有助於團隊理解和未來維護
+1. **容器化環境配置管理**：Docker 環境中的配置繼承可能失效，需要自包含配置
+2. **BDD 測試價值**：行為驅動測試提供清晰的問題定義和驗證標準
+3. **工具鏈兼容性**：Vitest/Vite 等現代工具對 TypeScript 配置繼承的處理可能有限制
+4. **CI/CD 環境一致性**：本地開發環境和 CI/CD 環境的差異需要充分測試
+5. **文檔化決策**：記錄完整的問題分析和解決過程，便於後續維護和學習
 
 ### 相關文件
-- `backend/tsconfig.json` - 後端 TypeScript 配置
-- `backend/src/__tests__/tsconfig-rootdir.test.ts` - BDD 配置測試
-- `backend/src/__tests__/build-integration.test.ts` - 構建集成測試
-- `.github/workflows/ci.yml` - CI/CD 流程配置
+- `backend/tsconfig.json` - 後端 TypeScript 配置（已修改為自包含）
+- `backend/tsconfig.test.json` - 後端測試 TypeScript 配置（已修改為自包含）
+- `backend/src/__tests__/tsconfig-rootdir.test.ts` - 配置驗證測試（已更新）
+- `tests/features/typescript-configuration.feature` - BDD 功能測試場景
+- `tests/step-definitions/typescript-configuration.steps.ts` - BDD 測試步驟定義
+- `docker-compose.test.yml` - Docker 測試環境配置
 
 ---
 
