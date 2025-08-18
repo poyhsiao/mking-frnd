@@ -10,7 +10,7 @@ Error: Codecov: Failed to properly create commit: The process '/home/runner/work
 
 ## Solution
 
-### 1. Using TDD Method to Diagnose the Problem
+### 1. Using BDD Method to Diagnose the Problem
 
 Created two test files to verify Codecov configuration:
 - `tests/ci/codecov-upload.test.ts` - Basic configuration validation
@@ -107,7 +107,7 @@ Tests cover the following aspects:
 
 ### Testing Strategy
 
-1. **Use TDD method** - Write tests first, then fix configuration
+1. **Use BDD method** - Write scenarios first, then fix configuration
 2. **Layered testing** - Basic configuration tests + integration tests
 3. **Cover multiple aspects** - Functionality, security, performance, reliability
 

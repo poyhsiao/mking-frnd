@@ -1,6 +1,6 @@
 /**
  * Test suite for Dockerfile pnpm version pinning
- * Following TDD methodology to ensure proper pnpm version management
+ * Following BDD methodology to ensure proper pnpm version management
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'

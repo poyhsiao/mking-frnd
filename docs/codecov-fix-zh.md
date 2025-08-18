@@ -10,7 +10,7 @@ Error: Codecov: Failed to properly upload: The process '/home/runner/work/_actio
 
 ## 解決方案
 
-使用測試驅動開發 (TDD) 方法診斷和修復 CI 配置：
+使用行為驅動開發 (BDD) 方法診斷和修復 CI 配置：
 
 ### 1. 診斷階段
 - 識別缺失的測試覆蓋率配置
@@ -31,9 +31,9 @@ Error: Codecov: Failed to properly upload: The process '/home/runner/work/_actio
 - 驗證 Codecov 上傳成功
 - 測試增強的錯誤處理和報告
 
-### 4. 使用 TDD 方法診斷問題
+### 4. 使用 BDD 方法診斷問題
 
-我們採用測試驅動開發 (TDD) 方法來診斷和修復 Codecov 配置問題：
+我們採用行為驅動開發 (BDD) 方法來診斷和修復 Codecov 配置問題：
 
 - `tests/ci/codecov-upload.test.ts` - 基本配置驗證
 - `tests/ci/codecov-integration.test.ts` - 集成測試和最佳實踐驗證
@@ -114,7 +114,7 @@ Error: Codecov: Failed to properly upload: The process '/home/runner/work/_actio
 5. **使用 secrets 管理 token** - 確保安全性
 
 ### 測試策略
-1. **TDD 方法** - 先寫測試，再修復配置
+1. **BDD 方法** - 先寫場景，再修復配置
 2. **分層測試** - 基本配置 + 集成測試
 3. **持續驗證** - CI 中自動運行配置測試
 

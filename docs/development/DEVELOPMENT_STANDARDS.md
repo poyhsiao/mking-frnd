@@ -247,7 +247,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
 - **Codecov Integration**: Updated to use `fail_ci_if_error: false` for improved CI reliability
 - **Error Handling**: Enhanced error resilience in coverage reporting pipeline
-- **Test Coverage**: Comprehensive TDD validation with 24+ test cases
+- **Scenario Coverage**: Comprehensive BDD validation with 24+ scenario cases
 
 #### Examples
 

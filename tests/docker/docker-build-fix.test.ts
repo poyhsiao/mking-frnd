@@ -4,9 +4,9 @@ import { existsSync } from 'fs';
 import path from 'path';
 
 /**
- * TDD Test Suite for Docker Build Fix
- * 
- * This test suite follows TDD methodology to fix the `/app/dist: not found` error
+ * BDD Scenario Suite for Docker Build Fix
+ *
+ * This scenario suite follows BDD methodology to fix the `/app/dist: not found` error
  * in GitHub Actions Docker builds.
  * 
  * Issue: Docker build fails because:
@@ -14,7 +14,7 @@ import path from 'path';
  * 2. COPY commands expect /app/dist but actual output is in /app/backend/dist and /app/frontend/dist
  * 3. Build context and workspace configuration mismatch
  */
-describe('Docker Build Fix - TDD Approach', () => {
+describe('Docker Build Fix - BDD Approach', () => {
   const projectRoot = path.resolve(__dirname, '../..');
   const backendTestImage = 'mking-frnd-backend-build-test';
   const frontendTestImage = 'mking-frnd-frontend-build-test';

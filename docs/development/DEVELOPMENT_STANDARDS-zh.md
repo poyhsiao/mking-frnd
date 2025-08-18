@@ -247,7 +247,7 @@ pnpm --filter frontend add react
 
 - **Codecov 整合**: 更新為使用 `fail_ci_if_error: false` 提升 CI 可靠性
 - **錯誤處理**: 增強覆蓋率報告流水線的錯誤恢復能力
-- **測試覆蓋**: 透過 TDD 進行全面驗證，包含 24+ 個測試案例
+- **場景覆蓋**: 透過 BDD 進行全面驗證，包含 24+ 個場景案例
 
 #### 範例
 

@@ -8,7 +8,7 @@ const DOCKERFILE_PATH = join(FRONTEND_DIR, 'Dockerfile');
 const ROOT_PACKAGE_JSON_PATH = join(PROJECT_ROOT, 'package.json');
 const FRONTEND_PACKAGE_JSON_PATH = join(FRONTEND_DIR, 'package.json');
 
-describe('Frontend Dockerfile TDD Tests', () => {
+describe('Frontend Dockerfile BDD Scenarios', () => {
   let dockerfileContent: string;
   let rootPackageJson: any;
   let frontendPackageJson: any;

@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Added MinIO S3-compatible object storage
 
 - 🔧 **CI/CD Pipeline Improvements**
-  - Fixed ERR_PNPM_OUTDATED_LOCKFILE error using TDD methodology
+  - Fixed ERR_PNPM_OUTDATED_LOCKFILE error using BDD methodology
   - Added comprehensive lockfile synchronization test suites
   - Enhanced CI error handling with clear resolution guidance
   - Implemented pnpm version consistency validation
@@ -58,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Updated backend Dockerfile to use `pnpm --filter=backend build` and copy from `/app/backend/dist`
   - Updated frontend Dockerfile to use `pnpm --filter=frontend build` and copy from `/app/frontend/dist`
   - Fixed nginx.conf path reference in frontend Dockerfile
-  - Added comprehensive test suite `tests/docker/docker-build-fix.test.ts` with TDD approach
+  - Added comprehensive scenario suite `tests/docker/docker-build-fix.test.ts` with BDD approach
   - Resolved workspace configuration issues in Docker production stages
 
 - 🔐 **GitHub Actions Permissions for Container Registry**
@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Added required `packages: write` permission to build job for GHCR push access
   - Added `contents: read` permission for repository checkout
   - Added `id-token: write` permission for OIDC authentication
-  - Added comprehensive test suite `tests/ci/github-actions-permissions.test.ts` with TDD approach
+  - Added comprehensive scenario suite `tests/ci/github-actions-permissions.test.ts` with BDD approach
   - Resolved Docker image push failures to GitHub Container Registry
 
 - 📋 **Product Planning and Documentation**

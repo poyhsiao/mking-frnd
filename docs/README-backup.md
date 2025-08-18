@@ -23,7 +23,7 @@ This project adopts a microservices architecture, built with modern technology s
 - [`development/`](./development/) - Development Guidelines and Standards
   - [Development Environment Setup](./development/setup.md)
   - [Implementation Plan](./development/implementation-plan.md)
-  - [TDD Development Guidelines](./development/tdd-guidelines.md)
+  - [BDD Development Guidelines](./development/bdd-guidelines.md)
   - [Development Standards](./development/DEVELOPMENT_STANDARDS.md) ⭐ Must Read
 - [`api/`](./api/) - API Documentation and Specifications
 - [`database/`](./database/) - Database Design and Migration
@@ -74,7 +74,7 @@ This project adopts a microservices architecture, built with modern technology s
 
 ## Development Principles
 
-- **Test-Driven Development (TDD)**: All features must be tested first
+- **Behavior-Driven Development (BDD)**: All features must be tested first
 - **Code Quality**: Follow PEP 8 (Python) and ESLint (JavaScript/TypeScript) standards
 - **Security First**: All user inputs must be validated and sanitized
 - **Complete Documentation**: All modules and functions must have clear documentation

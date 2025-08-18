@@ -21,7 +21,7 @@ specifiers in the lockfile ({"package":"^1.0.0"}) don't match specs in package.j
 - package.json 指定了不同的版本范围
 - 由于此不匹配，PNPM 无法使用 `--frozen-lockfile` 继续
 
-## 基于 TDD 的解决方案
+## 基于 BDD 的解决方案
 
 ### 1. 测试驱动检测
 
@@ -101,7 +101,7 @@ pnpm install --frozen-lockfile
 运行以下命令验证修复：
 
 ```bash
-# 运行 TDD 测试
+# 运行 BDD 场景
 npx vitest src/test/pnpm-specifier-mismatch.test.ts --run
 
 # 验证冻结锁文件
@@ -113,7 +113,7 @@ pnpm install --frozen-lockfile
 
 ## 修改的文件
 
-- `src/test/pnpm-specifier-mismatch.test.ts` - TDD 测试套件
+- `src/test/pnpm-specifier-mismatch.test.ts` - BDD 场景套件
 - `scripts/fix-specifier-mismatch.sh` - 自动修复脚本
 - `scripts/validate-lockfile-sync.sh` - 验证脚本
 - `docs/SPECIFIER_MISMATCH_FIX.md` - 英文文档
@@ -122,13 +122,13 @@ pnpm install --frozen-lockfile
 ## 后续步骤
 
 1. 在本地审查更改并测试
-2. 运行：`git add . && git commit -m 'fix: resolve PNPM specifier mismatch with TDD approach'`
+2. 运行：`git add . && git commit -m 'fix: resolve PNPM specifier mismatch with BDD approach'`
 3. 推送更改并监控 CI 构建
 4. 使用 `./scripts/validate-lockfile-sync.sh` 进行未来验证
 
 ## 技术细节
 
-### TDD 方法
+### BDD 方法
 
 1. **红色**：编写失败的测试来检测问题
 2. **绿色**：实施修复使测试通过
@@ -142,4 +142,4 @@ pnpm install --frozen-lockfile
 - Semver 合规性验证
 - 冻结锁文件测试
 
-这种基于 TDD 的方法确保了可靠且可维护的解决方案，用于处理 PNPM 规范不匹配问题。
+这种基于 BDD 的方法确保了可靠且可维护的解决方案，用于处理 PNPM 规范不匹配问题。

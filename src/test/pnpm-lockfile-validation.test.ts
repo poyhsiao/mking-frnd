@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import * as yaml from 'js-yaml';
 
-describe('PNPM Lockfile Validation - TDD Fix for dry-run Error', () => {
+describe('PNPM Lockfile Validation - BDD Fix for dry-run Error', () => {
   const projectRoot = process.cwd();
   const ciWorkflowPath = join(projectRoot, '.github', 'workflows', 'ci.yml');
   

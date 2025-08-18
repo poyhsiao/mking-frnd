@@ -23,7 +23,7 @@
 - [`development/`](./development/) - 開發指南和規範
   - [開發環境設置](./development/setup.md)
   - [實施計劃](./development/implementation-plan.md)
-  - [TDD 開發指南](./development/tdd-guidelines.md)
+  - [BDD 開發指南](./development/bdd-guidelines.md)
   - [開發規範](./development/DEVELOPMENT_STANDARDS.md) ⭐ 必讀
 - [`api/`](./api/) - API文檔和規範
 - [`database/`](./database/) - 資料庫設計和遷移
@@ -74,7 +74,7 @@
 
 ## 開發原則
 
-- **測試驅動開發 (TDD)**: 所有功能都必須先寫測試
+- **行為驅動開發 (BDD)**: 所有功能都必須先寫場景
 - **代碼品質**: 遵循 PEP 8 (Python) 和 ESLint (JavaScript/TypeScript) 規範
 - **安全第一**: 所有用戶輸入都必須驗證和清理
 - **文檔完整**: 所有模組和函數都必須有清晰的文檔

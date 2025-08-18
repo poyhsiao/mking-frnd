@@ -29,7 +29,7 @@ This project adopts a microservices architecture and uses a modern technology st
 - [`development/`](./development/) - Development Guidelines and Standards
   - [Development Environment Setup](./development/setup.md)
   - [Implementation Plan](./development/implementation-plan.md)
-  - [TDD Development Guidelines](./development/tdd-guidelines.md)
+  - [BDD Development Guidelines](./development/bdd-guidelines.md)
   - [Development Standards](./development/DEVELOPMENT_STANDARDS.md) ⭐ Must Read
   - [Microservices Development Guide](./development/microservices-development-guide.md)
 - [`api/`](./api/) - API Documentation and Specifications

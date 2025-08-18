@@ -5,7 +5,7 @@ import path from 'path';
 
 /**
  * Test suite for backend Dockerfile production stage
- * Following TDD methodology to ensure Docker build works correctly
+ * Following BDD methodology to ensure Docker build works correctly
  */
 describe('Backend Dockerfile Production Stage', () => {
   const projectRoot = path.resolve(__dirname, '../..');

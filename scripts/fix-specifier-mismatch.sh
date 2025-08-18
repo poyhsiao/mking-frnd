@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Fix PNPM Specifier Mismatch - TDD Based Solution
+# Fix PNPM Specifier Mismatch - BDD Based Solution
 # This script addresses ERR_PNPM_OUTDATED_LOCKFILE errors caused by specifier mismatches
 
 set -e
 
-echo "🔧 PNPM Specifier Mismatch Fix - TDD Based Solution"
+echo "🔧 PNPM Specifier Mismatch Fix - BDD Based Solution"
 echo "================================================="
 echo
 
@@ -31,8 +31,8 @@ cp "$LOCKFILE_PATH" "$LOCKFILE_PATH.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null |
 echo "✅ Backup created"
 echo
 
-# Step 2: Run TDD tests to identify issues
-echo "${BLUE}Step 2: Running TDD tests to identify specifier mismatches...${NC}"
+# Step 2: Run BDD scenarios to identify issues
+echo "${BLUE}Step 2: Running BDD scenarios to identify specifier mismatches...${NC}"
 echo "Running specifier mismatch detection tests..."
 
 if npx vitest src/test/pnpm-specifier-mismatch.test.ts --run --reporter=verbose; then
@@ -209,7 +209,7 @@ This indicates that:
 - The package.json specifies a different version range
 - PNPM cannot proceed with `--frozen-lockfile` because of this mismatch
 
-## TDD-Based Solution
+## BDD-Based Solution
 
 ### 1. Test-Driven Detection
 
@@ -332,7 +332,7 @@ pnpm -r list --depth=0
 
 ## Files Modified
 
-- `src/test/pnpm-specifier-mismatch.test.ts` - TDD test suite
+- `src/test/pnpm-specifier-mismatch.test.ts` - BDD scenario suite
 - `scripts/fix-specifier-mismatch.sh` - Automated fix script
 - `scripts/validate-lockfile-sync.sh` - Validation script
 - `docs/SPECIFIER_MISMATCH_FIX.md` - This documentation
@@ -342,7 +342,7 @@ pnpm -r list --depth=0
 Run the following to ensure the fix is working:
 
 ```bash
-# 1. Run TDD tests
+# 1. Run BDD scenarios
 npx vitest src/test/pnpm-specifier-mismatch.test.ts --run
 
 # 2. Validate lockfile
@@ -375,7 +375,7 @@ echo "${GREEN}🎉 PNPM Specifier Mismatch Fix Complete${NC}"
 echo "======================================="
 echo
 echo "Files created/modified:"
-echo "  ✅ src/test/pnpm-specifier-mismatch.test.ts (TDD test suite)"
+echo "  ✅ src/test/pnpm-specifier-mismatch.test.ts (BDD scenario suite)"
 echo "  ✅ scripts/fix-specifier-mismatch.sh (this script)"
 echo "  ✅ scripts/validate-lockfile-sync.sh (validation script)"
 echo "  ✅ docs/SPECIFIER_MISMATCH_FIX.md (documentation)"
@@ -383,7 +383,7 @@ echo "  ✅ pnpm-lock.yaml.backup.* (backup of original lockfile)"
 echo
 echo "Next steps:"
 echo "  1. Review the changes and test locally"
-echo "  2. Run: git add . && git commit -m 'fix: resolve PNPM specifier mismatch with TDD approach'"
+echo "  2. Run: git add . && git commit -m 'fix: resolve PNPM specifier mismatch with BDD approach'"
 echo "  3. Push changes and monitor CI build"
 echo "  4. Use ./scripts/validate-lockfile-sync.sh for future validation"
 echo

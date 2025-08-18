@@ -1,12 +1,12 @@
 /**
  * Automated Testing Pipeline Configuration Tests
  * Task 1.1: Automated testing pipeline configuration
- * Following TDD methodology with pytest-bdd best practices
+ * Following BDD methodology with pytest-bdd best practices
  * 
  * @description Comprehensive test suite for automated testing pipeline
  * @author Backend Engineer
  * @date 2025-01-13
- * @methodology Test-Driven Development (TDD)
+ * @methodology Behavior-Driven Development (BDD)
  */
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
@@ -19,7 +19,7 @@ import { parse as parseYaml } from 'yaml';
  * Test Suite: Automated Testing Pipeline Configuration
  * 
  * This test suite validates the automated testing pipeline configuration
- * following TDD principles and pytest-bdd best practices:
+ * following BDD principles and pytest-bdd best practices:
  * 
  * 1. Test Organization: Feature-based test organization
  * 2. Step Reusability: Common steps defined for reuse
@@ -36,7 +36,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
 
   beforeAll(() => {
     console.log('🚀 Starting Automated Testing Pipeline Configuration Tests...');
-    console.log('📋 Following TDD methodology with pytest-bdd best practices');
+    console.log('📋 Following BDD methodology with pytest-bdd best practices');
   });
 
   afterAll(() => {

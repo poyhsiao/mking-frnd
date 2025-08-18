@@ -20,9 +20,9 @@ The issue was caused by missing permissions in the GitHub Actions workflow confi
 
 The GitHub Actions workflow was using `GITHUB_TOKEN` for authentication but lacked the explicit permissions declaration that GitHub requires for organization repositories. <mcreference link="https://github.com/actions/runner/issues/1039" index="2">2</mcreference>
 
-## Test-Driven Development (TDD) Approach
+## Behavior-Driven Development (BDD) Approach
 
-Following TDD methodology, we created comprehensive tests before implementing the fix:
+Following BDD methodology, we created comprehensive scenarios before implementing the fix:
 
 ### Test Suite: `tests/ci/github-actions-permissions.test.ts`
 

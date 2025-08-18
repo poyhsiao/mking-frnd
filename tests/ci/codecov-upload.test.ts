@@ -5,7 +5,7 @@ import * as yaml from 'js-yaml';
 
 /**
  * Test suite for Codecov upload configuration in GitHub Actions
- * Following TDD principles to ensure proper codecov integration
+ * Following BDD principles to ensure proper codecov integration
  */
 describe('Codecov Upload Configuration', () => {
   let ciConfig: any;

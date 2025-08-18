@@ -300,7 +300,7 @@ Implement a comprehensive testing strategy following the testing pyramid:
 - Cypress: Reliable E2E testing with great debugging
 
 **Testing Practices:**
-- Test-Driven Development (TDD) for critical features
+- Behavior-Driven Development (BDD) for critical features
 - Code coverage targets (80% minimum)
 - Automated testing in CI/CD pipeline
 - Regular test maintenance and updates
@@ -409,18 +409,18 @@ Implement comprehensive observability with:
 - Code quality and maintainability
 - Team satisfaction and learning
 
-## ADR-012: PNPM Lockfile CI/CD Error Resolution Using TDD
+## ADR-012: PNPM Lockfile CI/CD Error Resolution Using BDD
 
 ### Status
-✅ **Decided** - Implement TDD-based approach for CI/CD lockfile issues
+✅ **Decided** - Implement BDD-based approach for CI/CD lockfile issues
 
 ### Background
 CI pipeline was failing with `ERR_PNPM_OUTDATED_LOCKFILE` error, causing deployment blockages and developer productivity issues.
 
 ### Decision
-Adopt Test-Driven Development (TDD) methodology to:
-1. Create comprehensive test suites for lockfile validation
-2. Implement targeted fixes based on test requirements
+Adopt Behavior-Driven Development (BDD) methodology to:
+1. Create comprehensive scenario suites for lockfile validation
+2. Implement targeted fixes based on scenario requirements
 3. Ensure robust prevention of future lockfile issues
 
 ### Implementation
@@ -441,7 +441,7 @@ Adopt Test-Driven Development (TDD) methodology to:
 - Automated prevention of regression
 - Improved developer experience
 
-**TDD Benefits:**
+**BDD Benefits:**
 - Tests define exact requirements
 - Targeted fixes based on failing tests
 - Confidence in solution completeness
@@ -466,9 +466,9 @@ Adopt Test-Driven Development (TDD) methodology to:
 - ✅ Enhanced developer confidence in CI pipeline
 
 ### Related Documentation
-- [PNPM Lockfile TDD Fix](./pnpm-lockfile-tdd-fix.md)
+- [PNPM Lockfile BDD Fix](./pnpm-lockfile-bdd-fix.md)
 - [Development Tasks](./development-tasks.md)
-- [TDD Guidelines](./development/tdd-guidelines.md)
+- [BDD Guidelines](./development/bdd-guidelines.md)
 
 ---
 

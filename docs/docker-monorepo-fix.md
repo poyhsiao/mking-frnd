@@ -38,9 +38,9 @@ ERROR: failed to solve: failed to copy files: failed to walk /app/dist: lstat /a
 
 ## Solution
 
-### Test-Driven Development (TDD) Approach
+### Behavior-Driven Development (BDD) Approach
 
-Following TDD methodology, we first created comprehensive tests to validate the Docker build process:
+Following BDD methodology, we first created comprehensive scenarios to validate the Docker build process:
 
 1. **Created Test Suite**: `tests/docker/docker-build-fix.test.ts`
    - Tests for valid Dockerfile existence (both backend and frontend)
@@ -163,7 +163,7 @@ Test Files  1 passed (1)
 
 ## Testing and Verification
 
-### TDD Approach Used
+### BDD Approach Used
 
 1. **Red Phase**: Created comprehensive test suite (`tests/docker/backend-dockerfile-production.test.ts`) that initially failed
 2. **Green Phase**: Fixed the Dockerfile to make tests pass

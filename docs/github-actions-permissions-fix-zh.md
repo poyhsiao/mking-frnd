@@ -20,9 +20,9 @@ ERROR: failed to build: failed to solve: failed to push ghcr.io/poyhsiao/mking-f
 
 GitHub Actions 工作流使用 `GITHUB_TOKEN` 进行身份验证，但缺少 GitHub 对组织仓库要求的显式权限声明。<mcreference link="https://github.com/actions/runner/issues/1039" index="2">2</mcreference>
 
-## 测试驱动开发 (TDD) 方法
+## 行为驱动开发 (BDD) 方法
 
-遵循 TDD 方法论，我们在实施修复之前创建了全面的测试：
+遵循 BDD 方法论，我们在实施修复之前创建了全面的场景：
 
 ### 测试套件：`tests/ci/github-actions-permissions.test.ts`
 
