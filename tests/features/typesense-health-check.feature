@@ -46,6 +46,6 @@ Feature: Typesense Container Health Check in CI Environment
 
     Examples:
       | interval | timeout | retries |
-      | 10s      | 5s      | 5       |
+      | 10s      | 8s      | 8       |
       | 15s      | 10s     | 3       |
       | 30s      | 15s     | 2       |

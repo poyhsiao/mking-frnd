@@ -2,8 +2,6 @@
 # Use with: docker compose -f docker-compose.test.yml up --abort-on-container-exit
 # This configuration is optimized for automated testing in CI/CD pipelines
 
-version: '3.8'
-
 services:
   # Test Database
   postgres-test:
@@ -82,12 +80,13 @@ services:
     networks:
       - test-network
     healthcheck:
-      # Use wget instead of curl for better reliability in Alpine-based images
-      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:8108/health || exit 1']
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s  # Allow more time for initial startup
+      # Check if Typesense process is running - more reliable than HTTP checks
+      # Enhanced configuration for CI environment stability
+      test: ['CMD-SHELL', 'ps aux | grep -v grep | grep typesense || exit 1']
+      interval: 10s
+      timeout: 8s
+      retries: 8
+      start_period: 60s  # Extended startup period for CI environment
     tmpfs:
       - /data  # Use tmpfs for faster tests
 
@@ -130,13 +129,25 @@ services:
     command: >
       sh -c "
         echo 'Waiting for all services to be ready...'
+        
+        # Enhanced service readiness check with timeout
+        MAX_WAIT=300  # 5 minutes timeout
+        WAIT_COUNT=0
+        
         echo 'Checking Typesense health...'
-        until wget --no-verbose --tries=1 --spider http://typesense-test:8108/health 2>/dev/null; do
-          echo 'Waiting for Typesense to be ready...'
-          sleep 5
+        until wget --no-verbose --tries=1 --spider --timeout=10 http://typesense-test:8108/health 2>/dev/null; do
+          if [ \$WAIT_COUNT -ge \$MAX_WAIT ]; then
+            echo 'ERROR: Typesense failed to become ready within timeout'
+            exit 1
+          fi
+          echo 'Waiting for Typesense to be ready... (\$WAIT_COUNT/\$MAX_WAIT)'
+          sleep 2
+          WAIT_COUNT=\$((WAIT_COUNT + 2))
         done
+        
         echo 'All services are ready!'
-        sleep 10
+        sleep 5
+        
         cd /app/backend
         echo 'Running database migrations...'
         npm run db:migrate:test

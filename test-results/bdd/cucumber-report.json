@@ -1,0 +1,894 @@
+[
+  {
+    "description": "  As a developer\n  I want the Typesense container to be healthy in CI environment\n  So that integration tests can run successfully",
+    "elements": [
+      {
+        "description": "",
+        "id": "typesense-container-health-check-in-ci-environment;typesense-container-starts-successfully",
+        "keyword": "Scenario",
+        "line": 10,
+        "name": "Typesense container starts successfully",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 1426542
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "the CI environment is set up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:114"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 500833
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "Docker Compose test configuration is loaded",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:120"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 212415
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 11,
+            "name": "the Typesense container is configured with proper health check",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:128"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 561041
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 12,
+            "name": "Docker Compose brings up the test services",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:138"
+            },
+            "result": {
+              "status": "failed",
+              "duration": 30021655541,
+              "error_message": "Error: spawnSync /bin/sh ETIMEDOUT\n    at Object.spawnSync (node:internal/child_process:1120:20)\n    at spawnSync (node:child_process:901:24)\n    at execSync (node:child_process:982:15)\n    at executeCommand (/Users/kimhsiao/Templates/git/kimhsiao/mking-frnd/tests/step-definitions/typesense-health-check.steps.ts:44:20)\n    at World.<anonymous> (/Users/kimhsiao/Templates/git/kimhsiao/mking-frnd/tests/step-definitions/typesense-health-check.steps.ts:144:3)"
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 13,
+            "name": "the Typesense container should start within 60 seconds",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:148"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 14,
+            "name": "the Typesense container should be marked as healthy",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:161"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 15,
+            "name": "the health check endpoint should respond with status 200",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:168"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 1160083
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "typesense-container-health-check-in-ci-environment;typesense-container-health-check-endpoint-is-accessible",
+        "keyword": "Scenario",
+        "line": 17,
+        "name": "Typesense container health check endpoint is accessible",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 258291
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "the CI environment is set up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:114"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 792040
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "Docker Compose test configuration is loaded",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:120"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 440624
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 18,
+            "name": "the Typesense container is running",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:179"
+            },
+            "result": {
+              "status": "failed",
+              "duration": 5098497042,
+              "error_message": "Error: function timed out, ensure the promise resolves within 5000 milliseconds\n    at Timeout.<anonymous> (/Users/kimhsiao/Templates/git/kimhsiao/mking-frnd/node_modules/.pnpm/@cucumber+cucumber@10.9.0/node_modules/@cucumber/cucumber/src/time.ts:52:14)\n    at listOnTimeout (node:internal/timers:588:17)\n    at processTimers (node:internal/timers:523:7)"
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 19,
+            "name": "I make a GET request to the health check endpoint",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:186"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 20,
+            "name": "the response status should be 200",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:194"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 21,
+            "name": "the response should indicate the service is ready",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:198"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 22,
+            "name": "the response time should be less than 5 seconds",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:203"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 211500
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "typesense-container-health-check-in-ci-environment;dependent-services-wait-for-typesense-to-be-healthy",
+        "keyword": "Scenario",
+        "line": 24,
+        "name": "Dependent services wait for Typesense to be healthy",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 111790
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "the CI environment is set up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:114"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 150332
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "Docker Compose test configuration is loaded",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:120"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 338458
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 25,
+            "name": "the Typesense container is starting up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:211"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 111292
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 26,
+            "name": "the backend-test service depends on Typesense",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:215"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 692540
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 27,
+            "name": "Docker Compose starts all services",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:224"
+            },
+            "result": {
+              "status": "failed",
+              "duration": 30026028249,
+              "error_message": "Error: spawnSync /bin/sh ETIMEDOUT\n    at Object.spawnSync (node:internal/child_process:1120:20)\n    at spawnSync (node:child_process:901:24)\n    at execSync (node:child_process:982:15)\n    at executeCommand (/Users/kimhsiao/Templates/git/kimhsiao/mking-frnd/tests/step-definitions/typesense-health-check.steps.ts:44:20)\n    at World.<anonymous> (/Users/kimhsiao/Templates/git/kimhsiao/mking-frnd/tests/step-definitions/typesense-health-check.steps.ts:227:3)"
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 28,
+            "name": "the backend-test service should wait for Typesense to be healthy",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:230"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 29,
+            "name": "the backend-test service should not start until Typesense is ready",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:237"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 30,
+            "name": "all dependent services should start successfully after Typesense is healthy",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:242"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 120708
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "typesense-container-health-check-in-ci-environment;typesense-container-handles-initialization-delays",
+        "keyword": "Scenario",
+        "line": 32,
+        "name": "Typesense container handles initialization delays",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 65625
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "the CI environment is set up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:114"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 77250
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "Docker Compose test configuration is loaded",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:120"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 104290
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 33,
+            "name": "the Typesense container is starting for the first time",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:253"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 77417
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 34,
+            "name": "the container is initializing its data structures",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:257"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 41417
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 35,
+            "name": "the health check should retry with appropriate intervals",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:261"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1174124
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 36,
+            "name": "the health check should wait for the service to be fully ready",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:270"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 185207
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 37,
+            "name": "the container should not be marked as failed during normal startup time",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:279"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 48667
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 71499
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "typesense-container-health-check-in-ci-environment;health-check-configuration-is-robust",
+        "keyword": "Scenario Outline",
+        "line": 49,
+        "name": "Health check configuration is robust",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 54292
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "the CI environment is set up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:114"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 45084
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "Docker Compose test configuration is loaded",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:120"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 52374
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 40,
+            "name": "the Typesense container health check is configured with 10s interval",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:285"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 253624
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 41,
+            "name": "the health check timeout is set to 8s",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:294"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 173708
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 42,
+            "name": "the health check retries are set to 8",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:303"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 119040
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 43,
+            "name": "the container is starting up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:312"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 50499
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 44,
+            "name": "the health check should allow sufficient time for startup",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:316"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 88875
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 45,
+            "name": "the configuration should handle temporary network issues",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:323"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 225249
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 73082
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "typesense-container-health-check-in-ci-environment;health-check-configuration-is-robust",
+        "keyword": "Scenario Outline",
+        "line": 50,
+        "name": "Health check configuration is robust",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 95499
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "the CI environment is set up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:114"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 93875
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "Docker Compose test configuration is loaded",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:120"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 82374
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 40,
+            "name": "the Typesense container health check is configured with 15s interval",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:285"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 155374
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 41,
+            "name": "the health check timeout is set to 10s",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:294"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 95415
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 42,
+            "name": "the health check retries are set to 3",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:303"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 69457
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 43,
+            "name": "the container is starting up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:312"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 24124
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 44,
+            "name": "the health check should allow sufficient time for startup",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:316"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 55333
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 45,
+            "name": "the configuration should handle temporary network issues",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:323"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 64666
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 48125
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "typesense-container-health-check-in-ci-environment;health-check-configuration-is-robust",
+        "keyword": "Scenario Outline",
+        "line": 51,
+        "name": "Health check configuration is robust",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 40416
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "the CI environment is set up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:114"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 53916
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "Docker Compose test configuration is loaded",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:120"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 43209
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 40,
+            "name": "the Typesense container health check is configured with 30s interval",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:285"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 73084
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 41,
+            "name": "the health check timeout is set to 15s",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:294"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 75333
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 42,
+            "name": "the health check retries are set to 2",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:303"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1138332
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 43,
+            "name": "the container is starting up",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:312"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 56166
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 44,
+            "name": "the health check should allow sufficient time for startup",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:316"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1713417
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 45,
+            "name": "the configuration should handle temporary network issues",
+            "match": {
+              "location": "step-definitions/typesense-health-check.steps.ts:323"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1230792
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 66791
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "typesense-container-health-check-in-ci-environment",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Typesense Container Health Check in CI Environment",
+    "tags": [],
+    "uri": "features/typesense-health-check.feature"
+  }
+]
