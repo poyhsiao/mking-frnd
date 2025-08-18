@@ -25,6 +25,7 @@
   "license": "MIT",
   "devDependencies": {
     "@cucumber/cucumber": "^10.9.0",
+    "@playwright/test": "^1.40.0",
     "@types/chai": "^4.3.11",
     "@types/node": "^20.10.5",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
@@ -33,6 +34,8 @@
     "chai": "^4.3.10",
     "cucumber-html-reporter": "^7.1.1",
     "eslint": "^8.56.0",
+    "js-yaml": "^4.1.0",
+    "@types/js-yaml": "^4.0.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   },
