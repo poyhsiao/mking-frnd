@@ -469,6 +469,92 @@
 
 ---
 
+## ADR-012: TypeScript 配置 rootDir 問題修復
+
+### 狀態
+✅ **已決定** - 在後端 tsconfig.json 中明確設置 rootDir
+
+### 背景
+在 GitHub Actions CI/CD 流程中，後端 TypeScript 編譯失敗，出現以下錯誤：
+```
+error TS6059: File '/home/runner/work/mking-frnd/mking-frnd/backend/src/healthcheck.ts' is not under 'rootDir' '/home/runner/work/mking-frnd/mking-frnd/src'. 'rootDir' is expected to contain all source files.
+```
+
+### 問題分析
+- 根 tsconfig.json 設置了 `"rootDir": "./src"`，指向項目根目錄的 src
+- 後端 tsconfig.json 繼承了這個設置，但後端源文件在 `backend/src`
+- 導致 TypeScript 編譯器無法正確解析文件路徑
+
+### 決策
+在後端的 tsconfig.json 中明確覆蓋 rootDir 設置：
+```json
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    // ... 其他配置
+  }
+}
+```
+
+### 實施方法
+使用 BDD（行為驅動開發）方法論：
+
+1. **編寫 BDD 測試**：
+   - 創建 `tsconfig-rootdir.test.ts` 驗證配置正確性
+   - 創建 `build-integration.test.ts` 驗證構建流程
+
+2. **測試場景**：
+   ```gherkin
+   Feature: Backend TypeScript compilation should work correctly
+   Scenario: When building the backend, TypeScript should compile without rootDir errors
+   Given: The backend has its own tsconfig.json that extends the root config
+   When: The TypeScript compiler runs on the backend
+   Then: It should not throw rootDir mismatch errors
+   And: All source files should be correctly included in compilation
+   ```
+
+3. **修復實施**：
+   - 在 `backend/tsconfig.json` 中添加 `"rootDir": "./src"`
+   - 驗證 TypeScript 編譯成功
+   - 確認構建產物正確生成
+
+### 理由
+**技術原因：**
+- 解決 monorepo 中 TypeScript 配置繼承問題
+- 確保每個子項目有正確的根目錄設置
+- 避免路徑解析衝突
+
+**BDD 方法論優勢：**
+- 測試先行，確保修復有效性
+- 清晰的行為描述，便於理解和維護
+- 回歸測試保護，防止未來類似問題
+
+### 後果
+**正面影響：**
+- CI/CD 流程恢復正常
+- TypeScript 編譯錯誤解決
+- 構建流程穩定可靠
+- 建立了 BDD 測試基礎
+
+**技術債務：**
+- 需要在每個子項目中明確設置 rootDir
+- 增加了配置維護複雜度
+
+### 經驗教訓
+1. **Monorepo 配置管理**：子項目繼承根配置時需要謹慎處理路徑相關設置
+2. **BDD 測試價值**：通過測試驅動的方式修復問題，提高了解決方案的可靠性
+3. **CI/CD 重要性**：持續集成能夠及早發現配置問題
+4. **文檔化決策**：記錄技術決策有助於團隊理解和未來維護
+
+### 相關文件
+- `backend/tsconfig.json` - 後端 TypeScript 配置
+- `backend/src/__tests__/tsconfig-rootdir.test.ts` - BDD 配置測試
+- `backend/src/__tests__/build-integration.test.ts` - 構建集成測試
+- `.github/workflows/ci.yml` - CI/CD 流程配置
+
+---
+
 ## 總結
 
 本文檔記錄了 MKing Friend 項目的核心技術決策，這些決策基於當前的技術環境、團隊能力和業務需求。隨著項目的發展和技術的演進，我們將持續評估和優化這些決策，確保技術架構能夠支撐業務的長期發展。

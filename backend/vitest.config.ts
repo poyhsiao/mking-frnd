@@ -26,8 +26,5 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src')
     }
-  },
-  esbuild: {
-    tsconfig: './tsconfig.test.json'
   }
 })
