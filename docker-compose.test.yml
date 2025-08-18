@@ -18,7 +18,6 @@ services:
       - '5433:5432'  # Different port to avoid conflicts
     volumes:
       - ./database/init:/docker-entrypoint-initdb.d:ro
-      - ./database/test-seeds:/docker-entrypoint-initdb.d/seeds:ro
     networks:
       - test-network
     healthcheck:
