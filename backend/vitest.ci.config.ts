@@ -78,6 +78,11 @@ export default defineConfig({
       'dist/',
       'build/',
       '**/*.d.ts'
-    ]
+    ],
+    
+    // TypeScript configuration
+    typecheck: {
+      tsconfig: './tsconfig.test.json'
+    }
   }
 });

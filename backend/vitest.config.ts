@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config';
-import path from 'path';
+import { defineConfig } from 'vitest/config'
+import path from 'path'
 
 export default defineConfig({
   test: {
@@ -9,23 +9,25 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage',
       exclude: [
-        'node_modules/',
-        'dist/',
-        'coverage/',
+        'node_modules/**',
+        'dist/**',
+        'coverage/**',
         '**/*.d.ts',
-        '**/*.config.*',
-        '**/test/**',
-        '**/*.test.*',
-        '**/*.spec.*',
-      ],
+        '**/*.config.{js,ts}',
+        '**/test/**'
+      ]
     },
     testTimeout: 10000,
-    hookTimeout: 10000,
+    hookTimeout: 10000
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+      '@': path.resolve(__dirname, './src')
+    }
   },
-});
+  esbuild: {
+    tsconfig: './tsconfig.test.json'
+  }
+})
