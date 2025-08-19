@@ -373,6 +373,7 @@ tar -czf config_backup_${DATE}.tar.gz config/
 ### 獲取幫助
 
 - 查看項目文檔: `docs/` 目錄
+- PostgreSQL 健康檢查修復: [docs/postgres-health-check-fix.md](docs/postgres-health-check-fix.md)
 - 提交 Issue: GitHub Issues
 - 社區討論: GitHub Discussions
 
