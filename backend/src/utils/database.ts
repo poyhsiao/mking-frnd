@@ -32,7 +32,7 @@ export const checkDatabaseHealth = async (): Promise<{
     const client = getPrismaClient();
     
     // Simple query to check connectivity
-    await client.$queryRaw`SELECT 1 as health_check`;
+    await client.$queryRaw<[{ health_check: number }]>`SELECT 1 as health_check`;
     
     const latency = Date.now() - startTime;
     

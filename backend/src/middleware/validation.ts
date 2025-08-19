@@ -180,7 +180,7 @@ export const commonRules = {
     field: 'age',
     required: false,
     type: 'number' as const,
-    custom: (value: unknown) => {
+    custom: (value: unknown): boolean | string => {
       const num = Number(value);
       return (num >= 13 && num <= 120) || 'Age must be between 13 and 120';
     },

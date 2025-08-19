@@ -25,8 +25,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
 // Comprehensive health check endpoint
-app.get('/health', (_req, res) => {
-  void (async () => {
+app.get('/health', (_req, res): void => {
+  void (async (): Promise<void> => {
     try {
       const healthResult = await performHealthCheck();
       
@@ -50,8 +50,8 @@ app.get('/health', (_req, res) => {
 });
 
 // Simple health check endpoint for Docker health checks
-app.get('/health/simple', (_req, res) => {
-  void (async () => {
+app.get('/health/simple', (_req, res): void => {
+  void (async (): Promise<void> => {
     try {
       const healthResult = await performSimpleHealthCheck();
       
