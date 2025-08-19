@@ -71,24 +71,28 @@ git clone https://github.com/your-org/mking-friend-frontend.git
 # 數據庫配置
 POSTGRES_DB=mking_friend
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password
-DATABASE_URL=postgresql://postgres:password@postgres:5432/mking_friend
+# SECURITY: Use strong random password - generate with: openssl rand -base64 32
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
 
 # Redis 配置
 REDIS_URL=redis://redis:6379
 
 # Typesense 配置
 TYPESENSE_URL=http://typesense:8108
-TYPESENSE_API_KEY=xyz
+# SECURITY: Use secure API key - generate with: openssl rand -hex 32
+TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
 TYPESENSE_COLLECTION_PREFIX=mking_friend
 
 # JWT 配置
-JWT_SECRET=your-super-secret-jwt-key
+# SECURITY: Use cryptographically secure secret - generate with: openssl rand -base64 64
+JWT_SECRET=${JWT_SECRET}
 JWT_EXPIRES_IN=1h
 
 # AWS 配置
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
+# SECURITY: Use IAM credentials with minimal required permissions
+AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 AWS_REGION=us-west-2
 AWS_S3_BUCKET=mking-friend-media
 
@@ -493,7 +497,7 @@ services:
     ports:
       - '3001:3000'
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD} # 注意：请设置强密码
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
@@ -505,7 +509,7 @@ services:
     image: typesense/typesense:0.25.1
     environment:
       - TYPESENSE_DATA_DIR=/data
-      - TYPESENSE_API_KEY=xyz
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY} # 注意：请生成强随机API密钥
       - TYPESENSE_ENABLE_CORS=true
     ports:
       - '8108:8108'

@@ -40,6 +40,7 @@
     "@commitlint/config-conventional": "^19.8.1",
     "@cucumber/cucumber": "^10.9.0",
     "@types/chai": "^4.3.11",
+    "@types/glob": "^9.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.0",
     "@types/yaml": "^1.9.7",
@@ -51,10 +52,12 @@
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.1.3",
+    "glob": "^11.0.3",
     "husky": "^8.0.3",
     "js-yaml": "^4.1.0",
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0",
     "yaml": "^2.8.1"
@@ -93,8 +96,5 @@
   "bugs": {
     "url": "https://github.com/kimhsiao/mking-frnd/issues"
   },
-  "homepage": "https://github.com/kimhsiao/mking-frnd#readme",
-  "dependencies": {
-    "ts-node": "^10.9.2"
-  }
+  "homepage": "https://github.com/kimhsiao/mking-frnd#readme"
 }

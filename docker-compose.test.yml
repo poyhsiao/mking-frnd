@@ -13,7 +13,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_TEST_PASSWORD:?POSTGRES_TEST_PASSWORD is required}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - '5433:5432'  # Different port to avoid conflicts
+      - "5433:5432" # Different port to avoid conflicts
     volumes:
       - ./database/init:/docker-entrypoint-initdb.d:ro
     networks:
@@ -25,24 +25,24 @@ services:
       retries: 5
       start_period: 10s
     tmpfs:
-      - /var/lib/postgresql/data  # Use tmpfs for faster tests
+      - /var/lib/postgresql/data # Use tmpfs for faster tests
 
   # Test Redis
   redis-test:
     image: redis:7-alpine
     container_name: mking-redis-test
-    command: redis-server --appendonly no --save ""  # Disable persistence for tests
+    command: redis-server --appendonly no --save "" # Disable persistence for tests
     ports:
-      - '6380:6379'  # Different port to avoid conflicts
+      - "6380:6379" # Different port to avoid conflicts
     networks:
       - test-network
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
     tmpfs:
-      - /data  # Use tmpfs for faster tests
+      - /data # Use tmpfs for faster tests
 
   # Test MinIO
   minio-test:
@@ -53,17 +53,17 @@ services:
       MINIO_ROOT_USER: ${MINIO_TEST_USER:-testuser}
       MINIO_ROOT_PASSWORD: ${MINIO_TEST_PASSWORD:?MINIO_TEST_PASSWORD is required}
     ports:
-      - '9002:9000'
-      - '9003:9001'
+      - "9002:9000"
+      - "9003:9001"
     networks:
       - test-network
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 5s
       retries: 3
     tmpfs:
-      - /data  # Use tmpfs for faster tests
+      - /data # Use tmpfs for faster tests
 
   # Test Typesense
   typesense-test:
@@ -76,19 +76,19 @@ services:
       # Optimize for faster startup in test environment
       TYPESENSE_LOG_LEVEL: WARN
     ports:
-      - '8109:8108'
+      - "8109:8108"
     networks:
       - test-network
     healthcheck:
       # Check if Typesense process is running - more reliable than HTTP checks
       # Enhanced configuration for CI environment stability
-      test: ['CMD-SHELL', 'ps aux | grep -v grep | grep typesense || exit 1']
+      test: ["CMD-SHELL", "ps aux | grep -v grep | grep typesense || exit 1"]
       interval: 10s
       timeout: 8s
       retries: 8
-      start_period: 60s  # Extended startup period for CI environment
+      start_period: 60s # Extended startup period for CI environment
     tmpfs:
-      - /data  # Use tmpfs for faster tests
+      - /data # Use tmpfs for faster tests
 
   # Backend Tests
   backend-test:
@@ -99,20 +99,20 @@ services:
     container_name: mking-backend-test
     environment:
       - NODE_ENV=test
-      - DATABASE_URL=postgresql://postgres:postgres@postgres-test:5432/mking_test
+      - DATABASE_URL=postgresql://${POSTGRES_TEST_USER:-postgres}:${POSTGRES_TEST_PASSWORD:?POSTGRES_TEST_PASSWORD is required}@postgres-test:5432/${POSTGRES_TEST_DB:-mking_test}
       - REDIS_URL=redis://redis-test:6379
       - MINIO_ENDPOINT=minio-test:9000
-      - MINIO_ACCESS_KEY=testuser
-      - MINIO_SECRET_KEY=testpassword
+      - MINIO_ACCESS_KEY=${MINIO_TEST_USER:-testuser}
+      - MINIO_SECRET_KEY=${MINIO_TEST_PASSWORD:?MINIO_TEST_PASSWORD is required}
       - TYPESENSE_HOST=typesense-test
       - TYPESENSE_PORT=8108
-      - TYPESENSE_API_KEY=test-api-key
-      - JWT_SECRET=test-jwt-secret
-      - ENCRYPTION_KEY=test-encryption-key
+      - TYPESENSE_API_KEY=${TYPESENSE_TEST_API_KEY:?TYPESENSE_TEST_API_KEY is required}
+      - JWT_SECRET=${JWT_TEST_SECRET:?JWT_TEST_SECRET is required}
+      - ENCRYPTION_KEY=${ENCRYPTION_TEST_KEY:?ENCRYPTION_TEST_KEY is required}
       - CI=true
       - PORT=3001
     ports:
-      - '3002:3001'  # Different port to avoid conflicts
+      - "3002:3001" # Different port to avoid conflicts
     volumes:
       - ./backend:/app/backend
       - /app/backend/node_modules
@@ -122,7 +122,7 @@ services:
       - test-network
     user: "1001:1001"
     healthcheck:
-      test: ['CMD', 'sh', '-c', 'cd /app/backend && npx ts-node src/healthcheck.ts']
+      test: ["CMD", "sh", "-c", "cd /app/backend && npx ts-node src/healthcheck.ts"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -298,5 +298,4 @@ networks:
     ipam:
       config:
         - subnet: 172.21.0.0/16
-
 # No persistent volumes for test environment - everything runs in memory/tmpfs
