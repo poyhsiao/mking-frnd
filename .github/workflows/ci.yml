@@ -39,6 +39,38 @@ jobs:
           mkdir -p test-results coverage
           chmod 777 test-results coverage
 
+      - name: Validate required environment variables
+        run: |
+          echo "🔍 Validating required environment variables..."
+
+          # Check for required test environment variables
+          REQUIRED_VARS=(
+            "POSTGRES_TEST_DB"
+            "POSTGRES_TEST_USER"
+            "POSTGRES_TEST_PASSWORD"
+            "MINIO_TEST_USER"
+            "MINIO_TEST_PASSWORD"
+            "TYPESENSE_TEST_API_KEY"
+            "JWT_TEST_SECRET"
+            "ENCRYPTION_TEST_KEY"
+          )
+
+          MISSING_VARS=()
+          for var in "${REQUIRED_VARS[@]}"; do
+            if [ -z "${!var}" ]; then
+              MISSING_VARS+=("$var")
+            fi
+          done
+
+          if [ ${#MISSING_VARS[@]} -ne 0 ]; then
+            echo "❌ Missing required environment variables:"
+            printf '  - %s\n' "${MISSING_VARS[@]}"
+            echo "Please ensure all required environment variables are set in the workflow."
+            exit 1
+          fi
+
+          echo "✅ All required environment variables are present."
+
       - name: Run ${{ matrix.test-type }} tests with Docker Compose
         env:
           # Test Database Configuration
@@ -52,6 +84,10 @@ jobs:
 
           # Test Typesense Configuration
           TYPESENSE_TEST_API_KEY: test-api-key
+
+          # Test Security Configuration
+          JWT_TEST_SECRET: test-jwt-secret-for-ci-pipeline-testing-only
+          ENCRYPTION_TEST_KEY: test-encryption-key-for-ci-pipeline-testing-only
 
           # General Test Configuration
           TEST_TYPE: ${{ matrix.test-type }}
@@ -74,6 +110,8 @@ jobs:
           export MINIO_TEST_USER="${MINIO_TEST_USER}"
           export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
           export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
+          export JWT_TEST_SECRET="${JWT_TEST_SECRET}"
+          export ENCRYPTION_TEST_KEY="${ENCRYPTION_TEST_KEY}"
           export TEST_TYPE="${TEST_TYPE}"
           export CI="${CI}"
           export NODE_ENV="${NODE_ENV}"
@@ -208,6 +246,10 @@ jobs:
           # Test Typesense Configuration
           TYPESENSE_TEST_API_KEY: test-api-key
 
+          # Test Security Configuration
+          JWT_TEST_SECRET: test-jwt-secret-for-ci-pipeline-testing-only
+          ENCRYPTION_TEST_KEY: test-encryption-key-for-ci-pipeline-testing-only
+
           # General Test Configuration
           CI: true
           NODE_ENV: test
@@ -224,6 +266,8 @@ jobs:
           export MINIO_TEST_USER="${MINIO_TEST_USER}"
           export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
           export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
+          export JWT_TEST_SECRET="${JWT_TEST_SECRET}"
+          export ENCRYPTION_TEST_KEY="${ENCRYPTION_TEST_KEY}"
           export CI="${CI}"
           export NODE_ENV="${NODE_ENV}"
 
@@ -254,6 +298,10 @@ jobs:
           # Test Typesense Configuration
           TYPESENSE_TEST_API_KEY: test-api-key
 
+          # Test Security Configuration
+          JWT_TEST_SECRET: test-jwt-secret-for-ci-pipeline-testing-only
+          ENCRYPTION_TEST_KEY: test-encryption-key-for-ci-pipeline-testing-only
+
           # General Test Configuration
           CI: true
           NODE_ENV: test
@@ -267,6 +315,8 @@ jobs:
           export MINIO_TEST_USER="${MINIO_TEST_USER}"
           export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
           export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
+          export JWT_TEST_SECRET="${JWT_TEST_SECRET}"
+          export ENCRYPTION_TEST_KEY="${ENCRYPTION_TEST_KEY}"
           export CI="${CI}"
           export NODE_ENV="${NODE_ENV}"
 
