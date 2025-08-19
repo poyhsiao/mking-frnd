@@ -165,7 +165,7 @@ validate_docker_compose_health() {
     local attempt=1
     
     while [ $attempt -le $max_attempts ]; do
-        health_status=$(docker compose -f docker-compose.test.yml ps --format json | jq -r '.[] | select(.Service == "typesense-test") | .Health')
+        health_status=$(docker compose -f docker-compose.test.yml ps --format json | jq -s -r '.[] | select(.Service == "typesense-test") | .Health')
         
         case "$health_status" in
             "healthy")

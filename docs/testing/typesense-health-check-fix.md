@@ -283,7 +283,7 @@ wget --no-verbose --tries=1 --spider http://localhost:8108/health
 docker compose -f docker-compose.test.yml up typesense-test --no-deps
 
 # Check container health status
-docker compose -f docker-compose.test.yml ps --format json | jq '.[] | select(.Service == "typesense-test") | .Health'
+docker compose -f docker-compose.test.yml ps --format json | jq -s '.[] | select(.Service == "typesense-test") | .Health'
 ```
 
 ## Future Improvements

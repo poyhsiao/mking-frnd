@@ -87,7 +87,7 @@ Then('the jq command should successfully extract the health status', function ()
 
 Then('the Service field should match {string}', function (expectedService: string) {
   try {
-    const serviceCommand = `echo '${context.dockerComposeOutput}' | jq -r ".[] | select(.Service == \"${expectedService}\") | .Service"`;
+    const serviceCommand = `echo '${context.dockerComposeOutput}' | jq -s -r ".[] | select(.Service == \"${expectedService}\") | .Service"`;
     const actualService = execSync(serviceCommand, { encoding: 'utf8', timeout: 5000 }).trim();
     expect(actualService).to.equal(expectedService);
   } catch (error) {
@@ -110,7 +110,7 @@ Given('the postgres-test service is in {string} state', function (expectedState:
         { encoding: 'utf8', timeout: 5000 }
       );
       
-      const healthCommand = `echo '${output}' | jq -r ".[] | select(.Service == \"postgres-test\") | .Health"`;
+      const healthCommand = `echo '${output}' | jq -s -r ".[] | select(.Service == \"postgres-test\") | .Health"`;
       const currentHealth = execSync(healthCommand, { encoding: 'utf8', timeout: 5000 }).trim();
       
       if (currentHealth === expectedState) {
