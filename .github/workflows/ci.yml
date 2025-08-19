@@ -149,11 +149,28 @@ jobs:
             local service_name=$1
             local max_attempts=30
             local attempt=1
+            local timeout_seconds=300  # 5 minutes total timeout
             
             echo "🔍 Checking health of ${service_name}..."
+            echo "⏱️  Timeout set to $timeout_seconds seconds ($max_attempts attempts)"
             
             while [ $attempt -le $max_attempts ]; do
+              echo "📊 Health check attempt $attempt/$max_attempts for ${service_name}"
+              
+              # Check if container is running first
+              if ! docker compose -f docker-compose.test.yml ps --format json | jq -e ".[] | select(.Service == \"${service_name}\")" > /dev/null; then
+                echo "❌ Service ${service_name} is not running"
+                echo "📋 Container status:"
+                docker compose -f docker-compose.test.yml ps "${service_name}" || true
+                sleep 10
+                attempt=$((attempt + 1))
+                continue
+              fi
+              
               health_status=$(docker compose -f docker-compose.test.yml ps --format json | jq -s -r ".[] | select(.Service == \"${service_name}\") | .Health")
+              state=$(docker compose -f docker-compose.test.yml ps --format json | jq -s -r ".[] | select(.Service == \"${service_name}\") | .State")
+              
+              echo "📋 Service ${service_name} - State: $state, Health: $health_status"
               
               case "$health_status" in
                 "healthy")
@@ -168,37 +185,74 @@ jobs:
                 "starting")
                   echo "⏳ ${service_name} is starting (attempt ${attempt}/${max_attempts})"
                   ;;
+                "")
+                  if [ "$state" = "running" ]; then
+                    echo "ℹ️  ${service_name} has no health check defined, assuming healthy if running"
+                    return 0
+                  else
+                    echo "⚠️  ${service_name} is not running (state: $state)"
+                  fi
+                  ;;
                 *)
                   echo "❓ ${service_name} health status unknown: ${health_status} (attempt ${attempt}/${max_attempts})"
                   ;;
               esac
               
+              echo "⏳ Waiting 10 seconds before next health check..."
               sleep 10
               attempt=$((attempt + 1))
             done
             
-            echo "💥 ${service_name} failed to become healthy after ${max_attempts} attempts"
-            echo "📋 Final container logs for ${service_name}:"
+            echo "❌ ${service_name} failed to become healthy after ${max_attempts} attempts ($timeout_seconds seconds)"
+            echo "🔍 Collecting diagnostic information for ${service_name}..."
+            
+            echo "📋 Final container status for ${service_name}:"
+            docker compose -f docker-compose.test.yml ps "${service_name}" || true
+            
+            echo "📜 Final container logs for ${service_name}:"
             docker compose -f docker-compose.test.yml logs "${service_name}" || true
+            
+            echo "🐳 Docker system info:"
+            docker system df || true
+            
             return 1
           }
 
           # Run tests based on type with improved error handling
           case "${{ matrix.test-type }}" in
             "unit")
-              echo "Running unit tests for all services..."
-              if ! docker compose -f docker-compose.test.yml up --build --abort-on-container-exit backend-test; then
-                echo "❌ Unit tests failed"
-                docker compose -f docker-compose.test.yml logs backend-test
-                exit 1
-              fi
-              ;;
+               echo "🧪 Running unit tests for all services..."
+               echo "📦 Building and starting unit test containers..."
+               
+               if ! timeout 1800 docker compose -f docker-compose.test.yml up --build --abort-on-container-exit unit-test; then
+                 echo "❌ Unit tests failed or timed out after 30 minutes"
+                 echo "🔍 Collecting diagnostic information..."
+                 
+                 echo "📜 Unit test logs:"
+                 docker compose -f docker-compose.test.yml logs unit-test || echo "Failed to retrieve unit test logs"
+                 
+                 echo "📋 Container status:"
+                 docker compose -f docker-compose.test.yml ps || echo "Failed to retrieve container status"
+                 
+                 echo "🐳 Docker system info:"
+                 docker system df || true
+                 
+                 exit 1
+               fi
+               echo "✅ Unit tests completed successfully"
+               ;;
             "integration")
-              echo "Running integration tests..."
+              echo "🔗 Running integration tests..."
               echo "🚀 Starting dependency services..."
               
-              # Start dependency services first
-              docker compose -f docker-compose.test.yml up -d --build postgres-test redis-test minio-test typesense-test
+              # Start dependency services first with timeout
+              if ! timeout 600 docker compose -f docker-compose.test.yml up -d --build postgres-test redis-test minio-test typesense-test; then
+                echo "❌ Failed to start dependency services within 10 minutes"
+                echo "🔍 Collecting diagnostic information..."
+                docker compose -f docker-compose.test.yml ps || true
+                docker compose -f docker-compose.test.yml logs postgres-test redis-test minio-test typesense-test || true
+                exit 1
+              fi
               
               # Wait for all services to be healthy
               echo "⏳ Waiting for services to become healthy..."
@@ -208,23 +262,40 @@ jobs:
               check_container_health "typesense-test"
               
               if [ $? -eq 0 ]; then
-                echo "✅ All dependency services are healthy, starting backend tests..."
-                if ! docker compose -f docker-compose.test.yml up --abort-on-container-exit backend-test; then
-                  echo "❌ Integration tests failed"
-                  docker compose -f docker-compose.test.yml logs backend-test
+                echo "✅ All dependency services are healthy, starting integration tests..."
+                if ! timeout 1800 docker compose -f docker-compose.test.yml up --abort-on-container-exit integration-test; then
+                  echo "❌ Integration tests failed or timed out after 30 minutes"
+                  echo "🔍 Collecting diagnostic information..."
+                  
+                  echo "📜 Integration test logs:"
+                  docker compose -f docker-compose.test.yml logs integration-test || echo "Failed to retrieve integration test logs"
+                  
+                  echo "📜 Service logs:"
+                  docker compose -f docker-compose.test.yml logs postgres-test redis-test minio-test typesense-test || echo "Failed to retrieve service logs"
+                  
+                  echo "📋 Container status:"
+                  docker compose -f docker-compose.test.yml ps || echo "Failed to retrieve container status"
+                  
                   exit 1
                 fi
+                echo "✅ Integration tests completed successfully"
               else
                 echo "❌ One or more dependency services failed to start properly"
                 exit 1
               fi
               ;;
             "e2e")
-              echo "Running end-to-end tests..."
+              echo "🎭 Running end-to-end tests..."
               echo "🚀 Starting all services..."
               
-              # Start all services
-              docker compose -f docker-compose.test.yml up -d --build postgres-test redis-test minio-test typesense-test backend-test
+              # Start all services with timeout
+              if ! timeout 900 docker compose -f docker-compose.test.yml up -d --build postgres-test redis-test minio-test typesense-test backend-test; then
+                echo "❌ Failed to start all services within 15 minutes"
+                echo "🔍 Collecting diagnostic information..."
+                docker compose -f docker-compose.test.yml ps || true
+                docker compose -f docker-compose.test.yml logs postgres-test redis-test minio-test typesense-test backend-test || true
+                exit 1
+              fi
               
               # Wait for all services to be healthy
               echo "⏳ Waiting for services to become healthy..."
@@ -235,12 +306,23 @@ jobs:
               check_container_health "backend-test"
               
               if [ $? -eq 0 ]; then
-                echo "✅ All services are healthy, starting frontend tests..."
-                if ! docker compose -f docker-compose.test.yml up --abort-on-container-exit frontend-test; then
-                  echo "❌ E2E tests failed"
-                  docker compose -f docker-compose.test.yml logs frontend-test
+                echo "✅ All services are healthy, starting e2e tests..."
+                if ! timeout 2400 docker compose -f docker-compose.test.yml up --abort-on-container-exit e2e-test; then
+                  echo "❌ E2E tests failed or timed out after 40 minutes"
+                  echo "🔍 Collecting diagnostic information..."
+                  
+                  echo "📜 E2E test logs:"
+                  docker compose -f docker-compose.test.yml logs e2e-test || echo "Failed to retrieve e2e test logs"
+                  
+                  echo "📜 Service logs:"
+                  docker compose -f docker-compose.test.yml logs postgres-test redis-test minio-test typesense-test backend-test || echo "Failed to retrieve service logs"
+                  
+                  echo "📋 Container status:"
+                  docker compose -f docker-compose.test.yml ps || echo "Failed to retrieve container status"
+                  
                   exit 1
                 fi
+                echo "✅ E2E tests completed successfully"
               else
                 echo "❌ One or more services failed to start properly"
                 exit 1
@@ -292,8 +374,17 @@ jobs:
           docker compose -f docker-compose.test.yml up --no-deps test-results || echo "Test results collector completed"
 
           # Copy results from containers if they exist
-          docker compose -f docker-compose.test.yml logs backend-test > test-results/backend-${{ matrix.test-type }}.log 2>&1 || true
-          docker compose -f docker-compose.test.yml logs frontend-test > test-results/frontend-${{ matrix.test-type }}.log 2>&1 || true
+          case "${{ matrix.test-type }}" in
+            "unit")
+              docker compose -f docker-compose.test.yml logs unit-test > test-results/unit-${{ matrix.test-type }}.log 2>&1 || true
+              ;;
+            "integration")
+              docker compose -f docker-compose.test.yml logs integration-test > test-results/integration-${{ matrix.test-type }}.log 2>&1 || true
+              ;;
+            "e2e")
+              docker compose -f docker-compose.test.yml logs e2e-test > test-results/e2e-${{ matrix.test-type }}.log 2>&1 || true
+              ;;
+          esac
 
           # List collected files for debugging
           echo "📋 Collected test results:"

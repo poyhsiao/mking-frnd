@@ -7,7 +7,7 @@ RUN apk add --no-cache \
     curl \
     bash \
     vim \
-    && npm install -g pnpm@8.15.1
+    && npm install -g pnpm@9.15.0
 
 # Create app user for development
 RUN addgroup -g 1001 -S nodejs \

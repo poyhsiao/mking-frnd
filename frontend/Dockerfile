@@ -3,7 +3,7 @@ FROM node:18-alpine AS base
 
 # Install pnpm using corepack (recommended approach)
 RUN corepack enable
-RUN corepack prepare pnpm@8.15.0 --activate
+RUN corepack prepare pnpm@9.15.0 --activate
 
 # Set pnpm environment variables
 ENV PNPM_HOME="/root/.local/share/pnpm"

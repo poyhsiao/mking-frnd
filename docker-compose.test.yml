@@ -220,30 +220,48 @@ services:
     command: >
       sh -c "
         cd /app/frontend
-        echo 'Running frontend unit tests...'
-        if pnpm run test:unit --help >/dev/null 2>&1; then
-          pnpm run test:unit || echo 'Unit tests failed or not configured'
+        echo 'Setting up test environment...'
+        
+        # Create test-results and coverage directories
+        mkdir -p /app/test-results /app/coverage
+        
+        # Check if we're in CI environment
+        if [ "$CI" = "true" ]; then
+          echo 'Running tests in CI mode with coverage...'
+          pnpm run test:ci
         else
-          echo 'test:unit script not found, skipping...'
+          echo 'Running frontend unit tests...'
+          # Check if test scripts exist by looking at package.json
+          if grep -q '"test:unit"' package.json; then
+            pnpm run test:unit
+          else
+            echo 'test:unit script not found, running default test command...'
+            pnpm run test --run
+          fi
+          
+          echo 'Running component tests...'
+          if grep -q '"test:component"' package.json; then
+            pnpm run test:component
+          else
+            echo 'test:component script not found, skipping...'
+          fi
+          
+          echo 'Running E2E tests...'
+          if grep -q '"test:e2e"' package.json; then
+            pnpm run test:e2e
+          else
+            echo 'test:e2e script not found, skipping...'
+          fi
+          
+          echo 'Generating coverage report...'
+          if grep -q '"test:coverage"' package.json; then
+            pnpm run test:coverage
+          else
+            echo 'test:coverage script not found, skipping...'
+          fi
         fi
-        echo 'Running component tests...'
-        if pnpm run test:component --help >/dev/null 2>&1; then
-          pnpm run test:component || echo 'Component tests failed or not configured'
-        else
-          echo 'test:component script not found, skipping...'
-        fi
-        echo 'Running E2E tests...'
-        if pnpm run test:e2e --help >/dev/null 2>&1; then
-          pnpm run test:e2e || echo 'E2E tests failed or not configured'
-        else
-          echo 'test:e2e script not found, skipping...'
-        fi
-        echo 'Generating coverage report...'
-        if pnpm run test:coverage --help >/dev/null 2>&1; then
-          pnpm run test:coverage || echo 'Coverage generation failed or not configured'
-        else
-          echo 'test:coverage script not found, skipping...'
-        fi
+        
+        echo 'Frontend tests completed.'
       "
 
   # Note: Auth and User services are integrated into the main backend service
