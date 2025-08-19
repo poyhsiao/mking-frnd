@@ -1,6 +1,6 @@
 # BDD Test Report - Typesense Health Check
 
-**Generated:** 2025年 8月18日 星期一 22时53分14秒 CST
+**Generated:** 2025年 8月19日 星期二 14时09分49秒 CST
 **Test Environment:** Darwin 24.6.0
 **Docker Version:** Docker version 28.2.2, build e6534b4
 **Node Version:** v22.18.0

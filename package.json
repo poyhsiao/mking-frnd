@@ -38,14 +38,14 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "@cucumber/cucumber": "^10.3.1",
+    "@cucumber/cucumber": "^10.9.0",
+    "@types/chai": "^4.3.11",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.0",
     "@types/yaml": "^1.9.7",
-    "chai": "^4.4.1",
-    "@types/chai": "^4.3.11",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
+    "chai": "^4.5.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
@@ -54,7 +54,6 @@
     "js-yaml": "^4.1.0",
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.4",
-    "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0",
     "yaml": "^2.8.1"
@@ -93,5 +92,8 @@
   "bugs": {
     "url": "https://github.com/kimhsiao/mking-frnd/issues"
   },
-  "homepage": "https://github.com/kimhsiao/mking-frnd#readme"
+  "homepage": "https://github.com/kimhsiao/mking-frnd#readme",
+  "dependencies": {
+    "ts-node": "^10.9.2"
+  }
 }
