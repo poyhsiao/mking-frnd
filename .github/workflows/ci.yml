@@ -8,10 +8,26 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "18"
-  PNPM_VERSION: "9.15.0"
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  # Test database configuration
+  POSTGRES_TEST_DB: mking_test
+  POSTGRES_TEST_USER: test_user
+  POSTGRES_TEST_PASSWORD: test_password
+  # Redis test configuration
+  REDIS_TEST_PASSWORD: test_redis_password
+  # MinIO test configuration
+  MINIO_TEST_USER: test_minio_user
+  MINIO_TEST_PASSWORD: test_minio_password
+  MINIO_TEST_BUCKET: test-bucket
+  # Typesense test configuration
+  TYPESENSE_TEST_API_KEY: test-api-key
+  # Test secrets
+  JWT_TEST_SECRET: test-jwt-secret-key-for-testing-only
+  JWT_TEST_EXPIRES_IN: 1h
+  ENCRYPTION_TEST_KEY: test-encryption-key-32-characters
 
 jobs:
   test:
@@ -65,10 +81,13 @@ jobs:
             "POSTGRES_TEST_DB"
             "POSTGRES_TEST_USER"
             "POSTGRES_TEST_PASSWORD"
+            "REDIS_TEST_PASSWORD"
             "MINIO_TEST_USER"
             "MINIO_TEST_PASSWORD"
+            "MINIO_TEST_BUCKET"
             "TYPESENSE_TEST_API_KEY"
             "JWT_TEST_SECRET"
+            "JWT_TEST_EXPIRES_IN"
             "ENCRYPTION_TEST_KEY"
           )
 
@@ -124,10 +143,13 @@ jobs:
           export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
           export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
           export POSTGRES_TEST_PASSWORD="${POSTGRES_TEST_PASSWORD}"
+          export REDIS_TEST_PASSWORD="${REDIS_TEST_PASSWORD}"
           export MINIO_TEST_USER="${MINIO_TEST_USER}"
           export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
+          export MINIO_TEST_BUCKET="${MINIO_TEST_BUCKET}"
           export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
           export JWT_TEST_SECRET="${JWT_TEST_SECRET}"
+          export JWT_TEST_EXPIRES_IN="${JWT_TEST_EXPIRES_IN}"
           export ENCRYPTION_TEST_KEY="${ENCRYPTION_TEST_KEY}"
           export TEST_TYPE="${TEST_TYPE}"
           export CI="${CI}"
@@ -147,22 +169,23 @@ jobs:
           # Function to check container health with detailed logging
           check_container_health() {
             local service_name=$1
-            local max_attempts=30
+            local max_attempts=40
             local attempt=1
-            local timeout_seconds=300  # 5 minutes total timeout
+            local timeout_seconds=600  # 10 minutes total timeout
+            local wait_time=15
             
             echo "🔍 Checking health of ${service_name}..."
-            echo "⏱️  Timeout set to $timeout_seconds seconds ($max_attempts attempts)"
+            echo "⏱️  Timeout set to $timeout_seconds seconds ($max_attempts attempts, ${wait_time}s intervals)"
             
             while [ $attempt -le $max_attempts ]; do
               echo "📊 Health check attempt $attempt/$max_attempts for ${service_name}"
               
-              # Check if container is running first
+              # Check if container exists and get its status
               if ! docker compose -f docker-compose.test.yml ps --format json | jq -e ".[] | select(.Service == \"${service_name}\")" > /dev/null; then
-                echo "❌ Service ${service_name} is not running"
-                echo "📋 Container status:"
-                docker compose -f docker-compose.test.yml ps "${service_name}" || true
-                sleep 10
+                echo "❌ Service ${service_name} container not found"
+                echo "📋 Available containers:"
+                docker compose -f docker-compose.test.yml ps || true
+                sleep $wait_time
                 attempt=$((attempt + 1))
                 continue
               fi
@@ -171,6 +194,16 @@ jobs:
               state=$(docker compose -f docker-compose.test.yml ps --format json | jq -s -r ".[] | select(.Service == \"${service_name}\") | .State")
               
               echo "📋 Service ${service_name} - State: $state, Health: $health_status"
+              
+              # Check if container is not running
+              if [ "$state" != "running" ]; then
+                echo "⚠️  Container ${service_name} is not running (state: $state)"
+                echo "📜 Container logs:"
+                docker compose -f docker-compose.test.yml logs --tail=10 "${service_name}" || true
+                sleep $wait_time
+                attempt=$((attempt + 1))
+                continue
+              fi
               
               case "$health_status" in
                 "healthy")
@@ -198,12 +231,12 @@ jobs:
                   ;;
               esac
               
-              echo "⏳ Waiting 10 seconds before next health check..."
-              sleep 10
+              echo "⏳ Waiting ${wait_time} seconds before next health check..."
+              sleep $wait_time
               attempt=$((attempt + 1))
             done
             
-            echo "❌ ${service_name} failed to become healthy after ${max_attempts} attempts ($timeout_seconds seconds)"
+            echo "❌ ${service_name} failed to become healthy after ${max_attempts} attempts (${timeout_seconds} seconds)"
             echo "🔍 Collecting diagnostic information for ${service_name}..."
             
             echo "📋 Final container status for ${service_name}:"

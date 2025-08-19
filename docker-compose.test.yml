@@ -19,11 +19,15 @@ services:
     networks:
       - test-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_TEST_USER} -d ${POSTGRES_TEST_DB}"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 10s
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_TEST_USER:-test_user} -d ${POSTGRES_TEST_DB:-mking_test} && psql -U ${POSTGRES_TEST_USER:-test_user} -d ${POSTGRES_TEST_DB:-mking_test} -c 'SELECT 1' > /dev/null 2>&1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 45s
     tmpfs:
       - /var/lib/postgresql/data # Use tmpfs for faster tests
 
@@ -37,10 +41,12 @@ services:
     networks:
       - test-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+      test:
+        ["CMD-SHELL", "redis-cli -a ${REDIS_TEST_PASSWORD:-test_redis_password} ping | grep PONG"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
     tmpfs:
       - /data # Use tmpfs for faster tests
 
@@ -58,10 +64,15 @@ services:
     networks:
       - test-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:9000/minio/health/live && curl -f http://localhost:9000/minio/health/ready",
+        ]
+      interval: 20s
+      timeout: 15s
+      retries: 6
+      start_period: 60s
     tmpfs:
       - /data # Use tmpfs for faster tests
 
@@ -80,13 +91,16 @@ services:
     networks:
       - test-network
     healthcheck:
-      # Check if Typesense process is running - more reliable than HTTP checks
-      # Enhanced configuration for CI environment stability
-      test: ["CMD-SHELL", "ps aux | grep -v grep | grep typesense || exit 1"]
-      interval: 10s
-      timeout: 8s
-      retries: 8
-      start_period: 60s # Extended startup period for CI environment
+      # Enhanced health check with proper API key validation
+      test:
+        [
+          "CMD-SHELL",
+          "curl -H 'X-TYPESENSE-API-KEY: ${TYPESENSE_TEST_API_KEY}' -f http://localhost:8108/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 45s # Extended startup period for CI environment
     tmpfs:
       - /data # Use tmpfs for faster tests
 
@@ -111,6 +125,7 @@ services:
       - ENCRYPTION_KEY=${ENCRYPTION_TEST_KEY:?ENCRYPTION_TEST_KEY is required}
       - CI=true
       - PORT=3001
+      - CHOWN_DIRS=/app/test-results /app/coverage
     ports:
       - "3002:3001" # Different port to avoid conflicts
     volumes:
@@ -120,7 +135,6 @@ services:
       - ./coverage:/app/coverage
     networks:
       - test-network
-    user: "1001:1001"
     healthcheck:
       test: ["CMD", "sh", "-c", "cd /app/backend && npx ts-node src/healthcheck.ts"]
       interval: 10s
@@ -312,24 +326,52 @@ services:
       target: test
     container_name: mking-unit-test
     environment:
-      - NODE_ENV=test
-      - DATABASE_URL=postgresql://${POSTGRES_TEST_USER:-postgres}:${POSTGRES_TEST_PASSWORD:?POSTGRES_TEST_PASSWORD is required}@postgres-test:5432/${POSTGRES_TEST_DB:-mking_test}
-      - REDIS_URL=redis://redis-test:6379
+      # Database configuration (for schema validation)
+      - POSTGRES_HOST=postgres-test
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_TEST_DB:-mking_test}
+      - POSTGRES_USER=${POSTGRES_TEST_USER:-test_user}
+      - POSTGRES_PASSWORD=${POSTGRES_TEST_PASSWORD:-test_password}
+      - DATABASE_URL=postgresql://${POSTGRES_TEST_USER:-test_user}:${POSTGRES_TEST_PASSWORD:-test_password}@postgres-test:5432/${POSTGRES_TEST_DB:-mking_test}
+
+      # Redis configuration
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_TEST_PASSWORD:-test_redis_password}
+      - REDIS_URL=redis://:${REDIS_TEST_PASSWORD:-test_redis_password}@redis-test:6379
+
+      # MinIO configuration
       - MINIO_ENDPOINT=minio-test:9000
-      - MINIO_ACCESS_KEY=${MINIO_TEST_USER:-testuser}
-      - MINIO_SECRET_KEY=${MINIO_TEST_PASSWORD:?MINIO_TEST_PASSWORD is required}
+      - MINIO_ACCESS_KEY=${MINIO_TEST_USER:-test_minio_user}
+      - MINIO_SECRET_KEY=${MINIO_TEST_PASSWORD:-test_minio_password}
+      - MINIO_BUCKET=${MINIO_TEST_BUCKET:-test-bucket}
+      - MINIO_USE_SSL=false
+
+      # Typesense configuration
       - TYPESENSE_HOST=typesense-test
       - TYPESENSE_PORT=8108
-      - TYPESENSE_API_KEY=${TYPESENSE_TEST_API_KEY:?TYPESENSE_TEST_API_KEY is required}
-      - JWT_SECRET=${JWT_TEST_SECRET:?JWT_TEST_SECRET is required}
-      - ENCRYPTION_KEY=${ENCRYPTION_TEST_KEY:?ENCRYPTION_TEST_KEY is required}
+      - TYPESENSE_PROTOCOL=http
+      - TYPESENSE_API_KEY=${TYPESENSE_TEST_API_KEY:-test-api-key}
+
+      # JWT configuration
+      - JWT_SECRET=${JWT_TEST_SECRET:-test-jwt-secret-key-for-testing-only}
+      - JWT_EXPIRES_IN=${JWT_TEST_EXPIRES_IN:-1h}
+
+      # Encryption configuration
+      - ENCRYPTION_KEY=${ENCRYPTION_TEST_KEY:-test-encryption-key-32-characters}
+
+      # Test configuration
+      - NODE_ENV=test
       - CI=true
       - TEST_TYPE=unit
+
+      # Fix ownership issues
+      - CHOWN_DIRS=/app/test-results /app/coverage
     volumes:
-      - ./backend:/app/backend
-      - /app/backend/node_modules
-      - ./test-results:/app/test-results
-      - ./coverage:/app/coverage
+      - ./backend:/app/backend:ro
+      - ./shared:/app/shared:ro
+      - test-results:/app/test-results
+      - coverage:/app/coverage
     networks:
       - test-network
     depends_on:
@@ -366,27 +408,55 @@ services:
       target: test
     container_name: mking-integration-test
     environment:
-      - NODE_ENV=test
-      - DATABASE_URL=postgresql://${POSTGRES_TEST_USER:-postgres}:${POSTGRES_TEST_PASSWORD:?POSTGRES_TEST_PASSWORD is required}@postgres-test:5432/${POSTGRES_TEST_DB:-mking_test}
-      - REDIS_URL=redis://redis-test:6379
+      # Database configuration
+      - POSTGRES_HOST=postgres-test
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_TEST_DB:-mking_test}
+      - POSTGRES_USER=${POSTGRES_TEST_USER:-test_user}
+      - POSTGRES_PASSWORD=${POSTGRES_TEST_PASSWORD:-test_password}
+      - DATABASE_URL=postgresql://${POSTGRES_TEST_USER:-test_user}:${POSTGRES_TEST_PASSWORD:-test_password}@postgres-test:5432/${POSTGRES_TEST_DB:-mking_test}
+
+      # Redis configuration
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_TEST_PASSWORD:-test_redis_password}
+      - REDIS_URL=redis://:${REDIS_TEST_PASSWORD:-test_redis_password}@redis-test:6379
+
+      # MinIO configuration
       - MINIO_ENDPOINT=minio-test:9000
-      - MINIO_ACCESS_KEY=${MINIO_TEST_USER:-testuser}
-      - MINIO_SECRET_KEY=${MINIO_TEST_PASSWORD:?MINIO_TEST_PASSWORD is required}
+      - MINIO_ACCESS_KEY=${MINIO_TEST_USER:-test_minio_user}
+      - MINIO_SECRET_KEY=${MINIO_TEST_PASSWORD:-test_minio_password}
+      - MINIO_BUCKET=${MINIO_TEST_BUCKET:-test-bucket}
+      - MINIO_USE_SSL=false
+
+      # Typesense configuration
       - TYPESENSE_HOST=typesense-test
       - TYPESENSE_PORT=8108
-      - TYPESENSE_API_KEY=${TYPESENSE_TEST_API_KEY:?TYPESENSE_TEST_API_KEY is required}
-      - JWT_SECRET=${JWT_TEST_SECRET:?JWT_TEST_SECRET is required}
-      - ENCRYPTION_KEY=${ENCRYPTION_TEST_KEY:?ENCRYPTION_TEST_KEY is required}
+      - TYPESENSE_PROTOCOL=http
+      - TYPESENSE_API_KEY=${TYPESENSE_TEST_API_KEY:-test-api-key}
+
+      # JWT configuration
+      - JWT_SECRET=${JWT_TEST_SECRET:-test-jwt-secret-key-for-testing-only}
+      - JWT_EXPIRES_IN=${JWT_TEST_EXPIRES_IN:-1h}
+
+      # Encryption configuration
+      - ENCRYPTION_KEY=${ENCRYPTION_TEST_KEY:-test-encryption-key-32-characters}
+
+      # Test configuration
+      - NODE_ENV=test
       - CI=true
       - TEST_TYPE=integration
       - PORT=3001
+
+      # Fix ownership issues
+      - CHOWN_DIRS=/app/test-results /app/coverage
     ports:
       - "3003:3001"
     volumes:
-      - ./backend:/app/backend
-      - /app/backend/node_modules
-      - ./test-results:/app/test-results
-      - ./coverage:/app/coverage
+      - ./backend:/app/backend:ro
+      - ./shared:/app/shared:ro
+      - test-results:/app/test-results
+      - coverage:/app/coverage
     networks:
       - test-network
     depends_on:
