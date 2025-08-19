@@ -1,0 +1,1543 @@
+[
+  {
+    "description": "  As a security team member\n  I want to ensure our security policy documentation and training materials are comprehensive\n  So that we maintain proper security governance and compliance",
+    "elements": [
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;security-policy-document-completeness",
+        "keyword": "Scenario",
+        "line": 6,
+        "name": "Security Policy Document Completeness",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "the security policy document exists",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:34"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1150874
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 8,
+            "name": "I validate the document structure",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:40"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 88959
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 9,
+            "name": "it should contain governance and organization section",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:44"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 76833
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 10,
+            "name": "it should contain risk management section",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:48"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 181833
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 11,
+            "name": "it should contain access control section",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:52"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 61958
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 12,
+            "name": "it should contain incident response section",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:56"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 54750
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 13,
+            "name": "it should contain compliance framework section",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:60"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 50166
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;incident-response-playbook-validation",
+        "keyword": "Scenario",
+        "line": 15,
+        "name": "Incident Response Playbook Validation",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 16,
+            "name": "the incident response playbook exists",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:65"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 417666
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 17,
+            "name": "I check the playbook content",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:71"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 178083
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 18,
+            "name": "it should define incident classification levels",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:75"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 127082
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 19,
+            "name": "it should specify team roles and responsibilities",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:79"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 98083
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 20,
+            "name": "it should outline communication protocols",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:83"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 85166
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 21,
+            "name": "it should include evidence handling procedures",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:87"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 80874
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 22,
+            "name": "it should cover legal and regulatory considerations",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:91"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 79500
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;security-training-materials-comprehensiveness",
+        "keyword": "Scenario",
+        "line": 24,
+        "name": "Security Training Materials Comprehensiveness",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 25,
+            "name": "the security training materials exist",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:96"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 401875
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 26,
+            "name": "I review the training content",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:102"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 140457
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 27,
+            "name": "it should cover security awareness training",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:106"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 80541
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 28,
+            "name": "it should include secure coding practices",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:110"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 73457
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 29,
+            "name": "it should address infrastructure security",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:114"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 78834
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 30,
+            "name": "it should contain incident response training",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:118"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 83457
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 31,
+            "name": "it should include compliance training",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:122"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 75832
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;document-metadata-validation",
+        "keyword": "Scenario",
+        "line": 33,
+        "name": "Document Metadata Validation",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 34,
+            "name": "security policy documents exist",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:127"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 71416
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 35,
+            "name": "I check document metadata",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:134"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 32458
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 36,
+            "name": "each document should have version information",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:138"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 311207
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 37,
+            "name": "each document should have last updated date",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:146"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 367875
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 38,
+            "name": "each document should have next review date",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:154"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 269499
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 39,
+            "name": "each document should have document owner",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:162"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 267583
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 40,
+            "name": "each document should have approval information",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:170"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 334458
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;training-program-structure",
+        "keyword": "Scenario",
+        "line": 42,
+        "name": "Training Program Structure",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 43,
+            "name": "the security training materials exist",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:96"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 102916
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 44,
+            "name": "I validate the training program structure",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:179"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 42583
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 45,
+            "name": "it should define training schedule",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:183"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 83208
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 46,
+            "name": "it should specify assessment methods",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:187"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 77292
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 47,
+            "name": "it should include completion tracking",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:191"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 78166
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 48,
+            "name": "it should outline knowledge retention testing",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:195"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 69707
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 49,
+            "name": "it should measure training effectiveness",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:199"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 72125
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;incident-response-team-roles",
+        "keyword": "Scenario",
+        "line": 51,
+        "name": "Incident Response Team Roles",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 52,
+            "name": "the incident response playbook exists",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:65"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 102125
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 53,
+            "name": "I check team structure",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:204"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 34041
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 54,
+            "name": "it should define incident commander role",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:208"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 78457
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 55,
+            "name": "it should specify technical lead responsibilities",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:212"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 77042
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 56,
+            "name": "it should outline communication coordinator duties",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:216"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 77999
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 57,
+            "name": "it should include legal advisor role",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:220"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 71415
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 58,
+            "name": "it should define management liaison responsibilities",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:224"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 69791
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;security-control-framework",
+        "keyword": "Scenario",
+        "line": 60,
+        "name": "Security Control Framework",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 61,
+            "name": "the security policy document exists",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:34"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 86833
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 62,
+            "name": "I review security controls",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:229"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 34750
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 63,
+            "name": "it should define technical controls",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:233"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 47374
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 64,
+            "name": "it should specify administrative controls",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:237"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 45166
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 65,
+            "name": "it should outline physical controls",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:241"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 47124
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 66,
+            "name": "it should include monitoring controls",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:245"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 69583
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 67,
+            "name": "it should address preventive controls",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:249"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 50875
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;compliance-framework-coverage",
+        "keyword": "Scenario",
+        "line": 69,
+        "name": "Compliance Framework Coverage",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 70,
+            "name": "the security policy document exists",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:34"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 73333
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 71,
+            "name": "I check compliance requirements",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:254"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 32166
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 72,
+            "name": "it should address regulatory compliance",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:258"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 49249
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 73,
+            "name": "it should include industry standards",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:262"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 53416
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 74,
+            "name": "it should specify audit requirements",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:266"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 50667
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 75,
+            "name": "it should outline reporting obligations",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:270"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 39499
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 76,
+            "name": "it should define compliance monitoring",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:274"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 47666
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;risk-management-process",
+        "keyword": "Scenario",
+        "line": 78,
+        "name": "Risk Management Process",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 79,
+            "name": "the security policy document exists",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:34"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 70584
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 80,
+            "name": "I validate risk management content",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:279"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 32791
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 81,
+            "name": "it should define risk assessment methodology",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:283"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 43167
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 82,
+            "name": "it should specify risk classification criteria",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:287"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 40957
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 83,
+            "name": "it should outline risk mitigation strategies",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:291"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 42874
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 84,
+            "name": "it should include risk monitoring procedures",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:295"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 59333
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 85,
+            "name": "it should address risk reporting requirements",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:299"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 44667
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;business-continuity-planning",
+        "keyword": "Scenario",
+        "line": 87,
+        "name": "Business Continuity Planning",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 88,
+            "name": "the security policy document exists",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:34"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 76040
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 89,
+            "name": "I check business continuity content",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:304"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 31334
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 90,
+            "name": "it should define business impact analysis",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:308"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 61416
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 91,
+            "name": "it should specify recovery time objectives",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:312"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 58375
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 92,
+            "name": "it should outline disaster recovery procedures",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:316"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 47874
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 93,
+            "name": "it should include backup and restore processes",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:320"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 45959
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 94,
+            "name": "it should address crisis communication plans",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:324"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 52125
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;security-awareness-training-content",
+        "keyword": "Scenario",
+        "line": 96,
+        "name": "Security Awareness Training Content",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 97,
+            "name": "the security training materials exist",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:96"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 73582
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 98,
+            "name": "I review awareness training content",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:329"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 35792
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 99,
+            "name": "it should cover phishing awareness",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:333"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 77832
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 100,
+            "name": "it should include password security",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:337"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 71957
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 101,
+            "name": "it should address social engineering",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:341"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 70791
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 102,
+            "name": "it should cover physical security",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:345"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 63834
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 103,
+            "name": "it should include data protection principles",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:349"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 147625
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;technical-security-training",
+        "keyword": "Scenario",
+        "line": 105,
+        "name": "Technical Security Training",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 106,
+            "name": "the security training materials exist",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:96"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 74916
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 107,
+            "name": "I check technical training content",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:354"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 187541
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 108,
+            "name": "it should cover secure coding practices",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:358"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 228458
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 109,
+            "name": "it should include OWASP Top 10",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:362"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 265375
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 110,
+            "name": "it should address secret management",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:366"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 94500
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 111,
+            "name": "it should cover container security",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:370"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 201834
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 112,
+            "name": "it should include infrastructure security",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:374"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 131166
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;documentation-accessibility-and-format",
+        "keyword": "Scenario",
+        "line": 114,
+        "name": "Documentation Accessibility and Format",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 115,
+            "name": "security policy documents exist",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:127"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 65624
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 116,
+            "name": "I check document accessibility",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:379"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 32084
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 117,
+            "name": "documents should be in readable format",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:383"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 288249
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 118,
+            "name": "documents should have clear structure",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:391"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 301124
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 119,
+            "name": "documents should use consistent formatting",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:399"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 248584
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 120,
+            "name": "documents should include table of contents",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:407"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 473500
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 121,
+            "name": "documents should have proper headings",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:416"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 345625
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;policy-update-and-maintenance-process",
+        "keyword": "Scenario",
+        "line": 123,
+        "name": "Policy Update and Maintenance Process",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 124,
+            "name": "the security policy document exists",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:34"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 119416
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 125,
+            "name": "I check policy management content",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:425"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 44874
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 126,
+            "name": "it should define update procedures",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:429"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 45165
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 127,
+            "name": "it should specify review cycles",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:433"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 45666
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 128,
+            "name": "it should outline change approval process",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:437"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 40541
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 129,
+            "name": "it should include version control procedures",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:441"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 118459
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 130,
+            "name": "it should address communication of changes",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:445"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 80458
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "security-policy-documentation-and-training-materials-compliance;training-effectiveness-measurement",
+        "keyword": "Scenario",
+        "line": 132,
+        "name": "Training Effectiveness Measurement",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 133,
+            "name": "the security training materials exist",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:96"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 99416
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 134,
+            "name": "I validate effectiveness measurement",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:450"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 127541
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 135,
+            "name": "it should include completion tracking",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:191"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 97624
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 136,
+            "name": "it should specify assessment methods",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:187"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 65459
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 137,
+            "name": "it should outline knowledge retention testing",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:195"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 61584
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 138,
+            "name": "it should measure behavioral change",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:454"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 72290
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 139,
+            "name": "it should track incident reduction",
+            "match": {
+              "location": "tests/step-definitions/security_policy_compliance.steps.js:458"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 69291
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "security-policy-documentation-and-training-materials-compliance",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Security Policy Documentation and Training Materials Compliance",
+    "tags": [],
+    "uri": "tests/features/security_policy_compliance.feature"
+  }
+]

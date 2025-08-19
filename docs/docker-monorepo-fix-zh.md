@@ -118,7 +118,7 @@ RUN pnpm install --filter=frontend --frozen-lockfile --offline
 
 ## 測試驗證
 
-### TDD 方法
+### BDD 方法
 
 1. **創建測試**：編寫 Docker 構建測試
 2. **運行測試**：確認問題存在

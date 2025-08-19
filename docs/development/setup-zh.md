@@ -99,7 +99,7 @@ KEYCLOAK_CLIENT_SECRET="your-keycloak-client-secret"
 MINIO_ENDPOINT="localhost"
 MINIO_PORT="9000"
 MINIO_ACCESS_KEY="admin"
-MINIO_SECRET_KEY="password123"
+MINIO_SECRET_KEY="${MINIO_SECRET_KEY:?MINIO_SECRET_KEY is required}"
 MINIO_BUCKET_NAME="mking-frnd-media"
 MINIO_USE_SSL="false"
 
@@ -447,7 +447,7 @@ clinic flame -- node src/index.js
 docker-compose up -d
 
 # 訪問監控服務
-# Grafana: http://localhost:3000 (admin/admin123)
+# Grafana: http://localhost:3000 (請使用環境變數設定的憑據)
 # Prometheus: http://localhost:9090
 # Loki: http://localhost:3100
 # Promtail: http://localhost:9080

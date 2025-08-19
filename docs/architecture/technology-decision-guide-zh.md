@@ -96,8 +96,8 @@
 - 更新開發工具配置
 - 更新環境變數設置
 
-#### 6. TDD 指南
-**文件路徑：** `docs/development/tdd-guidelines.md`
+#### 6. BDD 指南
+**文件路徑：** `docs/development/bdd-guidelines.md`
 **更新位置：** 測試框架和工具
 **更新內容：**
 - 更新測試框架選擇

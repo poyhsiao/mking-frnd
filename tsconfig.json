@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "checkJs": false,
     "jsx": "react-jsx",
@@ -13,7 +14,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    
     "removeComments": false,
     "strict": true,
     "noImplicitAny": true,
@@ -36,6 +37,7 @@
     "incremental": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
@@ -50,24 +52,26 @@
     "backend/src/**/*",
     "frontend/src/**/*",
     "packages/**/*",
-    "tools/**/*",
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx"
+    "tools/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "build",
     "coverage",
+    "**/coverage/**",
+    "**/dist/**",
+    "**/build/**",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "docker-volumes",
     "tmp",
-    "test-results"
+    "test-results",
+    "features/step_definitions/compiled",
+    "**/*.compiled.js",
+    "**/*.compiled.js.map"
   ],
   "ts-node": {
     "esm": true,

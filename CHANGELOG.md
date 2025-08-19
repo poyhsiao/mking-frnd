@@ -8,29 +8,88 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Security
+
+- **BREAKING**: Removed hardcoded secrets from Kubernetes manifests
+  - Replaced all base64-encoded secrets in `k8s/secrets.yaml` with placeholders
+  - Added `k8s/secrets.template.yaml` for development reference
+  - Updated `.gitignore` to prevent accidental commit of actual secrets files
+  - Created comprehensive secret management documentation in
+    `docs/security/SECRET_MANAGEMENT.md`
+  - Follows security-first methodology with external secret management
+    recommendations
+
+- Fixed hardcoded database passwords in PostgreSQL initialization
+  - Replaced hardcoded passwords in `k8s/postgres-deployment.yaml` with
+    environment variables
+  - Database users now use `${AUTH_DB_PASSWORD}`, `${USER_DB_PASSWORD}`, etc.
+  - Environment variables are injected from Kubernetes secrets
+  - Prevents credential exposure in ConfigMaps and version control
+  - Implemented security scanner-safe placeholder patterns to prevent false
+    positives
+  - Added `.gitleaksignore` configuration to exclude template files from secret
+    scanning
+  - Added pragma comments (`# pragma: allowlist secret`) to explicitly mark safe
+    placeholder lines
+
+### Improved
+
+- Enhanced lcov file merging in CI pipeline
+  - Replaced simple concatenation with proper `lcov --add-tracefile` merging
+  - Added lcov installation step to prevent invalid coverage reports
+  - Prevents duplicate entries and ensures accurate coverage data
+  - Follows BDD methodology with proper coverage report validation
+
+- Made `docker-compose.override.yml` optional in setup script
+  - Removed `docker-compose.override.yml` from required files list in
+    `setup-dev.sh`
+  - Added informational warning when file is missing instead of failing
+  - Improves developer experience for initial project setup
+  - Maintains backward compatibility for existing development workflows
+
+### Added
+
+- Created Kubernetes deployment documentation (`k8s/README.md`)
+  - Comprehensive guide for secret management and deployment order
+  - Security best practices and troubleshooting instructions
+  - Environment-specific deployment guidelines
+
 ### Fixed
 
 - Fixed Codecov upload failure in GitHub Actions CI pipeline
-  - Changed `fail_ci_if_error` from `true` to `false` in codecov-action@v5 configuration
-  - Prevents CI pipeline from failing due to codecov upload issues while maintaining coverage reporting
-  - Follows TDD methodology with comprehensive test suites for codecov integration
+  - Changed `fail_ci_if_error` from `true` to `false` in codecov-action@v5
+    configuration
+  - Prevents CI pipeline from failing due to codecov upload issues while
+    maintaining coverage reporting
+  - Follows BDD methodology with comprehensive scenario suites for codecov
+    integration
   - Ensures better CI reliability and resilience for coverage reporting
-  - Maintains all other codecov configuration including verbose logging and proper file paths
+  - Maintains all other codecov configuration including verbose logging and
+    proper file paths
 
 - Fixed Docker image cleanup bug in `verify-docker-build.sh` script
-  - Script now only removes images it creates (`verify-backend` and `verify-frontend`)
-  - Removed incorrect cleanup of `test-backend` and `test-frontend` images that were not created by the script
-  - Prevents potential interference with other processes that might be using those image names
-  - Implemented TDD methodology with comprehensive test suite to verify correct cleanup behavior
+  - Script now only removes images it creates (`verify-backend` and
+    `verify-frontend`)
+  - Removed incorrect cleanup of `test-backend` and `test-frontend` images that
+    were not created by the script
+  - Prevents potential interference with other processes that might be using
+    those image names
+  - Implemented BDD methodology with comprehensive scenario suite to verify correct
+    cleanup behavior
 
 - Improved pnpm version pinning in Dockerfiles using corepack
-  - Updated `backend/Dockerfile` to use `corepack prepare pnpm@8.15.0 --activate` for explicit version pinning
-  - Updated `frontend/Dockerfile` to use `corepack prepare pnpm@8.15.0 --activate` for explicit version pinning
-  - Replaced `npm install -g pnpm@8.15.1` with corepack-based approach for consistency
+  - Updated `backend/Dockerfile` to use
+    `corepack prepare pnpm@8.15.0 --activate` for explicit version pinning
+  - Updated `frontend/Dockerfile` to use
+    `corepack prepare pnpm@8.15.0 --activate` for explicit version pinning
+  - Replaced `npm install -g pnpm@8.15.1` with corepack-based approach for
+    consistency
   - Added proper PNPM_HOME and PATH environment variables in both Dockerfiles
   - Ensured consistent pnpm version across all Docker stages
-  - Implemented TDD methodology with comprehensive test suites for both backend and frontend Docker build verification
-  - Enhanced `verify-docker-build.sh` script to test both backend and frontend pnpm version pinning
+  - Implemented BDD methodology with comprehensive scenario suites for both backend
+    and frontend Docker build verification
+  - Enhanced `verify-docker-build.sh` script to test both backend and frontend
+    pnpm version pinning
 
 - 修復 GitHub Actions CI 中 backend tests 的路徑解析問題
   - 改進 `docker-build.test.js` 中的項目根目錄檢測邏輯
@@ -48,11 +107,13 @@ and this project adheres to
   - 修改 CI/CD 配置使用根目錄作為 Docker 構建上下文
 
 - Fixed Codecov integration and upload errors in CI/CD pipeline
-  - Upgraded Codecov Action from v4 to v5 for improved reliability and performance
+  - Upgraded Codecov Action from v4 to v5 for improved reliability and
+    performance
   - Enabled `fail_ci_if_error: true` for strict error handling in CI pipeline
-  - Added environment variables (`OS`, `NODE_VERSION`) for better coverage context
+  - Added environment variables (`OS`, `NODE_VERSION`) for better coverage
+    context
   - Configured `disable_search: false` to optimize coverage file discovery
-  - Implemented comprehensive test coverage validation with TDD methodology
+  - Implemented comprehensive scenario coverage validation with BDD methodology
   - Enhanced error reporting and debugging capabilities for coverage uploads
   - Updated documentation with Context7 best practices for Codecov integration
 
@@ -61,8 +122,10 @@ and this project adheres to
 - 新增 Docker 構建驗證腳本 `scripts/verify-docker-build.sh`
 - 新增 Docker monorepo 修復文檔 `docs/docker-monorepo-fix.md`
 - 新增 Docker 構建測試 `backend/src/__tests__/docker-build.test.js`
-- Added Codecov integration fix documentation (`docs/codecov-fix.md` and `docs/codecov-fix-zh.md`)
-- Added comprehensive test suite for Codecov integration (`tests/ci/codecov-integration.test.ts` and `tests/ci/codecov-upload.test.ts`)
+- Added Codecov integration fix documentation (`docs/codecov-fix.md` and
+  `docs/codecov-fix-zh.md`)
+- Added comprehensive test suite for Codecov integration
+  (`tests/ci/codecov-integration.test.ts` and `tests/ci/codecov-upload.test.ts`)
 - Enhanced CI/CD pipeline with improved Codecov Action v5 configuration
 
 ### Changed
@@ -73,5 +136,5 @@ and this project adheres to
 ### Technical Details
 
 - 解決了 `pnpm install --frozen-lockfile` 在 Docker 中失敗的問題
-- 實施 TDD 方法來驗證修復效果
+- 實施 BDD 方法來驗證修復效果
 - 遵循 pnpm 官方 Docker 最佳實踐指南

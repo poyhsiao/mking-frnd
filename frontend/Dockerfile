@@ -3,7 +3,7 @@ FROM node:18-alpine AS base
 
 # Install pnpm using corepack (recommended approach)
 RUN corepack enable
-RUN corepack prepare pnpm@8.15.0 --activate
+RUN corepack prepare pnpm@9.15.0 --activate
 
 # Set pnpm environment variables
 ENV PNPM_HOME="/root/.local/share/pnpm"
@@ -31,6 +31,31 @@ FROM base AS development
 COPY . .
 EXPOSE 3000
 CMD ["pnpm", "dev"]
+
+# Test stage
+FROM base AS test
+
+# Create a non-root user for testing
+RUN addgroup -g 1001 -S testgroup && \
+    adduser -S testuser -u 1001 -G testgroup
+
+COPY . .
+# Install dev dependencies for testing
+RUN pnpm install --filter=frontend --frozen-lockfile
+
+# Set proper ownership for the test user
+RUN chown -R testuser:testgroup /app
+
+# Set test environment
+ENV NODE_ENV=test
+# Expose port for testing
+EXPOSE 3000
+
+# Switch to non-root user
+USER testuser
+
+# Default command for tests
+CMD ["pnpm", "test"]
 
 # Build stage
 FROM base AS build

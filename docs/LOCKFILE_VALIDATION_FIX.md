@@ -1,6 +1,6 @@
 # PNPM Lockfile Validation Fix
 
-This document describes the TDD-based solution for fixing the `ERR_PNPM_OUTDATED_LOCKFILE` and "Unknown option: 'dry-run'" errors in GitHub Actions.
+This document describes the BDD-based solution for fixing the `ERR_PNPM_OUTDATED_LOCKFILE` and "Unknown option: 'dry-run'" errors in GitHub Actions.
 
 ## Problem Description
 
@@ -28,7 +28,7 @@ Error: Process completed with exit code 1.
 
 ## Solution Implemented
 
-### 1. Test-Driven Development Approach
+### 1. Behavior-Driven Development Approach
 
 Created comprehensive tests in `src/test/pnpm-lockfile-validation.test.ts` to:
 - Validate CI workflow doesn't contain invalid options
@@ -62,7 +62,7 @@ Created automated scripts to:
 # Test the validation
 ./scripts/test-lockfile-validation.sh
 
-# Run the TDD tests
+# Run the BDD scenarios
 npx vitest src/test/pnpm-lockfile-validation.test.ts
 ```
 
@@ -96,7 +96,7 @@ If you encounter lockfile issues:
 ## Files Modified
 
 - `.github/workflows/ci.yml` - Enhanced lockfile validation
-- `src/test/pnpm-lockfile-validation.test.ts` - TDD tests
+- `src/test/pnpm-lockfile-validation.test.ts` - BDD scenarios
 - `scripts/fix-lockfile-validation.sh` - Automated fix script
 - `scripts/test-lockfile-validation.sh` - Validation test script
 

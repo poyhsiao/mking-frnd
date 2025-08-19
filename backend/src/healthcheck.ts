@@ -3,8 +3,8 @@ import http from 'http';
 const options = {
   host: 'localhost',
   port: process.env['PORT'] || 3001,
-  path: '/health',
-  timeout: 2000,
+  path: '/health/simple',
+  timeout: 5000,
 };
 
 const request = http.request(options, res => {

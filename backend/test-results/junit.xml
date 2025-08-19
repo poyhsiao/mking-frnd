@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="18" failures="0" errors="0" time="2.407">
+    <testsuite name="src/index.test.ts" timestamp="2025-08-18T13:57:59.772Z" hostname="13e76148f95d" tests="4" failures="0" errors="0" skipped="0" time="0.028">
+        <testcase classname="src/index.test.ts" name="Backend Application &gt; Health Check &gt; should return health status" time="0.019">
+        </testcase>
+        <testcase classname="src/index.test.ts" name="Backend Application &gt; 404 Handler &gt; should return 404 for non-existent routes" time="0.006">
+            <system-out>
+2025-08-18 13:57:59 [[31merror[39m]: Error occurred:
+{
+  &quot;service&quot;: &quot;errorHandler&quot;,
+  &quot;error&quot;: {
+    &quot;message&quot;: &quot;Route GET /non-existent-route not found&quot;,
+    &quot;stack&quot;: &quot;Error: Route GET /non-existent-route not found\n    at Module.createError (/app/backend/src/middleware/errorHandler.ts:58:17)\n    at notFoundHandler (/app/backend/src/middleware/notFoundHandler.ts:9:17)\n    at Layer.handle [as handle_request] (/app/node_modules/.pnpm/express@4.21.2/node_modules/express/lib/router/layer.js:95:5)\n    at trim_prefix (/app/node_modules/.pnpm/express@4.21.2/node_modules/express/lib/router/index.js:328:13)\n    at /app/node_modules/.pnpm/express@4.21.2/node_modules/express/lib/router/index.js:286:9\n    at param (/app/node_modules/.pnpm/express@4.21.2/node_modules/express/lib/router/index.js:365:14)\n    at param (/app/node_modules/.pnpm/express@4.21.2/node_modules/express/lib/router/index.js:376:14)\n    at Function.process_params (/app/node_modules/.pnpm/express@4.21.2/node_modules/express/lib/router/index.js:421:3)\n    at next (/app/node_modules/.pnpm/express@4.21.2/node_modules/express/lib/router/index.js:280:10)\n    at requestLogger (/app/backend/src/middleware/requestLogger.ts:44:3)&quot;,
+    &quot;statusCode&quot;: 404
+  },
+  &quot;request&quot;: {
+    &quot;method&quot;: &quot;GET&quot;,
+    &quot;url&quot;: &quot;/non-existent-route&quot;,
+    &quot;headers&quot;: {
+      &quot;host&quot;: &quot;127.0.0.1:43431&quot;,
+      &quot;accept-encoding&quot;: &quot;gzip, deflate&quot;,
+      &quot;connection&quot;: &quot;close&quot;
+    },
+    &quot;body&quot;: {},
+    &quot;params&quot;: {},
+    &quot;query&quot;: {}
+  }
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="src/index.test.ts" name="Backend Application &gt; CORS &gt; should include CORS headers" time="0.002">
+        </testcase>
+        <testcase classname="src/index.test.ts" name="Backend Application &gt; Security Headers &gt; should include security headers" time="0.001">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/build-integration.test.ts" timestamp="2025-08-18T13:57:59.774Z" hostname="13e76148f95d" tests="3" failures="0" errors="0" skipped="0" time="0.918">
+        <testcase classname="src/__tests__/build-integration.test.ts" name="Build Integration Test &gt; should build successfully without TypeScript errors" time="0.918">
+        </testcase>
+        <testcase classname="src/__tests__/build-integration.test.ts" name="Build Integration Test &gt; should generate compiled files in dist directory" time="0">
+        </testcase>
+        <testcase classname="src/__tests__/build-integration.test.ts" name="Build Integration Test &gt; should have correct source maps" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/docker-build.test.js" timestamp="2025-08-18T13:57:59.775Z" hostname="13e76148f95d" tests="7" failures="0" errors="0" skipped="0" time="0.004">
+        <testcase classname="src/__tests__/docker-build.test.js" name="Docker Build Tests &gt; pnpm workspace configuration &gt; should have pnpm-lock.yaml in root directory" time="0.001">
+        </testcase>
+        <testcase classname="src/__tests__/docker-build.test.js" name="Docker Build Tests &gt; pnpm workspace configuration &gt; should have pnpm-workspace.yaml in root directory" time="0">
+        </testcase>
+        <testcase classname="src/__tests__/docker-build.test.js" name="Docker Build Tests &gt; pnpm workspace configuration &gt; should not have pnpm-lock.yaml in backend directory" time="0">
+        </testcase>
+        <testcase classname="src/__tests__/docker-build.test.js" name="Docker Build Tests &gt; pnpm workspace configuration &gt; should not have pnpm-lock.yaml in frontend directory" time="0">
+        </testcase>
+        <testcase classname="src/__tests__/docker-build.test.js" name="Docker Build Tests &gt; Dockerfile validation &gt; backend Dockerfile should be able to access root lockfile" time="0">
+        </testcase>
+        <testcase classname="src/__tests__/docker-build.test.js" name="Docker Build Tests &gt; Dockerfile validation &gt; frontend Dockerfile should be able to access root lockfile" time="0.001">
+        </testcase>
+        <testcase classname="src/__tests__/docker-build.test.js" name="Docker Build Tests &gt; Docker build context validation &gt; should have correct Docker build context configuration" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/tsconfig-rootdir.test.ts" timestamp="2025-08-18T13:57:59.777Z" hostname="13e76148f95d" tests="4" failures="0" errors="0" skipped="0" time="1.04">
+        <testcase classname="src/__tests__/tsconfig-rootdir.test.ts" name="TypeScript Configuration - RootDir Fix &gt; should have a valid tsconfig.json with correct rootDir" time="0.001">
+        </testcase>
+        <testcase classname="src/__tests__/tsconfig-rootdir.test.ts" name="TypeScript Configuration - RootDir Fix &gt; should compile TypeScript without rootDir errors" time="1.037">
+        </testcase>
+        <testcase classname="src/__tests__/tsconfig-rootdir.test.ts" name="TypeScript Configuration - RootDir Fix &gt; should include all source files in the correct rootDir scope" time="0.001">
+        </testcase>
+        <testcase classname="src/__tests__/tsconfig-rootdir.test.ts" name="TypeScript Configuration - RootDir Fix &gt; should be self-contained without extending parent tsconfig" time="0.001">
+        </testcase>
+    </testsuite>
+</testsuites>

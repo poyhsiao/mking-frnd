@@ -8,7 +8,7 @@ const DOCKERFILE_PATH = join(FRONTEND_DIR, 'Dockerfile');
 const ROOT_PACKAGE_JSON_PATH = join(PROJECT_ROOT, 'package.json');
 const FRONTEND_PACKAGE_JSON_PATH = join(FRONTEND_DIR, 'package.json');
 
-describe('Frontend Dockerfile TDD Tests', () => {
+describe('Frontend Dockerfile BDD Scenarios', () => {
   let dockerfileContent: string;
   let rootPackageJson: any;
   let frontendPackageJson: any;
@@ -25,7 +25,7 @@ describe('Frontend Dockerfile TDD Tests', () => {
     if (existsSync(ROOT_PACKAGE_JSON_PATH)) {
       rootPackageJson = JSON.parse(readFileSync(ROOT_PACKAGE_JSON_PATH, 'utf-8'));
     }
-    
+
     if (existsSync(FRONTEND_PACKAGE_JSON_PATH)) {
       frontendPackageJson = JSON.parse(readFileSync(FRONTEND_PACKAGE_JSON_PATH, 'utf-8'));
     }
@@ -44,7 +44,8 @@ describe('Frontend Dockerfile TDD Tests', () => {
     });
 
     it('should extract consistent pnpm version from packageManager', () => {
-      const packageManagerVersion = rootPackageJson.packageManager.match(/pnpm@(\d+\.\d+\.\d+)/)?.[1];
+      const packageManagerVersion =
+        rootPackageJson.packageManager.match(/pnpm@(\d+\.\d+\.\d+)/)?.[1];
       expect(packageManagerVersion).toBeDefined();
       expect(packageManagerVersion).toMatch(/^\d+\.\d+\.\d+$/);
     });
@@ -52,8 +53,11 @@ describe('Frontend Dockerfile TDD Tests', () => {
 
   describe('Dockerfile Pnpm Version Consistency', () => {
     it('should use corepack prepare with specific pnpm version', () => {
-      const packageManagerVersion = rootPackageJson.packageManager.match(/pnpm@(\d+\.\d+\.\d+)/)?.[1];
-      expect(dockerfileContent).toContain(`corepack prepare pnpm@${packageManagerVersion} --activate`);
+      const packageManagerVersion =
+        rootPackageJson.packageManager.match(/pnpm@(\d+\.\d+\.\d+)/)?.[1];
+      expect(dockerfileContent).toContain(
+        `corepack prepare pnpm@${packageManagerVersion} --activate`,
+      );
     });
 
     it('should not use npm install -g pnpm in base stages', () => {
@@ -65,9 +69,10 @@ describe('Frontend Dockerfile TDD Tests', () => {
     });
 
     it('should have consistent pnpm version across all stages', () => {
-      const packageManagerVersion = rootPackageJson.packageManager.match(/pnpm@(\d+\.\d+\.\d+)/)?.[1];
+      const packageManagerVersion =
+        rootPackageJson.packageManager.match(/pnpm@(\d+\.\d+\.\d+)/)?.[1];
       const corepackPrepareMatches = dockerfileContent.match(/corepack prepare pnpm@([\d\.]+)/g);
-      
+
       if (corepackPrepareMatches) {
         corepackPrepareMatches.forEach(match => {
           const version = match.match(/pnpm@([\d\.]+)/)?.[1];
@@ -96,7 +101,7 @@ describe('Frontend Dockerfile TDD Tests', () => {
     it('should use corepack enable before prepare', () => {
       const corepackEnableIndex = dockerfileContent.indexOf('corepack enable');
       const corepackPrepareIndex = dockerfileContent.indexOf('corepack prepare');
-      
+
       if (corepackEnableIndex !== -1 && corepackPrepareIndex !== -1) {
         expect(corepackEnableIndex).toBeLessThan(corepackPrepareIndex);
       }
@@ -109,7 +114,9 @@ describe('Frontend Dockerfile TDD Tests', () => {
 
   describe('Security Best Practices', () => {
     it('should not run as root in production stage', () => {
-      const productionStageMatch = dockerfileContent.match(/FROM nginx:alpine AS production([\s\S]*?)$/i);
+      const productionStageMatch = dockerfileContent.match(
+        /FROM nginx:alpine AS production([\s\S]*?)$/i,
+      );
       if (productionStageMatch) {
         const productionStageContent = productionStageMatch[1];
         expect(productionStageContent).toContain('USER frontend');

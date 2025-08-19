@@ -23,10 +23,13 @@ This project adopts a microservices architecture and uses a modern technology st
 - [Technology Stack Specifications](./TECH_STACK.md) - Confirmed Technology Selection
 
 ### 🛠️ Development Guidelines
+- [`development-environment-setup.md`](./development-environment-setup.md) - ✅ Task 1.1 Complete - Development Environment Setup
+- [`deployment-guide.md`](./deployment-guide.md) - Complete Deployment Instructions
+- [`docker-best-practices.md`](./docker-best-practices.md) - Docker Optimization Guidelines
 - [`development/`](./development/) - Development Guidelines and Standards
   - [Development Environment Setup](./development/setup.md)
   - [Implementation Plan](./development/implementation-plan.md)
-  - [TDD Development Guidelines](./development/tdd-guidelines.md)
+  - [BDD Development Guidelines](./development/bdd-guidelines.md)
   - [Development Standards](./development/DEVELOPMENT_STANDARDS.md) ⭐ Must Read
   - [Microservices Development Guide](./development/microservices-development-guide.md)
 - [`api/`](./api/) - API Documentation and Specifications
@@ -47,7 +50,13 @@ This project adopts a microservices architecture and uses a modern technology st
 2. **Technical Architecture**: Review [Technical Decision Records](./technical-decisions.md)
 3. **Development Planning**: Refer to [Development Tasks Todo List](./development-tasks.md)
 4. **Feature Priority**: Understand [MVP Priority Matrix](./mvp-priority-matrix.md)
-5. **Environment Setup**: Start with [Development Environment Setup](./development/setup.md)
+5. **Environment Setup**: ✅ **COMPLETED** - Use automated setup with [`../scripts/setup-dev.sh`](../scripts/setup-dev.sh)
+6. **Testing**: Run tests with [`../scripts/run-tests.sh`](../scripts/run-tests.sh)
+7. **Deployment**: Follow [Deployment Guide](./deployment-guide.md) for Docker/Docker Compose deployment
+
+### 🎯 Task 1.1 Status: ✅ COMPLETED
+
+The development environment setup is now fully automated and ready for use. All Docker configurations, CI/CD pipelines, and development tools have been implemented according to best practices.
 
 ## 🛠️ Technology Stack Overview
 

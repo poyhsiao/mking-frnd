@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mking-friend
+  labels:
+    name: mking-friend
+    app.kubernetes.io/name: mking-friend
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: mking-friend-platform
+    app.kubernetes.io/managed-by: kubectl
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mking-friend-monitoring
+  labels:
+    name: mking-friend-monitoring
+    app.kubernetes.io/name: mking-friend-monitoring
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: mking-friend-platform
+    app.kubernetes.io/managed-by: kubectl

@@ -2,7 +2,8 @@
 
 ## 1. 概述
 
-本文檔詳細說明 MKing Friend 微服務架構的部署流程，包括本地開發環境、測試環境和生產環境的部署策略。
+本文檔詳細說明 MKing
+Friend 微服務架構的部署流程，包括本地開發環境、測試環境和生產環境的部署策略。
 
 ### 1.1 微服務架構概覽
 
@@ -70,24 +71,28 @@ git clone https://github.com/your-org/mking-friend-frontend.git
 # 數據庫配置
 POSTGRES_DB=mking_friend
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password
-DATABASE_URL=postgresql://postgres:password@postgres:5432/mking_friend
+# SECURITY: Use strong random password - generate with: openssl rand -base64 32
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
 
 # Redis 配置
 REDIS_URL=redis://redis:6379
 
 # Typesense 配置
 TYPESENSE_URL=http://typesense:8108
-TYPESENSE_API_KEY=xyz
+# SECURITY: Use secure API key - generate with: openssl rand -hex 32
+TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
 TYPESENSE_COLLECTION_PREFIX=mking_friend
 
 # JWT 配置
-JWT_SECRET=your-super-secret-jwt-key
+# SECURITY: Use cryptographically secure secret - generate with: openssl rand -base64 64
+JWT_SECRET=${JWT_SECRET}
 JWT_EXPIRES_IN=1h
 
 # AWS 配置
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
+# SECURITY: Use IAM credentials with minimal required permissions
+AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 AWS_REGION=us-west-2
 AWS_S3_BUCKET=mking-friend-media
 
@@ -134,14 +139,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - mking-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -149,14 +154,14 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
     networks:
       - mking-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -164,13 +169,14 @@ services:
   consul:
     image: consul:1.15
     ports:
-      - "8500:8500"
-      - "8600:8600/udp"
-    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+      - '8500:8500'
+      - '8600:8600/udp'
+    command:
+      agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
     networks:
       - mking-network
     healthcheck:
-      test: ["CMD", "consul", "members"]
+      test: ['CMD', 'consul', 'members']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -181,8 +187,8 @@ services:
       context: ./mking-friend-auth-service
       dockerfile: Dockerfile
     ports:
-      - "${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}"
-      - "${AUTH_SERVICE_GRPC_PORT}:${AUTH_SERVICE_GRPC_PORT}"
+      - '${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}'
+      - '${AUTH_SERVICE_GRPC_PORT}:${AUTH_SERVICE_GRPC_PORT}'
     environment:
       - NODE_ENV=development
       - PORT=${AUTH_SERVICE_PORT}
@@ -203,7 +209,8 @@ services:
     networks:
       - mking-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${AUTH_SERVICE_PORT}/health"]
+      test:
+        ['CMD', 'curl', '-f', 'http://localhost:${AUTH_SERVICE_PORT}/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -213,8 +220,8 @@ services:
       context: ./mking-friend-user-service
       dockerfile: Dockerfile
     ports:
-      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
-      - "${USER_SERVICE_GRPC_PORT}:${USER_SERVICE_GRPC_PORT}"
+      - '${USER_SERVICE_PORT}:${USER_SERVICE_PORT}'
+      - '${USER_SERVICE_GRPC_PORT}:${USER_SERVICE_GRPC_PORT}'
     environment:
       - NODE_ENV=development
       - PORT=${USER_SERVICE_PORT}
@@ -236,7 +243,8 @@ services:
     networks:
       - mking-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${USER_SERVICE_PORT}/health"]
+      test:
+        ['CMD', 'curl', '-f', 'http://localhost:${USER_SERVICE_PORT}/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -246,9 +254,9 @@ services:
       context: ./mking-friend-chat-service
       dockerfile: Dockerfile
     ports:
-      - "${CHAT_SERVICE_PORT}:${CHAT_SERVICE_PORT}"
-      - "${CHAT_SERVICE_WEBSOCKET_PORT}:${CHAT_SERVICE_WEBSOCKET_PORT}"
-      - "${CHAT_SERVICE_GRPC_PORT}:${CHAT_SERVICE_GRPC_PORT}"
+      - '${CHAT_SERVICE_PORT}:${CHAT_SERVICE_PORT}'
+      - '${CHAT_SERVICE_WEBSOCKET_PORT}:${CHAT_SERVICE_WEBSOCKET_PORT}'
+      - '${CHAT_SERVICE_GRPC_PORT}:${CHAT_SERVICE_GRPC_PORT}'
     environment:
       - NODE_ENV=development
       - PORT=${CHAT_SERVICE_PORT}
@@ -274,7 +282,8 @@ services:
     networks:
       - mking-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${CHAT_SERVICE_PORT}/health"]
+      test:
+        ['CMD', 'curl', '-f', 'http://localhost:${CHAT_SERVICE_PORT}/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -284,8 +293,8 @@ services:
       context: ./mking-friend-media-service
       dockerfile: Dockerfile
     ports:
-      - "${MEDIA_SERVICE_PORT}:${MEDIA_SERVICE_PORT}"
-      - "${MEDIA_SERVICE_GRPC_PORT}:${MEDIA_SERVICE_GRPC_PORT}"
+      - '${MEDIA_SERVICE_PORT}:${MEDIA_SERVICE_PORT}'
+      - '${MEDIA_SERVICE_GRPC_PORT}:${MEDIA_SERVICE_GRPC_PORT}'
     environment:
       - NODE_ENV=development
       - PORT=${MEDIA_SERVICE_PORT}
@@ -308,7 +317,8 @@ services:
     networks:
       - mking-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${MEDIA_SERVICE_PORT}/health"]
+      test:
+        ['CMD', 'curl', '-f', 'http://localhost:${MEDIA_SERVICE_PORT}/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -318,8 +328,8 @@ services:
       context: ./mking-friend-admin-service
       dockerfile: Dockerfile
     ports:
-      - "${ADMIN_SERVICE_PORT}:${ADMIN_SERVICE_PORT}"
-      - "${ADMIN_SERVICE_GRPC_PORT}:${ADMIN_SERVICE_GRPC_PORT}"
+      - '${ADMIN_SERVICE_PORT}:${ADMIN_SERVICE_PORT}'
+      - '${ADMIN_SERVICE_GRPC_PORT}:${ADMIN_SERVICE_GRPC_PORT}'
     environment:
       - NODE_ENV=development
       - PORT=${ADMIN_SERVICE_PORT}
@@ -344,7 +354,8 @@ services:
     networks:
       - mking-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${ADMIN_SERVICE_PORT}/health"]
+      test:
+        ['CMD', 'curl', '-f', 'http://localhost:${ADMIN_SERVICE_PORT}/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -354,8 +365,8 @@ services:
       context: ./mking-friend-api-gateway
       dockerfile: Dockerfile
     ports:
-      - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
-      - "${API_GATEWAY_GRPC_PORT}:${API_GATEWAY_GRPC_PORT}"
+      - '${API_GATEWAY_PORT}:${API_GATEWAY_PORT}'
+      - '${API_GATEWAY_GRPC_PORT}:${API_GATEWAY_GRPC_PORT}'
     environment:
       - NODE_ENV=development
       - PORT=${API_GATEWAY_PORT}
@@ -381,7 +392,7 @@ services:
     networks:
       - mking-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${API_GATEWAY_PORT}/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:${API_GATEWAY_PORT}/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -392,7 +403,7 @@ services:
       context: ./mking-friend-frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - REACT_APP_API_URL=http://localhost:${API_GATEWAY_PORT}
       - REACT_APP_WS_URL=ws://localhost:${CHAT_SERVICE_WEBSOCKET_PORT}
@@ -467,7 +478,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - "9090:9090"
+      - '9090:9090'
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -484,9 +495,9 @@ services:
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3001:3000"
+      - '3001:3000'
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD} # 注意：请设置强密码
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
@@ -498,10 +509,10 @@ services:
     image: typesense/typesense:0.25.1
     environment:
       - TYPESENSE_DATA_DIR=/data
-      - TYPESENSE_API_KEY=xyz
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY} # 注意：请生成强随机API密钥
       - TYPESENSE_ENABLE_CORS=true
     ports:
-      - "8108:8108"
+      - '8108:8108'
     volumes:
       - typesense_data:/data
     networks:
@@ -510,7 +521,7 @@ services:
   loki:
     image: grafana/loki:2.9.0
     ports:
-      - "3100:3100"
+      - '3100:3100'
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - loki_data:/loki
@@ -578,25 +589,53 @@ metadata:
   name: mking-friend-config
   namespace: mking-friend
 data:
-  NODE_ENV: "production"
-  CONSUL_HOST: "consul"
-  CONSUL_PORT: "8500"
-  POSTGRES_DB: "mking_friend"
-  POSTGRES_USER: "postgres"
-  AWS_REGION: "us-west-2"
-  AWS_S3_BUCKET: "mking-friend-media"
+  NODE_ENV: 'production'
+  CONSUL_HOST: 'consul'
+  CONSUL_PORT: '8500'
+  POSTGRES_DB: 'mking_friend'
+  POSTGRES_USER: 'postgres'
+  AWS_REGION: 'us-west-2'
+  AWS_S3_BUCKET: 'mking-friend-media'
 ---
-apiVersion: v1
-kind: Secret
+# WARNING: Never store actual secrets in version control!
+# Use external secret management tools like:
+# - Kubernetes External Secrets Operator
+# - HashiCorp Vault
+# - AWS Secrets Manager
+# - Azure Key Vault
+# - Google Secret Manager
+
+# Example using External Secrets Operator:
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
 metadata:
   name: mking-friend-secrets
   namespace: mking-friend
-type: Opaque
-data:
-  POSTGRES_PASSWORD: cGFzc3dvcmQ=  # base64 encoded 'password'
-  JWT_SECRET: eW91ci1zdXBlci1zZWNyZXQtand0LWtleQ==  # base64 encoded
-  AWS_ACCESS_KEY_ID: eW91ci1hY2Nlc3Mta2V5  # base64 encoded
-  AWS_SECRET_ACCESS_KEY: eW91ci1zZWNyZXQta2V5  # base64 encoded
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: SecretStore
+  target:
+    name: mking-friend-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: POSTGRES_PASSWORD
+      remoteRef:
+        key: database/postgres
+        property: password
+    - secretKey: JWT_SECRET
+      remoteRef:
+        key: app/jwt
+        property: secret
+    - secretKey: AWS_ACCESS_KEY_ID
+      remoteRef:
+        key: aws/credentials
+        property: access_key_id
+    - secretKey: AWS_SECRET_ACCESS_KEY
+      remoteRef:
+        key: aws/credentials
+        property: secret_access_key
 ```
 
 ### 4.3 部署微服務
@@ -621,62 +660,62 @@ spec:
         app: auth-service
     spec:
       containers:
-      - name: auth-service
-        image: mking-friend/auth-service:latest
-        ports:
-        - containerPort: 3001
-        - containerPort: 50001
-        env:
-        - name: NODE_ENV
-          valueFrom:
-            configMapKeyRef:
-              name: mking-friend-config
-              key: NODE_ENV
-        - name: PORT
-          value: "3001"
-        - name: GRPC_PORT
-          value: "50001"
-        - name: DATABASE_URL
-          value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)"
-        - name: POSTGRES_USER
-          valueFrom:
-            configMapKeyRef:
-              name: mking-friend-config
-              key: POSTGRES_USER
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mking-friend-secrets
-              key: POSTGRES_PASSWORD
-        - name: POSTGRES_DB
-          valueFrom:
-            configMapKeyRef:
-              name: mking-friend-config
-              key: POSTGRES_DB
-        - name: JWT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: mking-friend-secrets
-              key: JWT_SECRET
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3001
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 3001
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: auth-service
+          image: mking-friend/auth-service:latest
+          ports:
+            - containerPort: 3001
+            - containerPort: 50001
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: mking-friend-config
+                  key: NODE_ENV
+            - name: PORT
+              value: '3001'
+            - name: GRPC_PORT
+              value: '50001'
+            - name: DATABASE_URL
+              value: 'postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)'
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: mking-friend-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mking-friend-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: mking-friend-config
+                  key: POSTGRES_DB
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mking-friend-secrets
+                  key: JWT_SECRET
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '250m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ---
 apiVersion: v1
 kind: Service
@@ -687,12 +726,12 @@ spec:
   selector:
     app: auth-service
   ports:
-  - name: http
-    port: 3001
-    targetPort: 3001
-  - name: grpc
-    port: 50001
-    targetPort: 50001
+    - name: http
+      port: 3001
+      targetPort: 3001
+    - name: grpc
+      port: 50001
+      targetPort: 50001
   type: ClusterIP
 ```
 
@@ -735,29 +774,29 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'pnpm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
 
-    - name: Install pnpm
-      run: npm install -g pnpm
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-    - name: Run linting
-      run: pnpm lint
+      - name: Run linting
+        run: pnpm lint
 
-    - name: Run tests
-      run: pnpm test
+      - name: Run tests
+        run: pnpm test
 
-    - name: Run e2e tests
-      run: pnpm test:e2e
+      - name: Run e2e tests
+        run: pnpm test:e2e
 
   build:
     needs: test
@@ -767,36 +806,36 @@ jobs:
       contents: read
       packages: write
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Log in to Container Registry
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     needs: build
@@ -804,32 +843,32 @@ jobs:
     if: github.ref == 'refs/heads/main'
     environment: production
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Setup kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
 
-    - name: Configure kubectl
-      run: |
-        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
-        export KUBECONFIG=kubeconfig
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
 
-    - name: Deploy to Kubernetes
-      run: |
-        export KUBECONFIG=kubeconfig
-        kubectl set image deployment/${{ github.event.repository.name }} \
-          ${{ github.event.repository.name }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-          -n mking-friend
-        kubectl rollout status deployment/${{ github.event.repository.name }} -n mking-friend
+      - name: Deploy to Kubernetes
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl set image deployment/${{ github.event.repository.name }} \
+            ${{ github.event.repository.name }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -n mking-friend
+          kubectl rollout status deployment/${{ github.event.repository.name }} -n mking-friend
 
-    - name: Verify deployment
-      run: |
-        export KUBECONFIG=kubeconfig
-        kubectl get pods -n mking-friend
-        kubectl get services -n mking-friend
+      - name: Verify deployment
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl get pods -n mking-friend
+          kubectl get services -n mking-friend
 ```
 
 ## 6. 生產環境部署
@@ -846,35 +885,35 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
 spec:
   tls:
-  - hosts:
-    - api.mking-friend.com
-    - app.mking-friend.com
-    secretName: mking-friend-tls
+    - hosts:
+        - api.mking-friend.com
+        - app.mking-friend.com
+      secretName: mking-friend-tls
   rules:
-  - host: api.mking-friend.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: api-gateway
-            port:
-              number: 3000
-  - host: app.mking-friend.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend
-            port:
-              number: 3000
+    - host: api.mking-friend.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 3000
+    - host: app.mking-friend.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 3000
 ```
 
 ### 6.2 自動擴展配置
@@ -894,18 +933,18 @@ spec:
   minReplicas: 3
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 ```
 
 ## 7. 故障排除
@@ -913,29 +952,32 @@ spec:
 ### 7.1 常見問題
 
 1. **服務無法啟動**：
+
    ```bash
    # 檢查服務日誌
    docker-compose logs service-name
    kubectl logs deployment/service-name -n mking-friend
-   
+
    # 檢查服務健康狀態
    curl http://localhost:port/health
    ```
 
 2. **gRPC 連接失敗**：
+
    ```bash
    # 檢查服務發現
    curl http://localhost:8500/v1/catalog/services
-   
+
    # 測試 gRPC 連接
    grpcurl -plaintext localhost:50001 list
    ```
 
 3. **數據庫連接問題**：
+
    ```bash
    # 檢查數據庫狀態
    docker-compose exec postgres pg_isready
-   
+
    # 檢查連接字符串
    echo $DATABASE_URL
    ```
@@ -945,34 +987,39 @@ spec:
 ```yaml
 # monitoring/alerts.yml
 groups:
-- name: mking-friend-alerts
-  rules:
-  - alert: ServiceDown
-    expr: up == 0
-    for: 1m
-    labels:
-      severity: critical
-    annotations:
-      summary: "Service {{ $labels.instance }} is down"
-      description: "{{ $labels.instance }} has been down for more than 1 minute."
+  - name: mking-friend-alerts
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Service {{ $labels.instance }} is down'
+          description:
+            '{{ $labels.instance }} has been down for more than 1 minute.'
 
-  - alert: HighCPUUsage
-    expr: (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
-    for: 5m
-    labels:
-      severity: warning
-    annotations:
-      summary: "High CPU usage on {{ $labels.instance }}"
-      description: "CPU usage is above 80% for more than 5 minutes."
+      - alert: HighCPUUsage
+        expr:
+          (100 - (avg by (instance)
+          (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High CPU usage on {{ $labels.instance }}'
+          description: 'CPU usage is above 80% for more than 5 minutes.'
 
-  - alert: HighMemoryUsage
-    expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
-    for: 5m
-    labels:
-      severity: warning
-    annotations:
-      summary: "High memory usage on {{ $labels.instance }}"
-      description: "Memory usage is above 90% for more than 5 minutes."
+      - alert: HighMemoryUsage
+        expr:
+          (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) /
+          node_memory_MemTotal_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High memory usage on {{ $labels.instance }}'
+          description: 'Memory usage is above 90% for more than 5 minutes.'
 ```
 
 ## 8. 安全考量

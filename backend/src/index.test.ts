@@ -1,20 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import request from 'supertest';
-import app from './index';
+import app from './test/testApp';
 
 describe('Backend Application', () => {
   describe('Health Check', () => {
-    it('should return health status', async () => {
+    it('should return comprehensive health status', async () => {
       const response = await request(app).get('/health').expect(200);
 
       expect(response.body as Record<string, unknown>).toMatchObject({
-        status: 'ok',
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        environment: expect.any(String),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        status: expect.stringMatching(/^(healthy|degraded|unhealthy)$/),
         timestamp: expect.any(String),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         uptime: expect.any(Number),
+        environment: expect.any(String),
+        version: expect.any(String),
+        dependencies: expect.any(Object),
+        system: expect.any(Object),
+      });
+    });
+
+    it('should return simple health status', async () => {
+      const response = await request(app).get('/health/simple').expect(200);
+
+      expect(response.body as Record<string, unknown>).toMatchObject({
+        status: 'ok',
+        timestamp: expect.any(String),
       });
     });
   });
@@ -28,10 +37,8 @@ describe('Backend Application', () => {
       expect(response.body as Record<string, unknown>).toMatchObject({
         success: false,
         error: {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           message: expect.stringContaining('not found'),
         },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         timestamp: expect.any(String),
         path: '/non-existent-route',
       });

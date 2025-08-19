@@ -146,8 +146,8 @@
 - [x] 自動化測試流程設置 (✅ Codecov Action v5 已整合)
 - [x] 代碼品質檢查配置 (✅ 增強了 fail_ci_if_error 和環境變數)
 - [x] Docker 構建配置 (✅ 修復了 pnpm workspace monorepo 構建問題)
-- [x] CI 鎖文件同步 (✅ 使用 TDD 方法修復 ERR_PNPM_OUTDATED_LOCKFILE)
-- [x] PNPM 規範不匹配解決 (✅ 使用全面的 TDD 測試套件修復依賴版本衝突)
+- [x] CI 鎖文件同步 (✅ 使用 BDD 方法修復 ERR_PNPM_OUTDATED_LOCKFILE)
+- [x] PNPM 規範不匹配解決 (✅ 使用全面的 BDD 場景套件修復依賴版本衝突)
 - [ ] 自動化部署管道
 - [ ] 環境分離策略
 

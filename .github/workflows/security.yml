@@ -1,0 +1,433 @@
+name: Security Scan
+
+# Restrict workflow permissions at the top level
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run security scan daily at 2 AM UTC
+    - cron: "0 2 * * *"
+
+jobs:
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+        with:
+          config-path: .gitleaks.toml
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@v3.63.2
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --config=.trufflehog.yml --debug --only-verified --format=sarif --output=trufflehog-results.sarif
+
+      - name: Upload TruffleHog scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trufflehog-results.sarif"
+
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      matrix:
+        directory: ["backend", "frontend"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit
+        run: |
+          pnpm audit --audit-level=moderate --json > pnpm-audit-${{ matrix.directory }}.json || true
+          pnpm audit --fix --dry-run || true
+
+      - name: Upload pnpm audit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pnpm-audit-${{ matrix.directory }}
+          path: pnpm-audit-${{ matrix.directory }}.json
+
+      - name: Validate Snyk Token
+        run: |
+          if [ -z "${{ secrets.SNYK_TOKEN }}" ]; then
+            echo "⚠️ SNYK_TOKEN is not set. Snyk scan will be skipped."
+            echo "SNYK_TOKEN_AVAILABLE=false" >> $GITHUB_ENV
+          else
+            echo "✅ SNYK_TOKEN is available"
+            echo "SNYK_TOKEN_AVAILABLE=true" >> $GITHUB_ENV
+          fi
+
+      - name: Run Snyk Security Scan
+        if: env.SNYK_TOKEN_AVAILABLE == 'true'
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=medium --package-manager=pnpm --sarif-file-output=snyk-${{ matrix.directory }}.sarif --exclude-base-image-vulns --json-file-output=snyk-${{ matrix.directory }}.json
+          command: test
+        working-directory: ./${{ matrix.directory }}
+        continue-on-error: true
+
+      - name: Handle Snyk scan failure
+        if: env.SNYK_TOKEN_AVAILABLE == 'false'
+        run: |
+          echo "Creating empty SARIF file due to missing SNYK_TOKEN"
+          cat > snyk-${{ matrix.directory }}.sarif << 'EOF'
+          {
+            "version": "2.1.0",
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "Snyk",
+                    "version": "1.0.0",
+                    "informationUri": "https://snyk.io"
+                  }
+                },
+                "results": [],
+                "invocations": [
+                  {
+                    "executionSuccessful": false,
+                    "exitCode": 1,
+                    "stderr": "Snyk token not available - scan skipped"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+
+      - name: Check if SARIF file was generated
+        run: |
+          echo "Checking for SARIF file generation..."
+
+          # Check if file exists in the matrix directory (when Snyk ran successfully)
+          if [ -f "${{ matrix.directory }}/snyk-${{ matrix.directory }}.sarif" ]; then
+            echo "✅ SARIF file found in ${{ matrix.directory }} directory"
+            ls -la ${{ matrix.directory }}/snyk-${{ matrix.directory }}.sarif
+            echo "File contents preview:"
+            head -20 ${{ matrix.directory }}/snyk-${{ matrix.directory }}.sarif
+            # Move the file to the root directory for upload
+            mv ${{ matrix.directory }}/snyk-${{ matrix.directory }}.sarif ./
+            echo "✅ SARIF file moved to root directory"
+          # Check if file exists in root directory (when Snyk was skipped)
+          elif [ -f "snyk-${{ matrix.directory }}.sarif" ]; then
+            echo "✅ SARIF file found in root directory"
+            ls -la snyk-${{ matrix.directory }}.sarif
+            echo "File contents preview:"
+            head -20 snyk-${{ matrix.directory }}.sarif
+          else
+            echo "❌ SARIF file not found anywhere"
+            echo "Root directory contents:"
+            ls -la
+            echo "${{ matrix.directory }} directory contents:"
+            ls -la ${{ matrix.directory }}/ || echo "Directory not accessible"
+            echo "Searching for any SARIF files:"
+            find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
+            
+            # Create a minimal SARIF file as fallback
+            echo "Creating fallback SARIF file"
+            cat > snyk-${{ matrix.directory }}.sarif << 'EOF'
+          {
+            "version": "2.1.0",
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "Snyk",
+                    "version": "1.0.0",
+                    "informationUri": "https://snyk.io"
+                  }
+                },
+                "results": [],
+                "invocations": [
+                  {
+                    "executionSuccessful": false,
+                    "exitCode": 1,
+                    "stderr": "Snyk scan failed to generate SARIF file"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          fi
+
+      - name: Verify SARIF file before upload
+        run: |
+          echo "Final verification of SARIF file before upload"
+          if [ -f "snyk-${{ matrix.directory }}.sarif" ]; then
+            echo "✅ SARIF file ready for upload"
+            ls -la snyk-${{ matrix.directory }}.sarif
+            echo "File size: $(wc -c < snyk-${{ matrix.directory }}.sarif) bytes"
+            echo "SARIF_FILE_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "❌ SARIF file still missing - upload will be skipped"
+            echo "SARIF_FILE_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Upload Snyk scan results
+        uses: github/codeql-action/upload-sarif@v3.22.12
+        if: always() && env.SARIF_FILE_EXISTS == 'true'
+        with:
+          sarif_file: "snyk-${{ matrix.directory }}.sarif"
+          category: "snyk-${{ matrix.directory }}"
+        continue-on-error: true
+
+      - name: Upload scan artifacts for debugging
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: snyk-scan-${{ matrix.directory }}-debug
+          path: |
+            snyk-${{ matrix.directory }}.sarif
+            snyk-${{ matrix.directory }}.json
+          retention-days: 7
+
+  sast-scan:
+    name: Static Application Security Testing
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/javascript
+            p/typescript
+            p/docker
+            p/kubernetes
+          generateSarif: "1"
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Semgrep scan results
+        uses: github/codeql-action/upload-sarif@v3.22.12
+        if: always()
+        with:
+          sarif_file: "semgrep.sarif"
+
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      security-events: write
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Build Docker images
+        run: |
+          docker build -f backend/Dockerfile -t mking-backend:latest ./backend
+          docker build -f frontend/Dockerfile -t mking-frontend:latest ./frontend
+
+      - name: Run Trivy vulnerability scanner - Backend
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: "mking-backend:latest"
+          format: "sarif"
+          output: "trivy-backend-results.sarif"
+          severity: "CRITICAL,HIGH,MEDIUM"
+
+      - name: Run Trivy vulnerability scanner - Frontend
+        uses: aquasecurity/trivy-action@0.16.1
+        with:
+          image-ref: "mking-frontend:latest"
+          format: "sarif"
+          output: "trivy-frontend-results.sarif"
+          severity: "CRITICAL,HIGH,MEDIUM"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3.22.12
+        if: always()
+        with:
+          sarif_file: "trivy-backend-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3.22.12
+        if: always()
+        with:
+          sarif_file: "trivy-frontend-results.sarif"
+
+  infrastructure-scan:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: dockerfile,kubernetes,docker_compose
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+          quiet: true
+          soft_fail: true
+
+      - name: Upload Checkov scan results
+        uses: github/codeql-action/upload-sarif@v3.22.12
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
+
+      - name: Run kube-linter
+        run: |
+          curl -L https://github.com/stackrox/kube-linter/releases/latest/download/kube-linter-linux.tar.gz | tar xz
+          ./kube-linter lint k8s/ --format=sarif > kube-linter-results.sarif || true
+
+      - name: Upload kube-linter scan results
+        uses: github/codeql-action/upload-sarif@v3.22.12
+        if: always()
+        with:
+          sarif_file: "kube-linter-results.sarif"
+
+      - name: Run Hadolint for Dockerfile security
+        uses: hadolint/hadolint-action@v3
+        with:
+          dockerfile: backend/Dockerfile
+          format: sarif
+          output-file: hadolint-backend-results.sarif
+          no-fail: true
+
+      - name: Run Hadolint for Frontend Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: frontend/Dockerfile
+          format: sarif
+          output-file: hadolint-frontend-results.sarif
+          no-fail: true
+
+      - name: Upload Hadolint scan results - Backend
+        uses: github/codeql-action/upload-sarif@v3.22.12
+        if: always()
+        with:
+          sarif_file: "hadolint-backend-results.sarif"
+
+      - name: Upload Hadolint scan results - Frontend
+        uses: github/codeql-action/upload-sarif@v3.22.12
+        if: always()
+        with:
+          sarif_file: "hadolint-frontend-results.sarif"
+
+  security-report:
+    name: Security Report
+    runs-on: ubuntu-latest
+    # Apply least privilege permissions
+    permissions:
+      contents: read
+      actions: read
+    needs: [secret-scan, dependency-scan, sast-scan, container-scan, infrastructure-scan]
+    if: always()
+    steps:
+      - name: Security Scan Summary
+        run: |
+          echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Scan Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Secret Detection | ${{ needs.secret-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Scan | ${{ needs.dependency-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SAST Scan | ${{ needs.sast-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Container Scan | ${{ needs.container-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Infrastructure Scan | ${{ needs.infrastructure-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please review the Security tab for detailed findings." >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on security issues
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: "Security scan failed! Please check the GitHub Security tab for details."
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -1,7 +1,7 @@
 /**
  * Development Environment Setup Tests
  * Comprehensive tests for task 1.1 Development Environment Setup
- * Following TDD approach to ensure all requirements are met
+ * Following BDD approach to ensure all requirements are met
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';

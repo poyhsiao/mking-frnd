@@ -2,81 +2,522 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '18'
-  PNPM_VERSION: '8.15.1'
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  # Test database configuration
+  POSTGRES_TEST_DB: mking_test
+  POSTGRES_TEST_USER: test_user
+  POSTGRES_TEST_PASSWORD: test_password
+  # Redis test configuration
+  REDIS_TEST_PASSWORD: test_redis_password
+  # MinIO test configuration
+  MINIO_TEST_USER: test_minio_user
+  MINIO_TEST_PASSWORD: test_minio_password
+  MINIO_TEST_BUCKET: test-bucket
+  # Typesense test configuration
+  TYPESENSE_TEST_API_KEY: test-api-key
+  # Test secrets
+  JWT_TEST_SECRET: test-jwt-secret-key-for-testing-only
+  JWT_TEST_EXPIRES_IN: 1h
+  ENCRYPTION_TEST_KEY: test-encryption-key-32-characters
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: mking_frnd_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-    
+
+    strategy:
+      matrix:
+        test-type: [unit, integration, e2e]
+
+    env:
+      # Test Database Configuration
+      POSTGRES_TEST_DB: ${{ secrets.POSTGRES_TEST_DB || 'mking_test' }}
+      POSTGRES_TEST_USER: ${{ secrets.POSTGRES_TEST_USER || 'postgres' }}
+      POSTGRES_TEST_PASSWORD: ${{ secrets.POSTGRES_TEST_PASSWORD || 'test_password_123' }}
+
+      # MinIO Test Configuration
+      MINIO_TEST_USER: ${{ secrets.MINIO_TEST_USER || 'testuser' }}
+      MINIO_TEST_PASSWORD: ${{ secrets.MINIO_TEST_PASSWORD || 'testpassword123' }}
+
+      # Typesense Test Configuration
+      TYPESENSE_TEST_API_KEY: ${{ secrets.TYPESENSE_TEST_API_KEY || 'test_api_key_123' }}
+
+      # Security Test Configuration
+      JWT_TEST_SECRET: ${{ secrets.JWT_TEST_SECRET || 'test_jwt_secret_key_for_testing_only_123456789' }}
+      ENCRYPTION_TEST_KEY: ${{ secrets.ENCRYPTION_TEST_KEY || 'test_encryption_key_32_chars_long' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install dependencies for health checks
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Create test results directory
+        run: |
+          mkdir -p test-results coverage
+          chmod 777 test-results coverage
+
+      - name: Validate required environment variables
+        run: |
+          echo "🔍 Validating required environment variables..."
+
+          # Check for required test environment variables
+          REQUIRED_VARS=(
+            "POSTGRES_TEST_DB"
+            "POSTGRES_TEST_USER"
+            "POSTGRES_TEST_PASSWORD"
+            "REDIS_TEST_PASSWORD"
+            "MINIO_TEST_USER"
+            "MINIO_TEST_PASSWORD"
+            "MINIO_TEST_BUCKET"
+            "TYPESENSE_TEST_API_KEY"
+            "JWT_TEST_SECRET"
+            "JWT_TEST_EXPIRES_IN"
+            "ENCRYPTION_TEST_KEY"
+          )
+
+          MISSING_VARS=()
+          for var in "${REQUIRED_VARS[@]}"; do
+            if [ -z "${!var}" ]; then
+              MISSING_VARS+=("$var")
+            fi
+          done
+
+          if [ ${#MISSING_VARS[@]} -ne 0 ]; then
+            echo "❌ Missing required environment variables:"
+            printf '  - %s\n' "${MISSING_VARS[@]}"
+            echo "Please ensure all required environment variables are set in the workflow."
+            exit 1
+          fi
+
+          echo "✅ All required environment variables are present."
+
+      - name: Run ${{ matrix.test-type }} tests with Docker Compose
+        env:
+          # Test Database Configuration
+          POSTGRES_TEST_DB: mking_test
+          POSTGRES_TEST_USER: postgres
+          POSTGRES_TEST_PASSWORD: postgres
+
+          # Test MinIO Configuration
+          MINIO_TEST_USER: testuser
+          MINIO_TEST_PASSWORD: testpassword
+
+          # Test Typesense Configuration
+          TYPESENSE_TEST_API_KEY: test-api-key
+
+          # Test Security Configuration
+          JWT_TEST_SECRET: test-jwt-secret-for-ci-pipeline-testing-only
+          ENCRYPTION_TEST_KEY: test-encryption-key-for-ci-pipeline-testing-only
+
+          # General Test Configuration
+          TEST_TYPE: ${{ matrix.test-type }}
+          CI: true
+          NODE_ENV: test
+
+          # Container health check configuration
+          COMPOSE_HTTP_TIMEOUT: 300
+          DOCKER_CLIENT_TIMEOUT: 300
+          WAIT_COUNT: 30
+          MAX_WAIT: 300
+        run: |
+          echo "Running ${{ matrix.test-type }} tests..."
+          echo "Setting up test environment variables..."
+
+          # Export all test environment variables
+          export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
+          export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
+          export POSTGRES_TEST_PASSWORD="${POSTGRES_TEST_PASSWORD}"
+          export REDIS_TEST_PASSWORD="${REDIS_TEST_PASSWORD}"
+          export MINIO_TEST_USER="${MINIO_TEST_USER}"
+          export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
+          export MINIO_TEST_BUCKET="${MINIO_TEST_BUCKET}"
+          export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
+          export JWT_TEST_SECRET="${JWT_TEST_SECRET}"
+          export JWT_TEST_EXPIRES_IN="${JWT_TEST_EXPIRES_IN}"
+          export ENCRYPTION_TEST_KEY="${ENCRYPTION_TEST_KEY}"
+          export TEST_TYPE="${TEST_TYPE}"
+          export CI="${CI}"
+          export NODE_ENV="${NODE_ENV}"
+          export COMPOSE_HTTP_TIMEOUT="${COMPOSE_HTTP_TIMEOUT}"
+          export DOCKER_CLIENT_TIMEOUT="${DOCKER_CLIENT_TIMEOUT}"
+
+          # Verify environment variables are set
+          echo "✅ Test environment variables configured:"
+          echo "   - POSTGRES_TEST_DB: ${POSTGRES_TEST_DB}"
+          echo "   - POSTGRES_TEST_USER: ${POSTGRES_TEST_USER}"
+          echo "   - MINIO_TEST_USER: ${MINIO_TEST_USER}"
+          echo "   - TYPESENSE_TEST_API_KEY: [REDACTED]"
+          echo "   - TEST_TYPE: ${TEST_TYPE}"
+          echo "   - COMPOSE_HTTP_TIMEOUT: ${COMPOSE_HTTP_TIMEOUT}s"
+
+          # Function to check container health with detailed logging
+          check_container_health() {
+            local service_name=$1
+            local max_attempts=40
+            local attempt=1
+            local timeout_seconds=600  # 10 minutes total timeout
+            local wait_time=15
+            
+            echo "🔍 Checking health of ${service_name}..."
+            echo "⏱️  Timeout set to $timeout_seconds seconds ($max_attempts attempts, ${wait_time}s intervals)"
+            
+            while [ $attempt -le $max_attempts ]; do
+              echo "📊 Health check attempt $attempt/$max_attempts for ${service_name}"
+              
+              # Check if container exists and get its status
+              if ! docker compose -f docker-compose.test.yml ps --format json | jq -e ".[] | select(.Service == \"${service_name}\")" > /dev/null; then
+                echo "❌ Service ${service_name} container not found"
+                echo "📋 Available containers:"
+                docker compose -f docker-compose.test.yml ps || true
+                sleep $wait_time
+                attempt=$((attempt + 1))
+                continue
+              fi
+              
+              health_status=$(docker compose -f docker-compose.test.yml ps --format json | jq -s -r ".[] | select(.Service == \"${service_name}\") | .Health")
+              state=$(docker compose -f docker-compose.test.yml ps --format json | jq -s -r ".[] | select(.Service == \"${service_name}\") | .State")
+              
+              echo "📋 Service ${service_name} - State: $state, Health: $health_status"
+              
+              # Check if container is not running
+              if [ "$state" != "running" ]; then
+                echo "⚠️  Container ${service_name} is not running (state: $state)"
+                echo "📜 Container logs:"
+                docker compose -f docker-compose.test.yml logs --tail=10 "${service_name}" || true
+                sleep $wait_time
+                attempt=$((attempt + 1))
+                continue
+              fi
+              
+              case "$health_status" in
+                "healthy")
+                  echo "✅ ${service_name} is healthy (attempt ${attempt}/${max_attempts})"
+                  return 0
+                  ;;
+                "unhealthy")
+                  echo "❌ ${service_name} is unhealthy (attempt ${attempt}/${max_attempts})"
+                  echo "📋 Container logs for ${service_name}:"
+                  docker compose -f docker-compose.test.yml logs --tail=20 "${service_name}" || true
+                  ;;
+                "starting")
+                  echo "⏳ ${service_name} is starting (attempt ${attempt}/${max_attempts})"
+                  ;;
+                "")
+                  if [ "$state" = "running" ]; then
+                    echo "ℹ️  ${service_name} has no health check defined, assuming healthy if running"
+                    return 0
+                  else
+                    echo "⚠️  ${service_name} is not running (state: $state)"
+                  fi
+                  ;;
+                *)
+                  echo "❓ ${service_name} health status unknown: ${health_status} (attempt ${attempt}/${max_attempts})"
+                  ;;
+              esac
+              
+              echo "⏳ Waiting ${wait_time} seconds before next health check..."
+              sleep $wait_time
+              attempt=$((attempt + 1))
+            done
+            
+            echo "❌ ${service_name} failed to become healthy after ${max_attempts} attempts (${timeout_seconds} seconds)"
+            echo "🔍 Collecting diagnostic information for ${service_name}..."
+            
+            echo "📋 Final container status for ${service_name}:"
+            docker compose -f docker-compose.test.yml ps "${service_name}" || true
+            
+            echo "📜 Final container logs for ${service_name}:"
+            docker compose -f docker-compose.test.yml logs "${service_name}" || true
+            
+            echo "🐳 Docker system info:"
+            docker system df || true
+            
+            return 1
+          }
+
+          # Run tests based on type with improved error handling
+          case "${{ matrix.test-type }}" in
+            "unit")
+               echo "🧪 Running unit tests for all services..."
+               echo "📦 Building and starting unit test containers..."
+               
+               if ! timeout 1800 docker compose -f docker-compose.test.yml up --build --abort-on-container-exit unit-test; then
+                 echo "❌ Unit tests failed or timed out after 30 minutes"
+                 echo "🔍 Collecting diagnostic information..."
+                 
+                 echo "📜 Unit test logs:"
+                 docker compose -f docker-compose.test.yml logs unit-test || echo "Failed to retrieve unit test logs"
+                 
+                 echo "📋 Container status:"
+                 docker compose -f docker-compose.test.yml ps || echo "Failed to retrieve container status"
+                 
+                 echo "🐳 Docker system info:"
+                 docker system df || true
+                 
+                 exit 1
+               fi
+               echo "✅ Unit tests completed successfully"
+               ;;
+            "integration")
+              echo "🔗 Running integration tests..."
+              echo "🚀 Starting dependency services..."
+              
+              # Start dependency services first with timeout
+              if ! timeout 600 docker compose -f docker-compose.test.yml up -d --build postgres-test redis-test minio-test typesense-test; then
+                echo "❌ Failed to start dependency services within 10 minutes"
+                echo "🔍 Collecting diagnostic information..."
+                docker compose -f docker-compose.test.yml ps || true
+                docker compose -f docker-compose.test.yml logs postgres-test redis-test minio-test typesense-test || true
+                exit 1
+              fi
+              
+              # Wait for all services to be healthy
+              echo "⏳ Waiting for services to become healthy..."
+              check_container_health "postgres-test" && \
+              check_container_health "redis-test" && \
+              check_container_health "minio-test" && \
+              check_container_health "typesense-test"
+              
+              if [ $? -eq 0 ]; then
+                echo "✅ All dependency services are healthy, starting integration tests..."
+                if ! timeout 1800 docker compose -f docker-compose.test.yml up --abort-on-container-exit integration-test; then
+                  echo "❌ Integration tests failed or timed out after 30 minutes"
+                  echo "🔍 Collecting diagnostic information..."
+                  
+                  echo "📜 Integration test logs:"
+                  docker compose -f docker-compose.test.yml logs integration-test || echo "Failed to retrieve integration test logs"
+                  
+                  echo "📜 Service logs:"
+                  docker compose -f docker-compose.test.yml logs postgres-test redis-test minio-test typesense-test || echo "Failed to retrieve service logs"
+                  
+                  echo "📋 Container status:"
+                  docker compose -f docker-compose.test.yml ps || echo "Failed to retrieve container status"
+                  
+                  exit 1
+                fi
+                echo "✅ Integration tests completed successfully"
+              else
+                echo "❌ One or more dependency services failed to start properly"
+                exit 1
+              fi
+              ;;
+            "e2e")
+              echo "🎭 Running end-to-end tests..."
+              echo "🚀 Starting all services..."
+              
+              # Start all services with timeout
+              if ! timeout 900 docker compose -f docker-compose.test.yml up -d --build postgres-test redis-test minio-test typesense-test backend-test; then
+                echo "❌ Failed to start all services within 15 minutes"
+                echo "🔍 Collecting diagnostic information..."
+                docker compose -f docker-compose.test.yml ps || true
+                docker compose -f docker-compose.test.yml logs postgres-test redis-test minio-test typesense-test backend-test || true
+                exit 1
+              fi
+              
+              # Wait for all services to be healthy
+              echo "⏳ Waiting for services to become healthy..."
+              check_container_health "postgres-test" && \
+              check_container_health "redis-test" && \
+              check_container_health "minio-test" && \
+              check_container_health "typesense-test" && \
+              check_container_health "backend-test"
+              
+              if [ $? -eq 0 ]; then
+                echo "✅ All services are healthy, starting e2e tests..."
+                if ! timeout 2400 docker compose -f docker-compose.test.yml up --abort-on-container-exit e2e-test; then
+                  echo "❌ E2E tests failed or timed out after 40 minutes"
+                  echo "🔍 Collecting diagnostic information..."
+                  
+                  echo "📜 E2E test logs:"
+                  docker compose -f docker-compose.test.yml logs e2e-test || echo "Failed to retrieve e2e test logs"
+                  
+                  echo "📜 Service logs:"
+                  docker compose -f docker-compose.test.yml logs postgres-test redis-test minio-test typesense-test backend-test || echo "Failed to retrieve service logs"
+                  
+                  echo "📋 Container status:"
+                  docker compose -f docker-compose.test.yml ps || echo "Failed to retrieve container status"
+                  
+                  exit 1
+                fi
+                echo "✅ E2E tests completed successfully"
+              else
+                echo "❌ One or more services failed to start properly"
+                exit 1
+              fi
+              ;;
+          esac
+
+      - name: Collect test results
+        if: always()
+        env:
+          # Test Database Configuration
+          POSTGRES_TEST_DB: mking_test
+          POSTGRES_TEST_USER: postgres
+          POSTGRES_TEST_PASSWORD: postgres
+
+          # Test MinIO Configuration
+          MINIO_TEST_USER: testuser
+          MINIO_TEST_PASSWORD: testpassword
+
+          # Test Typesense Configuration
+          TYPESENSE_TEST_API_KEY: test-api-key
+
+          # Test Security Configuration
+          JWT_TEST_SECRET: test-jwt-secret-for-ci-pipeline-testing-only
+          ENCRYPTION_TEST_KEY: test-encryption-key-for-ci-pipeline-testing-only
+
+          # General Test Configuration
+          CI: true
+          NODE_ENV: test
+        run: |
+          echo "Collecting test results for ${{ matrix.test-type }}..."
+
+          # Ensure test-results directory exists
+          mkdir -p test-results coverage
+
+          # Export environment variables for docker-compose
+          export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
+          export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
+          export POSTGRES_TEST_PASSWORD="${POSTGRES_TEST_PASSWORD}"
+          export MINIO_TEST_USER="${MINIO_TEST_USER}"
+          export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
+          export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
+          export JWT_TEST_SECRET="${JWT_TEST_SECRET}"
+          export ENCRYPTION_TEST_KEY="${ENCRYPTION_TEST_KEY}"
+          export CI="${CI}"
+          export NODE_ENV="${NODE_ENV}"
+
+          # Run test results collector with proper environment
+          docker compose -f docker-compose.test.yml up --no-deps test-results || echo "Test results collector completed"
+
+          # Copy results from containers if they exist
+          case "${{ matrix.test-type }}" in
+            "unit")
+              docker compose -f docker-compose.test.yml logs unit-test > test-results/unit-${{ matrix.test-type }}.log 2>&1 || true
+              ;;
+            "integration")
+              docker compose -f docker-compose.test.yml logs integration-test > test-results/integration-${{ matrix.test-type }}.log 2>&1 || true
+              ;;
+            "e2e")
+              docker compose -f docker-compose.test.yml logs e2e-test > test-results/e2e-${{ matrix.test-type }}.log 2>&1 || true
+              ;;
+          esac
+
+          # List collected files for debugging
+          echo "📋 Collected test results:"
+          find test-results -type f -name "*" 2>/dev/null | head -20 || echo "No test result files found"
+          find coverage -type f -name "*" 2>/dev/null | head -20 || echo "No coverage files found"
+
+      - name: Cleanup test environment
+        if: always()
+        env:
+          # Test Database Configuration
+          POSTGRES_TEST_DB: mking_test
+          POSTGRES_TEST_USER: postgres
+          POSTGRES_TEST_PASSWORD: postgres
+
+          # Test MinIO Configuration
+          MINIO_TEST_USER: testuser
+          MINIO_TEST_PASSWORD: testpassword
+
+          # Test Typesense Configuration
+          TYPESENSE_TEST_API_KEY: test-api-key
+
+          # Test Security Configuration
+          JWT_TEST_SECRET: test-jwt-secret-for-ci-pipeline-testing-only
+          ENCRYPTION_TEST_KEY: test-encryption-key-for-ci-pipeline-testing-only
+
+          # General Test Configuration
+          CI: true
+          NODE_ENV: test
+        run: |
+          echo "🧹 Cleaning up test environment..."
+
+          # Export environment variables for docker-compose
+          export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
+          export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
+          export POSTGRES_TEST_PASSWORD="${POSTGRES_TEST_PASSWORD}"
+          export MINIO_TEST_USER="${MINIO_TEST_USER}"
+          export MINIO_TEST_PASSWORD="${MINIO_TEST_PASSWORD}"
+          export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
+          export JWT_TEST_SECRET="${JWT_TEST_SECRET}"
+          export ENCRYPTION_TEST_KEY="${ENCRYPTION_TEST_KEY}"
+          export CI="${CI}"
+          export NODE_ENV="${NODE_ENV}"
+
+          # Stop and remove all test containers and volumes
+          docker compose -f docker-compose.test.yml down -v --remove-orphans || echo "Some containers may have already been removed"
+
+          # Clean up Docker system resources
+          docker system prune -f || echo "Docker system cleanup completed"
+
+          echo "✅ Test environment cleanup completed"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.test-type }}
+          path: |
+            test-results/
+            coverage/
+          retention-days: 30
+
+  lint:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
-      
+
       - name: Get pnpm store directory
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-      
+
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      
-      - name: Validate lockfile (dry-run)
+
+      - name: Validate lockfile and install dependencies
         run: |
           echo "🔍 Checking lockfile synchronization..."
-          
+
           # Check pnpm version
           echo "📦 PNPM version: $(pnpm --version)"
-          
+
           # Validate lockfile with detailed error reporting
           if ! pnpm install --frozen-lockfile; then
             echo "❌ Lockfile validation failed"
@@ -101,95 +542,109 @@ jobs:
             
             exit 1
           fi
-          
+
           echo "✅ Lockfile is properly synchronized"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      
+
       - name: Lint backend
         run: pnpm run lint
         working-directory: ./backend
-      
+
       - name: Lint frontend
         run: pnpm run lint
         working-directory: ./frontend
-      
+
       - name: Type check backend
-        run: pnpm run build
+        run: |
+          pnpm run db:generate
+          pnpm run build
         working-directory: ./backend
-      
+
       - name: Type check frontend
         run: pnpm run build
         working-directory: ./frontend
-      
-      - name: Setup test environment
-        run: |
-          cp .env.example .env
-          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mking_frnd_test" >> .env
-          echo "REDIS_URL=redis://localhost:6379" >> .env
-      
-      - name: Run database migrations
-        run: pnpm exec prisma migrate deploy
-        working-directory: ./backend
-      
-      - name: Run backend tests
-        run: pnpm run test:ci
-        working-directory: ./backend
-      
-      - name: Run frontend tests
-        run: pnpm run test:ci
-        working-directory: ./frontend
-      
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
+
+  coverage:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
         with:
-          name: test-results
-          path: |
-            backend/test-results/
-            frontend/test-results/
-            backend/coverage/
-            frontend/coverage/
-          retention-days: 30
-      
+          pattern: test-results-*
+          merge-multiple: true
+          path: ./test-results
+
+      - name: Merge coverage reports
+        run: |
+          echo "Merging coverage reports..."
+          mkdir -p merged-coverage
+
+          # Install lcov if not present
+          if ! command -v lcov &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y lcov
+          fi
+
+          # Merge all .lcov files properly
+          lcov_files=$(find ./test-results -name "*.lcov")
+          if [ -n "$lcov_files" ]; then
+            first=1
+            for file in $lcov_files; do
+              if [ $first -eq 1 ]; then
+                cp "$file" merged-coverage/lcov.info
+                first=0
+              else
+                lcov --add-tracefile merged-coverage/lcov.info --add-tracefile "$file" --output-file merged-coverage/lcov.info
+              fi
+            done
+          fi
+
+          find ./test-results -name "coverage-final.json" -exec cp {} merged-coverage/ \; || true
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./backend/coverage/lcov.info,./frontend/coverage/lcov.info
+          files: ./merged-coverage/lcov.info
           fail_ci_if_error: false
           handle_no_reports_found: true
           verbose: true
           flags: unittests
           name: codecov-umbrella
           env_vars: OS,NODE_VERSION
-          directory: ./
+          directory: ./merged-coverage
           disable_search: false
 
   build:
     name: Build Docker Images
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, lint, coverage]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     permissions:
       contents: read
       packages: write
       id-token: write
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -201,7 +656,7 @@ jobs:
             type=ref,event=pr
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
-      
+
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
@@ -212,7 +667,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
@@ -230,11 +685,11 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/develop'
     environment: staging
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Deploy to staging
         run: |
           echo "Deploying to staging environment..."
@@ -247,11 +702,11 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     environment: production
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Deploy to production
         run: |
           echo "Deploying to production environment..."

@@ -1,0 +1,582 @@
+# Docker Compose Test Configuration
+# Use with: docker compose -f docker-compose.test.yml up --abort-on-container-exit
+# This configuration is optimized for automated testing in CI/CD pipelines
+
+services:
+  # Test Database
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: mking-postgres-test
+    environment:
+      POSTGRES_DB: ${POSTGRES_TEST_DB:-mking_test}
+      POSTGRES_USER: ${POSTGRES_TEST_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_TEST_PASSWORD:?POSTGRES_TEST_PASSWORD is required}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432" # Different port to avoid conflicts
+    volumes:
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - test-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_TEST_USER:-test_user} -d ${POSTGRES_TEST_DB:-mking_test} && psql -U ${POSTGRES_TEST_USER:-test_user} -d ${POSTGRES_TEST_DB:-mking_test} -c 'SELECT 1' > /dev/null 2>&1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 45s
+    tmpfs:
+      - /var/lib/postgresql/data # Use tmpfs for faster tests
+
+  # Test Redis
+  redis-test:
+    image: redis:7-alpine
+    container_name: mking-redis-test
+    command: redis-server --appendonly no --save "" # Disable persistence for tests
+    ports:
+      - "6380:6379" # Different port to avoid conflicts
+    networks:
+      - test-network
+    healthcheck:
+      test:
+        ["CMD-SHELL", "redis-cli -a ${REDIS_TEST_PASSWORD:-test_redis_password} ping | grep PONG"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+    tmpfs:
+      - /data # Use tmpfs for faster tests
+
+  # Test MinIO
+  minio-test:
+    image: minio/minio:latest
+    container_name: mking-minio-test
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_TEST_USER:-testuser}
+      MINIO_ROOT_PASSWORD: ${MINIO_TEST_PASSWORD:?MINIO_TEST_PASSWORD is required}
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    networks:
+      - test-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:9000/minio/health/live && curl -f http://localhost:9000/minio/health/ready",
+        ]
+      interval: 20s
+      timeout: 15s
+      retries: 6
+      start_period: 60s
+    tmpfs:
+      - /data # Use tmpfs for faster tests
+
+  # Test Typesense
+  typesense-test:
+    image: typesense/typesense:0.25.2
+    container_name: mking-typesense-test
+    environment:
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_API_KEY: ${TYPESENSE_TEST_API_KEY:?TYPESENSE_TEST_API_KEY is required}
+      TYPESENSE_ENABLE_CORS: true
+      # Optimize for faster startup in test environment
+      TYPESENSE_LOG_LEVEL: WARN
+    ports:
+      - "8109:8108"
+    networks:
+      - test-network
+    healthcheck:
+      # Enhanced health check with proper API key validation
+      test:
+        [
+          "CMD-SHELL",
+          "curl -H 'X-TYPESENSE-API-KEY: ${TYPESENSE_TEST_API_KEY}' -f http://localhost:8108/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 45s # Extended startup period for CI environment
+    tmpfs:
+      - /data # Use tmpfs for faster tests
+
+  # Backend Tests
+  backend-test:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: test
+    container_name: mking-backend-test
+    environment:
+      - NODE_ENV=test
+      - DATABASE_URL=postgresql://${POSTGRES_TEST_USER:-postgres}:${POSTGRES_TEST_PASSWORD:?POSTGRES_TEST_PASSWORD is required}@postgres-test:5432/${POSTGRES_TEST_DB:-mking_test}
+      - REDIS_URL=redis://redis-test:6379
+      - MINIO_ENDPOINT=minio-test:9000
+      - MINIO_ACCESS_KEY=${MINIO_TEST_USER:-testuser}
+      - MINIO_SECRET_KEY=${MINIO_TEST_PASSWORD:?MINIO_TEST_PASSWORD is required}
+      - TYPESENSE_HOST=typesense-test
+      - TYPESENSE_PORT=8108
+      - TYPESENSE_API_KEY=${TYPESENSE_TEST_API_KEY:?TYPESENSE_TEST_API_KEY is required}
+      - JWT_SECRET=${JWT_TEST_SECRET:?JWT_TEST_SECRET is required}
+      - ENCRYPTION_KEY=${ENCRYPTION_TEST_KEY:?ENCRYPTION_TEST_KEY is required}
+      - CI=true
+      - PORT=3001
+      - CHOWN_DIRS=/app/test-results /app/coverage
+    ports:
+      - "3002:3001" # Different port to avoid conflicts
+    volumes:
+      - ./backend:/app/backend
+      - /app/backend/node_modules
+      - ./test-results:/app/test-results
+      - ./coverage:/app/coverage
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "cd /app/backend && npx ts-node src/healthcheck.ts"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      minio-test:
+        condition: service_healthy
+      typesense-test:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Waiting for all services to be ready...'
+        
+        # Enhanced service readiness check with timeout
+        MAX_WAIT=300  # 5 minutes timeout
+        WAIT_COUNT=0
+        
+        echo 'Checking Typesense health...'
+        until wget --no-verbose --tries=1 --spider --timeout=10 http://typesense-test:8108/health 2>/dev/null; do
+          if [ \$WAIT_COUNT -ge \$MAX_WAIT ]; then
+            echo 'ERROR: Typesense failed to become ready within timeout'
+            exit 1
+          fi
+          echo 'Waiting for Typesense to be ready... (\$WAIT_COUNT/\$MAX_WAIT)'
+          sleep 2
+          WAIT_COUNT=\$((WAIT_COUNT + 2))
+        done
+        
+        echo 'All services are ready!'
+        sleep 5
+        
+        cd /app/backend
+        echo 'Running database migrations...'
+        npm run db:migrate:test
+        echo 'Seeding test data...'
+        npm run db:seed:test
+        
+        echo 'Starting backend server for health checks...'
+        npm run dev &
+        SERVER_PID=\$!
+        
+        # Wait for server to be ready
+        echo 'Waiting for backend server to be ready...'
+        WAIT_COUNT=0
+        until npx ts-node src/healthcheck.ts 2>/dev/null; do
+          if [ \$WAIT_COUNT -ge 60 ]; then
+            echo 'ERROR: Backend server failed to start within timeout'
+            kill \$SERVER_PID 2>/dev/null || true
+            exit 1
+          fi
+          echo 'Waiting for backend server... (\$WAIT_COUNT/60)'
+          sleep 2
+          WAIT_COUNT=\$((WAIT_COUNT + 2))
+        done
+        
+        echo 'Backend server is ready!'
+        
+        echo 'Running unit tests...'
+        npm run test:unit
+        echo 'Running integration tests...'
+        npm run test:integration
+        echo 'Running API tests...'
+        npm run test:api
+        echo 'Generating coverage report...'
+        npm run test:coverage
+        
+        # Keep server running for health checks
+        wait \$SERVER_PID
+      "
+
+  # Frontend Tests
+  frontend-test:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: test
+    container_name: mking-frontend-test
+    environment:
+      - NODE_ENV=test
+      - VITE_API_BASE_URL=http://backend-test:8000/api
+      - CI=true
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+      - ./test-results:/app/test-results
+      - ./coverage:/app/coverage
+    networks:
+      - test-network
+    depends_on:
+      - backend-test
+    command: >
+      sh -c "
+        cd /app/frontend
+        echo 'Setting up test environment...'
+        
+        # Create test-results and coverage directories
+        mkdir -p /app/test-results /app/coverage
+        
+        # Check if we're in CI environment
+        if [ "$CI" = "true" ]; then
+          echo 'Running tests in CI mode with coverage...'
+          pnpm run test:ci
+        else
+          echo 'Running frontend unit tests...'
+          # Check if test scripts exist by looking at package.json
+          if grep -q '"test:unit"' package.json; then
+            pnpm run test:unit
+          else
+            echo 'test:unit script not found, running default test command...'
+            pnpm run test --run
+          fi
+          
+          echo 'Running component tests...'
+          if grep -q '"test:component"' package.json; then
+            pnpm run test:component
+          else
+            echo 'test:component script not found, skipping...'
+          fi
+          
+          echo 'Running E2E tests...'
+          if grep -q '"test:e2e"' package.json; then
+            pnpm run test:e2e
+          else
+            echo 'test:e2e script not found, skipping...'
+          fi
+          
+          echo 'Generating coverage report...'
+          if grep -q '"test:coverage"' package.json; then
+            pnpm run test:coverage
+          else
+            echo 'test:coverage script not found, skipping...'
+          fi
+        fi
+        
+        echo 'Frontend tests completed.'
+      "
+
+  # Note: Auth and User services are integrated into the main backend service
+  # No separate microservices exist for auth and user functionality
+
+  # Note: Chat, Media, and Admin services are integrated into the main backend service
+  # No separate microservices exist for these functionalities
+
+  # Integration Tests
+  # Note: Integration tests are currently disabled as they require a separate Dockerfile
+  # TODO: Create tests/Dockerfile or integrate tests into backend/frontend services
+  # integration-test:
+  #   build:
+  #     context: ./tests
+  #     dockerfile: Dockerfile
+  #   container_name: mking-integration-test
+  #   environment:
+  #     - NODE_ENV=test
+  #     - API_BASE_URL=http://backend-test:8000
+  #     - FRONTEND_URL=http://frontend-test:3000
+  #     - CI=true
+  #   volumes:
+  #     - ./tests:/app
+  #     - /app/node_modules
+  #     - ./test-results:/app/test-results
+  #   networks:
+  #     - test-network
+  #   depends_on:
+  #     - backend-test
+  #     - frontend-test
+  #   command: >
+  #     sh -c "
+  #       echo 'Waiting for all services to be ready...'
+  #       sleep 30
+  #       echo 'Running end-to-end integration tests...'
+  #       npm run test:e2e
+  #       echo 'Running API integration tests...'
+  #       npm run test:api:integration
+  #       echo 'Running performance tests...'
+  #       npm run test:performance
+  #     "
+
+  # Unit Tests Service
+  unit-test:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: test
+    container_name: mking-unit-test
+    environment:
+      # Database configuration (for schema validation)
+      - POSTGRES_HOST=postgres-test
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_TEST_DB:-mking_test}
+      - POSTGRES_USER=${POSTGRES_TEST_USER:-test_user}
+      - POSTGRES_PASSWORD=${POSTGRES_TEST_PASSWORD:-test_password}
+      - DATABASE_URL=postgresql://${POSTGRES_TEST_USER:-test_user}:${POSTGRES_TEST_PASSWORD:-test_password}@postgres-test:5432/${POSTGRES_TEST_DB:-mking_test}
+
+      # Redis configuration
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_TEST_PASSWORD:-test_redis_password}
+      - REDIS_URL=redis://:${REDIS_TEST_PASSWORD:-test_redis_password}@redis-test:6379
+
+      # MinIO configuration
+      - MINIO_ENDPOINT=minio-test:9000
+      - MINIO_ACCESS_KEY=${MINIO_TEST_USER:-test_minio_user}
+      - MINIO_SECRET_KEY=${MINIO_TEST_PASSWORD:-test_minio_password}
+      - MINIO_BUCKET=${MINIO_TEST_BUCKET:-test-bucket}
+      - MINIO_USE_SSL=false
+
+      # Typesense configuration
+      - TYPESENSE_HOST=typesense-test
+      - TYPESENSE_PORT=8108
+      - TYPESENSE_PROTOCOL=http
+      - TYPESENSE_API_KEY=${TYPESENSE_TEST_API_KEY:-test-api-key}
+
+      # JWT configuration
+      - JWT_SECRET=${JWT_TEST_SECRET:-test-jwt-secret-key-for-testing-only}
+      - JWT_EXPIRES_IN=${JWT_TEST_EXPIRES_IN:-1h}
+
+      # Encryption configuration
+      - ENCRYPTION_KEY=${ENCRYPTION_TEST_KEY:-test-encryption-key-32-characters}
+
+      # Test configuration
+      - NODE_ENV=test
+      - CI=true
+      - TEST_TYPE=unit
+
+      # Fix ownership issues
+      - CHOWN_DIRS=/app/test-results /app/coverage
+    volumes:
+      - ./backend:/app/backend:ro
+      - ./shared:/app/shared:ro
+      - test-results:/app/test-results
+      - coverage:/app/coverage
+    networks:
+      - test-network
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      minio-test:
+        condition: service_healthy
+      typesense-test:
+        condition: service_healthy
+    command: >
+      sh -c "
+        cd /app/backend
+        echo 'Setting up test environment for unit tests...'
+        
+        # Create test-results and coverage directories
+        mkdir -p /app/test-results /app/coverage
+        
+        echo 'Running database migrations...'
+        npm run db:migrate:test
+        
+        echo 'Running unit tests...'
+        npm run test:unit
+        
+        echo 'Unit tests completed successfully!'
+      "
+
+  # Integration Tests Service
+  integration-test:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: test
+    container_name: mking-integration-test
+    environment:
+      # Database configuration
+      - POSTGRES_HOST=postgres-test
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_TEST_DB:-mking_test}
+      - POSTGRES_USER=${POSTGRES_TEST_USER:-test_user}
+      - POSTGRES_PASSWORD=${POSTGRES_TEST_PASSWORD:-test_password}
+      - DATABASE_URL=postgresql://${POSTGRES_TEST_USER:-test_user}:${POSTGRES_TEST_PASSWORD:-test_password}@postgres-test:5432/${POSTGRES_TEST_DB:-mking_test}
+
+      # Redis configuration
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_TEST_PASSWORD:-test_redis_password}
+      - REDIS_URL=redis://:${REDIS_TEST_PASSWORD:-test_redis_password}@redis-test:6379
+
+      # MinIO configuration
+      - MINIO_ENDPOINT=minio-test:9000
+      - MINIO_ACCESS_KEY=${MINIO_TEST_USER:-test_minio_user}
+      - MINIO_SECRET_KEY=${MINIO_TEST_PASSWORD:-test_minio_password}
+      - MINIO_BUCKET=${MINIO_TEST_BUCKET:-test-bucket}
+      - MINIO_USE_SSL=false
+
+      # Typesense configuration
+      - TYPESENSE_HOST=typesense-test
+      - TYPESENSE_PORT=8108
+      - TYPESENSE_PROTOCOL=http
+      - TYPESENSE_API_KEY=${TYPESENSE_TEST_API_KEY:-test-api-key}
+
+      # JWT configuration
+      - JWT_SECRET=${JWT_TEST_SECRET:-test-jwt-secret-key-for-testing-only}
+      - JWT_EXPIRES_IN=${JWT_TEST_EXPIRES_IN:-1h}
+
+      # Encryption configuration
+      - ENCRYPTION_KEY=${ENCRYPTION_TEST_KEY:-test-encryption-key-32-characters}
+
+      # Test configuration
+      - NODE_ENV=test
+      - CI=true
+      - TEST_TYPE=integration
+      - PORT=3001
+
+      # Fix ownership issues
+      - CHOWN_DIRS=/app/test-results /app/coverage
+    ports:
+      - "3003:3001"
+    volumes:
+      - ./backend:/app/backend:ro
+      - ./shared:/app/shared:ro
+      - test-results:/app/test-results
+      - coverage:/app/coverage
+    networks:
+      - test-network
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      minio-test:
+        condition: service_healthy
+      typesense-test:
+        condition: service_healthy
+    command: >
+      sh -c "
+        cd /app/backend
+        echo 'Setting up test environment for integration tests...'
+        
+        # Create test-results and coverage directories
+        mkdir -p /app/test-results /app/coverage
+        
+        echo 'Running database migrations...'
+        npm run db:migrate:test
+        echo 'Seeding test data...'
+        npm run db:seed:test
+        
+        echo 'Starting backend server for integration tests...'
+        npm run dev &
+        SERVER_PID=\$!
+        
+        # Wait for server to be ready
+        echo 'Waiting for backend server to be ready...'
+        WAIT_COUNT=0
+        until npx ts-node src/healthcheck.ts 2>/dev/null; do
+          if [ \$WAIT_COUNT -ge 60 ]; then
+            echo 'ERROR: Backend server failed to start within timeout'
+            kill \$SERVER_PID 2>/dev/null || true
+            exit 1
+          fi
+          echo 'Waiting for backend server... (\$WAIT_COUNT/60)'
+          sleep 2
+          WAIT_COUNT=\$((WAIT_COUNT + 2))
+        done
+        
+        echo 'Running integration tests...'
+        npm run test:integration
+        
+        echo 'Integration tests completed successfully!'
+        kill \$SERVER_PID 2>/dev/null || true
+      "
+
+  # E2E Tests Service
+  e2e-test:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: test
+    container_name: mking-e2e-test
+    environment:
+      - NODE_ENV=test
+      - VITE_API_BASE_URL=http://backend-test:3001/api
+      - CI=true
+      - TEST_TYPE=e2e
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+      - ./test-results:/app/test-results
+      - ./coverage:/app/coverage
+    networks:
+      - test-network
+    depends_on:
+      - backend-test
+    command: >
+      sh -c "
+        cd /app/frontend
+        echo 'Setting up test environment for E2E tests...'
+        
+        # Create test-results and coverage directories
+        mkdir -p /app/test-results /app/coverage
+        
+        echo 'Waiting for backend service to be ready...'
+        sleep 30
+        
+        echo 'Running E2E tests...'
+        if grep -q '\"test:e2e\"' package.json; then
+          pnpm run test:e2e
+        else
+          echo 'test:e2e script not found, running default test command...'
+          pnpm run test --run
+        fi
+        
+        echo 'E2E tests completed successfully!'
+      "
+
+  # Test Results Collector
+  test-results:
+    image: alpine:latest
+    container_name: mking-test-results
+    volumes:
+      - ./test-results:/results
+      - ./coverage:/coverage
+    networks:
+      - test-network
+    depends_on:
+      - backend-test
+      - frontend-test
+      - unit-test
+      - integration-test
+      - e2e-test
+    command: >
+      sh -c "
+        echo 'Collecting test results...'
+        find /results -name '*.xml' -o -name '*.json' | head -20
+        echo 'Collecting coverage reports...'
+        find /coverage -name '*.lcov' -o -name '*.json' | head -20
+        echo 'Test execution completed!'
+      "
+
+networks:
+  test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+# No persistent volumes for test environment - everything runs in memory/tmpfs

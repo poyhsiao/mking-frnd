@@ -1,0 +1,61 @@
+{
+  "name": "mking-bdd-tests",
+  "version": "1.0.0",
+  "description": "BDD tests for mking application using Cucumber.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "cucumber-js",
+    "test:bdd": "cucumber-js features/**/*.feature --require step-definitions/**/*.ts --require-module ts-node/register",
+    "test:health-check": "cucumber-js features/typesense-health-check.feature --require step-definitions/typesense-health-check.steps.ts --require-module ts-node/register",
+    "test:docker": "../scripts/run-bdd-tests.sh",
+    "lint": "eslint . --ext .ts,.js",
+    "type-check": "tsc --noEmit",
+    "validate:compose": "docker compose -f ../docker-compose.test.yml config",
+    "validate:typesense": "docker compose -f ../docker-compose.test.yml up -d typesense-test && sleep 30 && docker compose -f ../docker-compose.test.yml ps typesense-test && docker compose -f ../docker-compose.test.yml down -v"
+  },
+  "keywords": [
+    "bdd",
+    "cucumber",
+    "testing",
+    "docker",
+    "typesense",
+    "health-check"
+  ],
+  "author": "mking development team",
+  "license": "MIT",
+  "devDependencies": {
+    "@cucumber/cucumber": "^10.9.0",
+    "@playwright/test": "^1.40.0",
+    "@types/chai": "^4.3.11",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "axios": "^1.6.2",
+    "chai": "^4.3.10",
+    "cucumber-html-reporter": "^7.1.1",
+    "eslint": "^8.56.0",
+    "js-yaml": "^4.1.0",
+    "@types/js-yaml": "^4.0.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "cucumber": {
+    "requireModule": [
+      "ts-node/register"
+    ],
+    "require": [
+      "step-definitions/**/*.steps.ts"
+    ],
+    "format": [
+      "progress-bar",
+      "json:reports/cucumber-report.json"
+    ],
+    "formatOptions": {
+      "snippetInterface": "async-await"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

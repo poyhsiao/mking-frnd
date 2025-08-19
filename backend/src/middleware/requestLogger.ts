@@ -21,9 +21,7 @@ export const requestLogger = (
 
   // Override res.end to log response
   const originalEnd = res.end.bind(res);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
   const originalEndAny = originalEnd as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
   res.end = ((...args: any[]) => {
     const duration = Date.now() - startTime;
 
@@ -36,9 +34,7 @@ export const requestLogger = (
     });
 
     // Call original end with all arguments
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
     return originalEndAny(...args);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as any;
 
   next();

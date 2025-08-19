@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Backend Development Service
@@ -12,13 +12,13 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3001
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mking_dev
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-mking_dev}
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=dev-jwt-secret-change-in-production
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - CORS_ORIGIN=http://localhost:3000
     ports:
       - "3001:3001"
-      - "9229:9229"  # Node.js debugger port
+      - "9229:9229" # Node.js debugger port
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -39,10 +39,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 512M
         reservations:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 256M
 
   # Frontend Development Service
@@ -57,7 +57,7 @@ services:
       - NODE_ENV=development
       - VITE_API_URL=http://localhost:3001
       - VITE_APP_NAME=MKing Development
-      - CHOKIDAR_USEPOLLING=true  # For file watching in Docker
+      - CHOKIDAR_USEPOLLING=true # For file watching in Docker
     ports:
       - "3000:3000"
     volumes:
@@ -77,10 +77,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 512M
         reservations:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 256M
 
   # PostgreSQL Database (Development)
@@ -91,7 +91,7 @@ services:
     environment:
       POSTGRES_DB: mking_dev
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
       - "5432:5432"
@@ -109,10 +109,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 256M
         reservations:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 128M
 
   # Redis Cache (Development)
@@ -136,10 +136,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 128M
         reservations:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 64M
 
   # Development Tools Container
@@ -152,9 +152,9 @@ services:
       - dev_tools_cache:/root/.cache
     networks:
       - mking-network
-    command: tail -f /dev/null  # Keep container running
+    command: tail -f /dev/null # Keep container running
     profiles:
-      - tools  # Only start when explicitly requested
+      - tools # Only start when explicitly requested
 
 volumes:
   postgres_dev_data:

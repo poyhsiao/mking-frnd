@@ -6,9 +6,9 @@
   "type": "module",
   "engines": {
     "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@8.15.0",
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "pnpm --parallel --recursive run dev",
     "build": "pnpm --recursive run build",
@@ -16,6 +16,7 @@
     "test:unit": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
+    "test:bdd": "cucumber-js features/**/*.feature --require-module ts-node/esm --require features/step_definitions/**/*.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "type-check": "tsc --noEmit",
@@ -37,20 +38,29 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@cucumber/cucumber": "^10.9.0",
+    "@types/chai": "^4.3.11",
+    "@types/glob": "^9.0.0",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.0",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
+    "@types/yaml": "^1.9.7",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "chai": "^4.5.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.1.3",
+    "glob": "^11.0.3",
     "husky": "^8.0.3",
+    "js-yaml": "^4.1.0",
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
-    "js-yaml": "^4.1.0",
-    "@types/js-yaml": "^4.0.9",
-    "vitest": "^1.2.0"
+    "vitest": "^1.2.0",
+    "yaml": "^2.8.1"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [

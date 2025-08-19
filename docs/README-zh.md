@@ -21,10 +21,13 @@
 - [技術棧規格](./TECH_STACK.md) - 已確定技術選型
 
 ### 🛠️ 開發指南
+- [`development-environment-setup.md`](./development-environment-setup.md) - ✅ 任務1.1完成 - 開發環境設置
+- [`deployment-guide.md`](./deployment-guide.md) - 完整部署說明
+- [`docker-best-practices.md`](./docker-best-practices.md) - Docker 優化指南
 - [`development/`](./development/) - 開發指南和規範
   - [開發環境設置](./development/setup.md)
   - [實施計劃](./development/implementation-plan.md)
-  - [TDD 開發指南](./development/tdd-guidelines.md)
+  - [BDD 開發指南](./development/bdd-guidelines.md)
   - [開發規範](./development/DEVELOPMENT_STANDARDS.md) ⭐ 必讀
 - [`api/`](./api/) - API文檔和規範
 - [`database/`](./database/) - 資料庫設計和遷移
@@ -43,7 +46,13 @@
 2. **技術架構**: 查看 [技術決策記錄](./technical-decisions.md)
 3. **開發規劃**: 參考 [開發任務 Todo List](./development-tasks.md)
 4. **功能優先級**: 了解 [MVP 優先級矩陣](./mvp-priority-matrix.md)
-5. **環境設置**: 開始 [開發環境設置](./development/setup.md)
+5. **環境設置**: ✅ **已完成** - 使用自動化設置腳本 [`../scripts/setup-dev.sh`](../scripts/setup-dev.sh)
+6. **測試**: 使用測試腳本 [`../scripts/run-tests.sh`](../scripts/run-tests.sh)
+7. **部署**: 遵循 [部署指南](./deployment-guide.md) 進行 Docker/Docker Compose 部署
+
+### 🎯 任務1.1狀態: ✅ 已完成
+
+開發環境設置現已完全自動化並可供使用。所有Docker配置、CI/CD管道和開發工具都已按照最佳實踐實施。
 
 ## 🛠️ 技術棧概覽
 
@@ -76,7 +85,7 @@
 
 ## 開發原則
 
-- **測試驅動開發 (TDD)**: 所有功能都必須先寫測試
+- **行為驅動開發 (BDD)**: 所有功能都必須先寫場景
 - **代碼品質**: 遵循 PEP 8 (Python) 和 ESLint (JavaScript/TypeScript) 規範
 - **安全第一**: 所有用戶輸入都必須驗證和清理
 - **文檔完整**: 所有模組和函數都必須有清晰的文檔

@@ -1,6 +1,6 @@
 # PNPM Lockfile 验证修复
 
-本文档描述了基于TDD方法修复GitHub Actions中`ERR_PNPM_OUTDATED_LOCKFILE`和"Unknown option: 'dry-run'"错误的解决方案。
+本文档描述了基于BDD方法修复GitHub Actions中`ERR_PNPM_OUTDATED_LOCKFILE`和"Unknown option: 'dry-run'"错误的解决方案。
 
 ## 问题描述
 
@@ -28,7 +28,7 @@ Error: Process completed with exit code 1.
 
 ## 实施的解决方案
 
-### 1. 测试驱动开发方法
+### 1. 行为驱动开发方法
 
 在`src/test/pnpm-lockfile-validation.test.ts`中创建了全面的测试：
 - 验证CI工作流不包含无效选项
@@ -67,7 +67,7 @@ Error: Process completed with exit code 1.
    - 验证工作区配置
 
 3. **修复脚本**: `scripts/fix-lockfile-validation.sh`
-   - 全面的TDD修复实现
+   - 全面的BDD修复实现
    - 自动化测试和验证
    - 文档生成
 
@@ -146,7 +146,7 @@ pnpm install --frozen-lockfile
 
 ## 结论
 
-这个TDD解决方案提供了：
+这个BDD解决方案提供了：
 - 全面的测试覆盖
 - 改进的错误处理
 - 清晰的故障排除指导

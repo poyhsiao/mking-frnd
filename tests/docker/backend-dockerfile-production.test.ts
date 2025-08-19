@@ -5,7 +5,7 @@ import path from 'path';
 
 /**
  * Test suite for backend Dockerfile production stage
- * Following TDD methodology to ensure Docker build works correctly
+ * Following BDD methodology to ensure Docker build works correctly
  */
 describe('Backend Dockerfile Production Stage', () => {
   const projectRoot = path.resolve(__dirname, '../..');
@@ -31,27 +31,21 @@ describe('Backend Dockerfile Production Stage', () => {
 
   it('should build production stage successfully', () => {
     expect(() => {
-      execSync(
-        `docker build -f backend/Dockerfile --target production -t ${testImageName} .`,
-        {
-          cwd: projectRoot,
-          stdio: 'pipe',
-          timeout: 300000, // 5 minutes timeout
-        }
-      );
+      execSync(`docker build -f backend/Dockerfile --target production -t ${testImageName} .`, {
+        cwd: projectRoot,
+        stdio: 'pipe',
+        timeout: 300000, // 5 minutes timeout
+      });
     }).not.toThrow();
   });
 
   it('should install production dependencies correctly', () => {
     // Build the image first
-    execSync(
-      `docker build -f backend/Dockerfile --target production -t ${testImageName} .`,
-      {
-        cwd: projectRoot,
-        stdio: 'pipe',
-        timeout: 300000,
-      }
-    );
+    execSync(`docker build -f backend/Dockerfile --target production -t ${testImageName} .`, {
+      cwd: projectRoot,
+      stdio: 'pipe',
+      timeout: 300000,
+    });
 
     // Check that node_modules exists and contains expected packages
     const result = execSync(
@@ -59,7 +53,7 @@ describe('Backend Dockerfile Production Stage', () => {
       {
         encoding: 'utf8',
         timeout: 30000,
-      }
+      },
     );
 
     expect(result).toBeDefined();
@@ -67,14 +61,11 @@ describe('Backend Dockerfile Production Stage', () => {
 
   it('should have correct workspace configuration files', () => {
     // Build the image first
-    execSync(
-      `docker build -f backend/Dockerfile --target production -t ${testImageName} .`,
-      {
-        cwd: projectRoot,
-        stdio: 'pipe',
-        timeout: 300000,
-      }
-    );
+    execSync(`docker build -f backend/Dockerfile --target production -t ${testImageName} .`, {
+      cwd: projectRoot,
+      stdio: 'pipe',
+      timeout: 300000,
+    });
 
     // Check that workspace files are present
     const result = execSync(
@@ -82,7 +73,7 @@ describe('Backend Dockerfile Production Stage', () => {
       {
         encoding: 'utf8',
         timeout: 30000,
-      }
+      },
     );
 
     expect(result).toBeDefined();
@@ -90,23 +81,17 @@ describe('Backend Dockerfile Production Stage', () => {
 
   it('should run the application successfully', () => {
     // Build the image first
-    execSync(
-      `docker build -f backend/Dockerfile --target production -t ${testImageName} .`,
-      {
-        cwd: projectRoot,
-        stdio: 'pipe',
-        timeout: 300000,
-      }
-    );
+    execSync(`docker build -f backend/Dockerfile --target production -t ${testImageName} .`, {
+      cwd: projectRoot,
+      stdio: 'pipe',
+      timeout: 300000,
+    });
 
     // Test that the container can start (we'll stop it quickly)
     expect(() => {
-      execSync(
-        `timeout 10s docker run --rm ${testImageName} || true`,
-        {
-          timeout: 15000,
-        }
-      );
+      execSync(`timeout 10s docker run --rm ${testImageName} || true`, {
+        timeout: 15000,
+      });
     }).not.toThrow();
   });
 });

@@ -9,11 +9,11 @@ import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 beforeAll(async () => {
   // Setup global test environment
   console.log('🧪 Setting up test environment...');
-  
+
   // Set test environment variables
   process.env.NODE_ENV = 'test';
   process.env.LOG_LEVEL = 'error';
-  
+
   // Mock console methods in test environment
   if (process.env.VITEST_SILENT === 'true') {
     console.log = vi.fn();
@@ -30,7 +30,7 @@ afterAll(async () => {
 beforeEach(() => {
   // Reset all mocks before each test
   vi.clearAllMocks();
-  
+
   // Reset timers
   vi.useRealTimers();
 });
@@ -48,21 +48,21 @@ global.testUtils = {
   createMock: <T extends (...args: any[]) => any>(implementation?: T) => {
     return vi.fn(implementation);
   },
-  
+
   /**
    * Wait for a specified amount of time
    */
   wait: (ms: number): Promise<void> => {
     return new Promise(resolve => setTimeout(resolve, ms));
   },
-  
+
   /**
    * Create a promise that resolves after a delay
    */
   delay: (ms: number): Promise<void> => {
     return new Promise(resolve => setTimeout(resolve, ms));
   },
-  
+
   /**
    * Generate a random string for testing
    */
@@ -74,7 +74,7 @@ global.testUtils = {
     }
     return result;
   },
-  
+
   /**
    * Generate a random email for testing
    */
@@ -83,14 +83,14 @@ global.testUtils = {
     const domain = global.testUtils.randomString(6).toLowerCase();
     return `${username}@${domain}.com`;
   },
-  
+
   /**
    * Generate a random UUID v4 for testing
    */
   randomUUID: (): string => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   },
@@ -109,4 +109,4 @@ declare global {
 }
 
 // Export for explicit imports
-export { };
+export {};

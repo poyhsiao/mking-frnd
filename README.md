@@ -54,6 +54,10 @@
 
 ## 🚀 快速開始
 
+### 🎯 Task 1.1 狀態: ✅ 已完成
+
+開發環境設置現已完全自動化！使用我們的一鍵設置腳本即可快速開始。
+
 ### 前置要求
 
 - **Docker** 20.10+ 和 **Docker Compose** 2.0+
@@ -61,7 +65,21 @@
 - 至少 **8GB** 可用內存
 - 至少 **20GB** 可用磁盤空間
 
-### 安裝步驟
+### 🚀 一鍵自動化設置 (推薦)
+
+```bash
+# 克隆項目
+git clone https://github.com/your-username/mking-frnd.git
+cd mking-frnd
+
+# 一鍵設置開發環境
+./scripts/setup-dev.sh
+
+# 運行測試
+./scripts/run-tests.sh
+```
+
+### 📋 手動安裝步驟 (可選)
 
 1. **克隆項目**
    ```bash
@@ -102,9 +120,11 @@
 - **API Gateway**: http://localhost:8080
 
 #### 🔧 管理界面
-- **Keycloak 認證**: http://localhost:8081 (admin/admin123)
-- **MinIO 存儲**: http://localhost:9001 (minioadmin/minioadmin123)
-- **Grafana 監控**: http://localhost:3002 (admin/admin123)
+- **Keycloak 認證**: http://localhost:8081 (請使用環境變數設定的憑據)
+- **MinIO 存儲**: http://localhost:9001 (請使用環境變數設定的憑據)
+- **Grafana 監控**: http://localhost:3002 (請使用環境變數設定的憑據)
+
+> ⚠️ **安全提醒**: 請勿在生產環境中使用預設憑據。請參考 `.env.example` 設定強密碼。
 - **Typesense 搜尋**: http://localhost:8108
 
 #### 📊 開發工具
@@ -240,7 +260,7 @@ docker-compose logs -f postgres
 
 ### 系統監控
 
-- **Grafana**: http://localhost:3000 (admin/admin123)
+- **Grafana**: http://localhost:3000 (請使用環境變數設定的憑據)
   - 系統資源監控
   - 應用性能指標
   - 日誌查詢和分析
@@ -355,6 +375,7 @@ tar -czf config_backup_${DATE}.tar.gz config/
 ### 獲取幫助
 
 - 查看項目文檔: `docs/` 目錄
+- PostgreSQL 健康檢查修復: [docs/postgres-health-check-fix.md](docs/postgres-health-check-fix.md)
 - 提交 Issue: GitHub Issues
 - 社區討論: GitHub Discussions
 

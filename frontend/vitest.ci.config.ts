@@ -19,13 +19,13 @@ export default defineConfig({
     // Global test settings
     globals: true,
     environment: 'jsdom',
-    
+
     // Setup files
     setupFiles: ['./src/test/setup.ts'],
-    
+
     // CSS handling
     css: true,
-    
+
     // Coverage configuration for CI
     coverage: {
       provider: 'v8',
@@ -39,59 +39,49 @@ export default defineConfig({
         '**/dist/**',
         '**/build/**',
         'src/main.tsx',
-        'src/vite-env.d.ts'
+        'src/vite-env.d.ts',
       ],
       thresholds: {
         global: {
           branches: 75,
           functions: 75,
           lines: 75,
-          statements: 75
-        }
-      }
+          statements: 75,
+        },
+      },
     },
-    
+
     // Timeouts for CI environment
     testTimeout: 30000,
     hookTimeout: 30000,
-    
+
     // Reporter configuration
     reporter: process.env.CI ? ['verbose', 'junit'] : ['verbose'],
     outputFile: {
-      junit: './test-results/junit.xml'
+      junit: './test-results/junit.xml',
     },
-    
+
     // Pool options for CI
     pool: 'threads',
     poolOptions: {
       threads: {
-        singleThread: process.env.CI === 'true'
-      }
+        singleThread: process.env.CI === 'true',
+      },
     },
-    
+
     // Retry configuration for flaky tests
     retry: process.env.CI ? 2 : 0,
-    
+
     // Watch mode disabled in CI
     watch: false,
-    
+
     // Include/exclude patterns
-    include: [
-      'src/**/*.{test,spec}.{js,ts,jsx,tsx}'
-    ],
-    exclude: [
-      'node_modules/',
-      'dist/',
-      'build/',
-      '**/*.d.ts'
-    ],
-    
+    include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    exclude: ['node_modules/', 'dist/', 'build/', '**/*.d.ts'],
+
     // Mock configuration for CI stability
     deps: {
-      inline: [
-        '@testing-library/react',
-        '@testing-library/jest-dom'
-      ]
-    }
-  }
+      inline: ['@testing-library/react', '@testing-library/jest-dom'],
+    },
+  },
 });

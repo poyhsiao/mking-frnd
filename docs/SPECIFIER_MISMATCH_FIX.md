@@ -21,7 +21,7 @@ This indicates that:
 - The package.json specifies a different version range
 - PNPM cannot proceed with `--frozen-lockfile` because of this mismatch
 
-## TDD-Based Solution
+## BDD-Based Solution
 
 ### 1. Test-Driven Detection
 
@@ -144,7 +144,7 @@ pnpm -r list --depth=0
 
 ## Files Modified
 
-- `src/test/pnpm-specifier-mismatch.test.ts` - TDD test suite
+- `src/test/pnpm-specifier-mismatch.test.ts` - BDD scenario suite
 - `scripts/fix-specifier-mismatch.sh` - Automated fix script
 - `scripts/validate-lockfile-sync.sh` - Validation script
 - `docs/SPECIFIER_MISMATCH_FIX.md` - This documentation
@@ -154,7 +154,7 @@ pnpm -r list --depth=0
 Run the following to ensure the fix is working:
 
 ```bash
-# 1. Run TDD tests
+# 1. Run BDD scenarios
 npx vitest src/test/pnpm-specifier-mismatch.test.ts --run
 
 # 2. Validate lockfile

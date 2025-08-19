@@ -3,142 +3,221 @@
 ## 1. 測試策略概述
 
 ### 1.1 測試理念
-- **測試驅動開發 (TDD)**: 先寫測試，再寫實現
+- **行為驅動開發 (BDD)**: 以業務行為為導向的開發方法
+- **協作溝通**: 促進業務、開發和測試團隊的協作
+- **活文檔**: 可執行的規格說明書
 - **品質保證**: 確保代碼品質和功能正確性
 - **持續整合**: 自動化測試流程
-- **全面覆蓋**: 單元測試、整合測試、端到端測試
+- **全面覆蓋**: 單元場景、整合場景、端到端場景
 - **效能監控**: 效能測試和負載測試
 
-### 1.2 測試金字塔
+### 1.2 BDD 測試金字塔
 
 ```
-        /\     E2E Tests (10%)
-       /  \    - 用戶流程測試
-      /    \   - 跨系統整合
+        /\     E2E Scenarios (10%)
+       /  \    - 完整用戶旅程場景
+      /    \   - 跨系統整合場景
      /______\  
-    /        \ Integration Tests (20%)
-   /          \ - API 測試
-  /            \ - 資料庫測試
- /              \ - 服務整合
+    /        \ Integration Scenarios (20%)
+   /          \ - API 整合場景
+  /            \ - 資料庫整合場景
+ /              \ - 服務整合場景
 /________________\
-Unit Tests (70%)
-- 函數測試
-- 組件測試
-- 邏輯測試
+Unit Scenarios (70%)
+- 組件行為場景
+- 業務邏輯場景
+- 功能行為場景
 ```
 
 ### 1.3 測試目標
+- **場景覆蓋率**: 目標 90% 以上的業務場景覆蓋
 - **代碼覆蓋率**: 目標 90% 以上
 - **分支覆蓋率**: 目標 85% 以上
-- **測試執行時間**: 單元測試 < 5分鐘，整合測試 < 15分鐘
-- **測試穩定性**: 測試通過率 > 98%
+- **場景執行時間**: 單元場景 < 5分鐘，整合場景 < 15分鐘
+- **場景穩定性**: 場景通過率 > 98%
 - **缺陷檢出率**: 在開發階段檢出 95% 以上的缺陷
+- **活文檔品質**: 場景描述清晰且可理解
 
-## 2. TDD 實施策略
+## 2. BDD 實施策略
 
-### 2.1 TDD 循環
+### 2.1 BDD 循環
 
-#### 2.1.1 Red-Green-Refactor 循環
+#### 2.1.1 Discover-Formulate-Automate-Demonstrate 循環
 ```
-1. Red (紅燈)
-   - 寫一個失敗的測試
-   - 確保測試會失敗
-   - 測試應該簡單且專注
+1. Discover (探索)
+   - 與利害關係人協作了解需求
+   - 識別業務價值和用戶目標
+   - 探討不同的場景和邊界情況
 
-2. Green (綠燈)
-   - 寫最少的代碼讓測試通過
-   - 不考慮代碼品質
-   - 只關注功能實現
+2. Formulate (制定)
+   - 使用 Gherkin 語法編寫場景
+   - 採用 Given-When-Then 結構
+   - 用業務語言描述行為
 
-3. Refactor (重構)
-   - 改善代碼品質
-   - 保持測試通過
-   - 消除重複代碼
+3. Automate (自動化)
+   - 實現步驟定義使場景可執行
+   - 編寫支援代碼和測試基礎設施
+   - 確保場景能夠自動執行
+
+4. Demonstrate (展示)
+   - 執行場景驗證行為
+   - 獲得利害關係人的反饋
+   - 持續改進場景和實現
 ```
 
-#### 2.1.2 TDD 最佳實踐
+#### 2.1.2 BDD 最佳實踐
 
-**測試命名規範**
+**場景編寫規範**
+```gherkin
+# 用戶管理功能
+Feature: 用戶管理
+  作為系統管理員
+  我想要管理用戶帳戶
+  以便用戶能夠安全地訪問平台
+
+  Background:
+    Given 用戶管理系統可用
+    And 資料庫是乾淨的
+
+  Scenario: 使用有效資料創建用戶
+    Given 我有有效的用戶資料:
+      | email           | test@example.com |
+      | password        | securePassword123 |
+      | displayName     | 測試用戶 |
+    When 我創建新的用戶帳戶
+    Then 用戶應該被成功創建
+    And 用戶應該有唯一的 ID
+    And 用戶電子郵件應該是 "test@example.com"
+    And 密碼應該被加密
+
+  Scenario: 拒絕使用無效電子郵件創建用戶
+    Given 我有無效電子郵件的用戶資料:
+      | email           | invalid-email |
+      | password        | securePassword123 |
+      | displayName     | 測試用戶 |
+    When 我嘗試創建新的用戶帳戶
+    Then 用戶創建應該失敗
+    And 我應該看到錯誤訊息 "無效的電子郵件格式"
+    And 資料庫中不應該創建任何用戶
+```
+
+**Given-When-Then 結構**
 ```typescript
-// 格式: should_ExpectedBehavior_When_StateUnderTest
-describe('UserService', () => {
-  describe('createUser', () => {
-    it('should_ReturnUser_When_ValidDataProvided', async () => {
-      // 測試實現
-    });
-    
-    it('should_ThrowValidationError_When_EmailIsInvalid', async () => {
-      // 測試實現
-    });
-    
-    it('should_ThrowConflictError_When_EmailAlreadyExists', async () => {
-      // 測試實現
-    });
-  });
+// user-management.steps.ts
+import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
+import { UserService } from '../services/UserService';
+import { TestContext } from '../support/TestContext';
+
+Given('我有有效的用戶資料:', function (dataTable) {
+  this.userData = dataTable.rowsHash();
+});
+
+Given('我有無效電子郵件的用戶資料:', function (dataTable) {
+  this.userData = dataTable.rowsHash();
+});
+
+Given('用戶管理系統可用', function () {
+  this.userService = new UserService();
+});
+
+Given('資料庫是乾淨的', async function () {
+  await TestContext.cleanDatabase();
+});
+
+When('我創建新的用戶帳戶', async function () {
+  try {
+    this.result = await this.userService.createUser(this.userData);
+    this.error = null;
+  } catch (error) {
+    this.error = error;
+    this.result = null;
+  }
+});
+
+When('我嘗試創建新的用戶帳戶', async function () {
+  try {
+    this.result = await this.userService.createUser(this.userData);
+    this.error = null;
+  } catch (error) {
+    this.error = error;
+    this.result = null;
+  }
+});
+
+Then('用戶應該被成功創建', function () {
+  expect(this.result).toBeDefined();
+  expect(this.error).toBeNull();
+});
+
+Then('用戶應該有唯一的 ID', function () {
+  expect(this.result.id).toBeDefined();
+  expect(typeof this.result.id).toBe('string');
+});
+
+Then('用戶電子郵件應該是 {string}', function (expectedEmail) {
+  expect(this.result.email).toBe(expectedEmail);
+});
+
+Then('密碼應該被加密', function () {
+  expect(this.result.password).not.toBe(this.userData.password);
+  expect(this.result.password).toMatch(/^\$2[aby]\$/);
+});
+
+Then('用戶創建應該失敗', function () {
+  expect(this.result).toBeNull();
+  expect(this.error).toBeDefined();
+});
+
+Then('我應該看到錯誤訊息 {string}', function (expectedMessage) {
+  expect(this.error.message).toBe(expectedMessage);
+});
+
+Then('資料庫中不應該創建任何用戶', async function () {
+  const userCount = await TestContext.getUserCount();
+  expect(userCount).toBe(0);
 });
 ```
 
-**AAA 模式 (Arrange-Act-Assert)**
-```typescript
-it('should_ReturnUser_When_ValidDataProvided', async () => {
-  // Arrange - 準備測試資料
-  const userData = {
-    email: 'test@example.com',
-    password: 'securePassword123',
-    displayName: '測試用戶'
-  };
-  const mockRepository = createMockRepository();
-  const userService = new UserService(mockRepository);
-  
-  // Act - 執行被測試的方法
-  const result = await userService.createUser(userData);
-  
-  // Assert - 驗證結果
-  expect(result).toBeDefined();
-  expect(result.email).toBe(userData.email);
-  expect(result.id).toBeTruthy();
-  expect(mockRepository.save).toHaveBeenCalledWith(
-    expect.objectContaining(userData)
-  );
-});
-```
-
-### 2.2 TDD 工作流程
+### 2.2 BDD 工作流程
 
 #### 2.2.1 功能開發流程
 ```
-1. 分析需求
-   - 理解業務需求
-   - 定義驗收標準
-   - 識別邊界條件
+1. 發現 (Discover)
+   - 與利害關係人協作
+   - 理解業務價值和目標
+   - 識別用戶故事和驗收標準
+   - 探索實例和邊界條件
 
-2. 設計測試案例
-   - 正常情況測試
-   - 異常情況測試
-   - 邊界條件測試
+2. 制定 (Formulate)
+   - 編寫 Gherkin 場景
+   - 定義 Given-When-Then 結構
+   - 創建活文檔
+   - 確保場景可測試且有意義
 
-3. 實施 TDD 循環
-   - 寫失敗測試
-   - 實現功能
-   - 重構代碼
+3. 自動化 (Automate)
+   - 實現步驟定義
+   - 編寫支援代碼
+   - 運行場景（紅燈）
+   - 實現功能代碼（綠燈）
+   - 重構和優化（重構）
 
-4. 整合測試
-   - API 測試
-   - 資料庫測試
-   - 服務整合測試
-
-5. 驗收測試
-   - 端到端測試
-   - 用戶流程測試
+4. 演示 (Demonstrate)
+   - 運行完整場景套件
+   - 生成活文檔報告
+   - 與利害關係人驗證行為
+   - 收集反饋並迭代
 ```
 
-#### 2.2.2 代碼審查檢查清單
-- [ ] 所有新功能都有對應的測試
-- [ ] 測試覆蓋率達到標準
-- [ ] 測試命名清晰且有意義
-- [ ] 測試獨立且可重複執行
-- [ ] 沒有重複的測試邏輯
-- [ ] 測試資料準備充分
+#### 2.2.2 場景審查檢查清單
+- [ ] 所有場景都使用業務語言編寫
+- [ ] 場景覆蓋主要用戶旅程
+- [ ] Given-When-Then 結構清晰
+- [ ] 場景獨立且可重複執行
+- [ ] 步驟定義可重用
+- [ ] 活文檔保持最新
+- [ ] 場景執行時間合理
+- [ ] 錯誤訊息清晰易懂
 - [ ] 異常情況有適當的測試
 
 ## 3. 測試類型和策略
@@ -1167,115 +1246,111 @@ class TestNotifier {
 }
 ```
 
-## 7. 測試最佳實踐
+## 7. BDD 最佳實踐
 
-### 7.1 測試原則
+### 7.1 BDD 原則
 
-1. **FIRST 原則**
-   - **Fast**: 測試應該快速執行
-   - **Independent**: 測試之間應該獨立
-   - **Repeatable**: 測試應該可重複執行
-   - **Self-Validating**: 測試應該有明確的通過/失敗結果
-   - **Timely**: 測試應該及時編寫
+1. **FIRST-BDD 原則**
+   - **Fast**: 場景應該快速執行
+   - **Independent**: 場景之間應該獨立
+   - **Repeatable**: 場景應該可重複執行
+   - **Self-Validating**: 場景應該有明確的通過/失敗結果
+   - **Timely**: 場景應該及時編寫
 
-2. **測試金字塔**
-   - 70% 單元測試
-   - 20% 整合測試
-   - 10% 端到端測試
+2. **BDD 測試金字塔**
+   - 70% 單元場景（Unit Scenarios）
+   - 20% 整合場景（Integration Scenarios）
+   - 10% 端到端場景（E2E Scenarios）
 
-3. **測試命名**
-   - 使用描述性的測試名稱
-   - 包含預期行為和條件
-   - 使用一致的命名格式
+3. **場景編寫原則**
+   - 使用業務語言描述行為
+   - 遵循 Given-When-Then 結構
+   - 場景應該表達業務價值
+   - 避免技術實現細節
 
 ### 7.2 常見陷阱和解決方案
 
-#### 7.2.1 測試依賴性
-```typescript
-// ❌ 錯誤：測試之間有依賴
-describe('UserService', () => {
-  let userId: string;
-  
-  it('should create user', async () => {
-    const user = await userService.createUser(userData);
-    userId = user.id; // 其他測試依賴這個 ID
-  });
-  
-  it('should update user', async () => {
-    await userService.updateUser(userId, updateData); // 依賴前一個測試
-  });
-});
+#### 7.2.1 場景依賴性
+```gherkin
+# ❌ 錯誤：場景之間有依賴
+Feature: 用戶管理
+  Scenario: 創建用戶
+    When 我創建用戶 "張小美"
+    Then 用戶應該被創建
+    # 其他場景依賴這個用戶
 
-// ✅ 正確：每個測試獨立
-describe('UserService', () => {
-  it('should create user', async () => {
-    const user = await userService.createUser(userData);
-    expect(user.id).toBeDefined();
-  });
-  
-  it('should update user', async () => {
-    // 在測試內部創建所需的資料
-    const user = await userService.createUser(userData);
-    const updatedUser = await userService.updateUser(user.id, updateData);
-    expect(updatedUser.displayName).toBe(updateData.displayName);
-  });
-});
+  Scenario: 更新用戶資料
+    When 我更新用戶 "張小美" 的資料
+    Then 用戶資料應該被更新
+    # 依賴前一個場景創建的用戶
+
+# ✅ 正確：每個場景獨立
+Feature: 用戶管理
+  Background:
+    Given 系統已初始化
+
+  Scenario: 創建用戶
+    Given 我有有效的用戶資料
+    When 我創建新用戶
+    Then 用戶應該被成功創建
+
+  Scenario: 更新用戶資料
+    Given 系統中存在用戶 "張小美"
+    When 我更新用戶的顯示名稱為 "張小美-更新"
+    Then 用戶資料應該被成功更新
 ```
 
-#### 7.2.2 過度模擬
-```typescript
-// ❌ 錯誤：過度模擬
-it('should calculate total price', () => {
-  const mockMath = {
-    add: jest.fn().mockReturnValue(100),
-    multiply: jest.fn().mockReturnValue(120)
-  };
-  
-  const calculator = new PriceCalculator(mockMath);
-  const result = calculator.calculateTotal(items);
-  
-  expect(result).toBe(120);
-});
+#### 7.2.2 過度技術化的場景
+```gherkin
+# ❌ 錯誤：包含技術實現細節
+Scenario: 計算總價
+  Given 我調用 PriceCalculator.calculateTotal() 方法
+  And 我模擬 TaxService.getTaxRate() 返回 0.2
+  When 我傳入價格為 100 的商品陣列
+  Then 方法應該返回 120
 
-// ✅ 正確：只模擬外部依賴
-it('should calculate total price with tax', () => {
-  const mockTaxService = {
-    getTaxRate: jest.fn().mockReturnValue(0.2)
-  };
-  
-  const calculator = new PriceCalculator(mockTaxService);
-  const result = calculator.calculateTotal([{ price: 100 }]);
-  
-  expect(result).toBe(120); // 100 + 20% tax
-});
+# ✅ 正確：使用業務語言
+Scenario: 計算含稅總價
+  Given 我的購物車中有一件價格為 100 元的商品
+  And 當前稅率為 20%
+  When 我查看訂單總額
+  Then 我應該看到總價為 120 元
+  And 其中包含 20 元的稅費
 ```
 
-### 7.3 測試維護
+### 7.3 BDD 場景維護
 
-#### 7.3.1 定期審查測試
-- 每月審查測試覆蓋率
-- 識別和移除重複測試
-- 更新過時的測試
-- 重構複雜的測試
+#### 7.3.1 定期審查場景
+- 每月審查場景覆蓋率和業務價值
+- 識別和移除重複或過時的場景
+- 更新場景以反映業務需求變化
+- 重構複雜的步驟定義
+- 確保活文檔保持最新
 
-#### 7.3.2 測試文檔
+#### 7.3.2 BDD 活文檔
 ```markdown
-# 測試文檔
+# BDD 活文檔
 
-## 測試策略
-- 描述整體測試方法
-- 說明測試類型和範圍
-- 定義品質標準
+## BDD 策略
+- 描述整體 BDD 方法和協作流程
+- 說明場景類型和業務覆蓋範圍
+- 定義場景品質標準
 
-## 測試環境
-- 測試環境設定
-- 測試資料準備
-- 環境重置程序
+## 場景執行環境
+- BDD 測試環境設定
+- 測試資料準備和清理
+- 環境重置和隔離程序
 
-## 測試案例
-- 關鍵業務流程測試
-- 邊界條件測試
-- 錯誤處理測試
+## 業務場景庫
+- 核心用戶旅程場景
+- 業務規則驗證場景
+- 異常處理和邊界條件場景
+- 整合和端到端場景
+
+## 步驟定義庫
+- 可重用的步驟定義
+- 業務領域特定的步驟
+- 技術支援步驟
 ```
 
-這個測試策略文檔提供了完整的測試框架，確保 MKing Friend 平台能夠通過全面的測試保證代碼品質和功能正確性。
+這個 BDD 測試策略文檔提供了完整的行為驅動開發框架，確保 MKing Friend 平台能夠通過協作式的場景驗證保證業務需求的正確實現和代碼品質。

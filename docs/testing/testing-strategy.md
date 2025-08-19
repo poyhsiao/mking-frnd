@@ -21,99 +21,280 @@ This document outlines the comprehensive testing strategy for the MKing Friend s
 - **Usability**: Intuitive and accessible user experience
 - **Maintainability**: Code is testable and modifications are safe
 
-## Testing Pyramid
+## BDD Testing Pyramid
 
-### Unit Tests (70%)
-**Purpose**: Test individual components in isolation
+### Unit Scenarios (70%)
+**Purpose**: Test individual component behaviors in isolation using Gherkin scenarios
 
 **Scope**:
-- Business logic validation
-- Data transformation functions
-- API endpoint logic
-- Database operations
-- Utility functions
+- Business logic validation through scenarios
+- Data transformation behaviors
+- API endpoint behaviors
+- Database operation scenarios
+- Utility function behaviors
+
+**BDD Approach**:
+- Write scenarios in Gherkin syntax
+- Focus on component behavior rather than implementation
+- Use Given-When-Then structure
+- Describe business value and expected outcomes
 
 **Tools & Frameworks**:
-- **Backend**: Jest (Node.js), PHPUnit (PHP), pytest (Python)
-- **Frontend**: Jest, React Testing Library, Vitest
-- **Mobile**: XCTest (iOS), JUnit (Android)
+- **Backend**: Cucumber.js with Jest, Cucumber with PHPUnit, pytest-bdd
+- **Frontend**: Cucumber.js with React Testing Library, Playwright
+- **Mobile**: Cucumber with XCTest (iOS), Cucumber-Android
 
-**Coverage Target**: 90% code coverage
+**Coverage Target**: 90% scenario coverage
 
 **Execution**: 
 - Run on every commit
-- Part of CI/CD pipeline
+- Part of BDD CI/CD pipeline
 - Local development environment
 
-### Integration Tests (20%)
-**Purpose**: Test component interactions and data flow
+**Example Unit Scenario**:
+```gherkin
+Feature: User Password Validation
+  As a system
+  I want to validate user passwords
+  So that user accounts remain secure
+
+  Scenario: Valid password meets security requirements
+    Given a password "SecurePass123!"
+    When I validate the password strength
+    Then the password should be accepted
+    And the validation should return "strong"
+```
+
+### Integration Scenarios (20%)
+**Purpose**: Test component interactions and data flow through business scenarios
 
 **Scope**:
-- API integration testing
-- Database integration
+- API integration behaviors
+- Database integration scenarios
 - Third-party service integration
-- Microservice communication
-- Message queue operations
+- Microservice communication flows
+- Message queue operation scenarios
+
+**BDD Approach**:
+- Describe integration behaviors from business perspective
+- Focus on data flow and system interactions
+- Use realistic business scenarios
+- Validate end-to-end data consistency
 
 **Tools & Frameworks**:
-- **API Testing**: Postman, Newman, REST Assured
-- **Database Testing**: Testcontainers, in-memory databases
-- **Service Testing**: WireMock, MockServer
+- **API Testing**: Cucumber with Playwright, Newman with Cucumber reports
+- **Database Testing**: Cucumber with Testcontainers, in-memory databases
+- **Service Testing**: Cucumber with WireMock, MockServer
 
-**Coverage Target**: All critical integration points
+**Coverage Target**: All critical integration scenarios
 
 **Execution**:
 - Pre-deployment validation
 - Staging environment testing
 - Scheduled regression runs
 
-### End-to-End Tests (10%)
-**Purpose**: Validate complete user workflows
+**Example Integration Scenario**:
+```gherkin
+Feature: User Registration Integration
+  As a new user
+  I want to register for an account
+  So that I can access the platform
+
+  Scenario: Successful user registration with email notification
+    Given I am on the registration page
+    When I submit valid registration details:
+      | email    | john@example.com |
+      | password | SecurePass123!   |
+      | name     | John Doe         |
+    Then my account should be created in the database
+    And I should receive a welcome email
+    And I should be redirected to the dashboard
+```
+
+### End-to-End Scenarios (10%)
+**Purpose**: Validate complete user workflows through comprehensive business scenarios
 
 **Scope**:
-- Critical user journeys
-- Cross-browser compatibility
-- Mobile app workflows
-- Payment processing
-- Authentication flows
+- Critical user journey scenarios
+- Cross-browser compatibility behaviors
+- Mobile app workflow scenarios
+- Payment processing flows
+- Authentication journey scenarios
+
+**BDD Approach**:
+- Describe complete user journeys
+- Focus on business value and user goals
+- Include realistic user interactions
+- Validate business outcomes
 
 **Tools & Frameworks**:
-- **Web**: Playwright, Cypress, Selenium
-- **Mobile**: Appium, Detox
-- **API**: Postman collections
+- **Web**: Cucumber with Playwright, Cypress-Cucumber-Preprocessor
+- **Mobile**: Cucumber with Appium, Detox with Cucumber
+- **API**: Cucumber with Postman collections
 
-**Coverage Target**: All critical business scenarios
+**Coverage Target**: All critical business journey scenarios
 
 **Execution**:
 - Pre-release validation
 - Production smoke tests
 - Weekly regression cycles
 
-## Test-Driven Development (TDD) Implementation
+**Example E2E Scenario**:
+```gherkin
+Feature: Complete User Onboarding Journey
+  As a new visitor
+  I want to complete the full onboarding process
+  So that I can start using the platform effectively
 
-### TDD Cycle
-1. **Red**: Write a failing test
-2. **Green**: Write minimal code to pass the test
-3. **Refactor**: Improve code while keeping tests green
+  Scenario: New user completes full onboarding
+    Given I am a new visitor to the platform
+    When I register with valid credentials
+    And I verify my email address
+    And I complete my profile setup
+    And I connect with my first friend
+    Then I should see the main dashboard
+    And I should receive an onboarding completion notification
+    And my user status should be "active"
+```
 
-### TDD Guidelines
-- Write tests before implementation
-- Keep tests simple and focused
-- Test one thing at a time
-- Use descriptive test names
-- Maintain fast test execution
+## Behavior-Driven Development (BDD) Implementation
 
-### TDD Benefits
-- Better code design
-- Higher test coverage
-- Reduced debugging time
-- Improved code confidence
-- Living documentation
+### BDD Cycle
+1. **Discover**: Collaborate with stakeholders to understand requirements
+2. **Formulate**: Write scenarios in Gherkin syntax using Given-When-Then
+3. **Automate**: Implement step definitions to make scenarios executable
+4. **Demonstrate**: Run scenarios to validate behavior and get feedback
+
+### BDD Guidelines
+- Write scenarios in business language
+- Focus on behavior rather than implementation
+- Collaborate with stakeholders on scenario creation
+- Use descriptive scenario names
+- Maintain executable specifications
+
+#### Scenario Structure
+```gherkin
+# Example: User service behavior
+Feature: User Management
+  As a system administrator
+  I want to manage user accounts
+  So that users can access the platform securely
+
+  Background:
+    Given the user management system is available
+    And the database is clean
+
+  Scenario: Create user with valid data
+    Given I have valid user data:
+      | email                | test@example.com |
+      | password             | securePassword123 |
+      | confirmPassword      | securePassword123 |
+    When I create a new user account
+    Then the user should be created successfully
+    And the user should have a unique ID
+    And the user email should be "test@example.com"
+    And the password should be encrypted
+
+  Scenario: Reject user creation with invalid email
+    Given I have user data with invalid email:
+      | email                | invalid-email |
+      | password             | securePassword123 |
+      | confirmPassword      | securePassword123 |
+    When I attempt to create a new user account
+    Then the user creation should fail
+    And I should see an error message "Invalid email format"
+    And no user should be created in the database
+```
+
+#### Step Definitions Example
+```typescript
+// user-management.steps.ts
+import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
+import { UserService } from '../services/UserService';
+import { TestContext } from '../support/TestContext';
+
+Given('I have valid user data:', function (dataTable) {
+  this.userData = dataTable.rowsHash();
+});
+
+Given('I have user data with invalid email:', function (dataTable) {
+  this.userData = dataTable.rowsHash();
+});
+
+Given('the user management system is available', function () {
+  this.userService = new UserService();
+});
+
+Given('the database is clean', async function () {
+  await TestContext.cleanDatabase();
+});
+
+When('I create a new user account', async function () {
+  try {
+    this.result = await this.userService.createUser(this.userData);
+    this.error = null;
+  } catch (error) {
+    this.error = error;
+    this.result = null;
+  }
+});
+
+When('I attempt to create a new user account', async function () {
+  try {
+    this.result = await this.userService.createUser(this.userData);
+    this.error = null;
+  } catch (error) {
+    this.error = error;
+    this.result = null;
+  }
+});
+
+Then('the user should be created successfully', function () {
+  expect(this.result).toBeDefined();
+  expect(this.error).toBeNull();
+});
+
+Then('the user should have a unique ID', function () {
+  expect(this.result.id).toBeDefined();
+  expect(typeof this.result.id).toBe('string');
+});
+
+Then('the user email should be {string}', function (expectedEmail) {
+  expect(this.result.email).toBe(expectedEmail);
+});
+
+Then('the password should be encrypted', function () {
+  expect(this.result.password).not.toBe(this.userData.password);
+  expect(this.result.password).toMatch(/^\$2[aby]\$/);
+});
+
+Then('the user creation should fail', function () {
+  expect(this.result).toBeNull();
+  expect(this.error).toBeDefined();
+});
+
+Then('I should see an error message {string}', function (expectedMessage) {
+  expect(this.error.message).toBe(expectedMessage);
+});
+
+Then('no user should be created in the database', async function () {
+  const userCount = await TestContext.getUserCount();
+  expect(userCount).toBe(0);
+});
+```
+
+### BDD Benefits
+- Better stakeholder collaboration
+- Living documentation in business language
+- Reduced miscommunication
+- Improved requirement clarity
+- Executable specifications
 
 ### Implementation Strategy
-1. **Phase 1**: New features use TDD approach
-2. **Phase 2**: Legacy code gets tests during refactoring
-3. **Phase 3**: Full TDD adoption across all development
+1. **Phase 1**: New features use BDD approach with Gherkin scenarios
+2. **Phase 2**: Legacy features get BDD scenarios during refactoring
+3. **Phase 3**: Full BDD adoption across all development
 
 ## Testing Objectives
 
@@ -206,7 +387,9 @@ This document outlines the comprehensive testing strategy for the MKing Friend s
 - **Coverage Reporting**: Codecov Action v5 integration (✅ Upgraded from v4 with enhanced reliability)
 - **Test Execution**: Automated pipeline integration with fail_ci_if_error disabled for improved CI stability
 - **Error Handling**: Enhanced error resilience in coverage reporting pipeline
-- **TDD Validation**: Comprehensive test-driven development with 24+ test cases for CI configuration
+- **BDD Validation**: Comprehensive behavior-driven development with 24+ scenarios for CI configuration
+- **Scenario Execution**: Automated Gherkin scenario execution in CI pipeline
+- **Living Documentation**: Automated generation of BDD reports and documentation
 - **Deployment**: Blue-green deployment with testing
 - **Coverage Upload**: Automated coverage reports to Codecov with environment variables and optimized file discovery
 

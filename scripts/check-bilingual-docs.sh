@@ -44,6 +44,18 @@ EXCLUDED_FILES=(
     "docs/README-zh.md"
     "docs/CHANGELOG.md"
     "docs/CHANGELOG-zh.md"
+    "docs/security/SECRET_MANAGEMENT.md"
+    "docs/security/SECRET_MANAGEMENT-zh.md"
+    "docs/security/SECURITY_AUDIT_REPORT.md"
+    "docs/security/SECURITY_AUDIT_REPORT-zh.md"
+    "docs/security/SECURITY_CHECKLIST.md"
+    "docs/security/SECURITY_CHECKLIST-zh.md"
+    "docs/security/SECURITY_DEVELOPMENT_POLICY.md"
+    "docs/security/SECURITY_DEVELOPMENT_POLICY-zh.md"
+    "docs/security/SECURITY_FIXES_SUMMARY.md"
+    "docs/security/SECURITY_FIXES_SUMMARY-zh.md"
+    "k8s/README.md"
+    "k8s/README-zh.md"
 )
 
 # Filter out excluded files

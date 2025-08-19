@@ -29,8 +29,14 @@ describe('Docker Build Tests', () => {
   const frontendDir = path.join(rootDir, 'frontend');
 
   // 驗證路徑解析是否正確
-  if (!existsSync(rootDir) || !existsSync(backendDir) || !existsSync(frontendDir)) {
-    throw new Error(`Invalid project structure detected. Root: ${rootDir}, Backend: ${backendDir}, Frontend: ${frontendDir}`);
+  if (
+    !existsSync(rootDir) ||
+    !existsSync(backendDir) ||
+    !existsSync(frontendDir)
+  ) {
+    throw new Error(
+      `Invalid project structure detected. Root: ${rootDir}, Backend: ${backendDir}, Frontend: ${frontendDir}`,
+    );
   }
 
   describe('pnpm workspace configuration', () => {
@@ -58,11 +64,11 @@ describe('Docker Build Tests', () => {
   describe('Dockerfile validation', () => {
     test('backend Dockerfile should be able to access root lockfile', () => {
       const dockerfilePath = path.join(backendDir, 'Dockerfile');
-      
+
       if (!existsSync(dockerfilePath)) {
         throw new Error(`Backend Dockerfile not found at ${dockerfilePath}`);
       }
-      
+
       const dockerfileContent = readFileSync(dockerfilePath, 'utf8');
 
       // 檢查 Dockerfile 是否正確引用了根目錄的文件
@@ -71,11 +77,11 @@ describe('Docker Build Tests', () => {
 
     test('frontend Dockerfile should be able to access root lockfile', () => {
       const dockerfilePath = path.join(frontendDir, 'Dockerfile');
-      
+
       if (!existsSync(dockerfilePath)) {
         throw new Error(`Frontend Dockerfile not found at ${dockerfilePath}`);
       }
-      
+
       const dockerfileContent = readFileSync(dockerfilePath, 'utf8');
 
       // 檢查 Dockerfile 是否正確引用了根目錄的文件
