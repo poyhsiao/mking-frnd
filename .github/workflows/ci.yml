@@ -2,14 +2,14 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '18'
-  PNPM_VERSION: '9.15.0'
+  NODE_VERSION: "18"
+  PNPM_VERSION: "9.15.0"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -17,47 +17,47 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         test-type: [unit, integration, e2e]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Install dependencies for health checks
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
-      
+
       - name: Create test results directory
         run: |
           mkdir -p test-results coverage
           chmod 777 test-results coverage
-      
+
       - name: Run ${{ matrix.test-type }} tests with Docker Compose
         env:
           # Test Database Configuration
           POSTGRES_TEST_DB: mking_test
           POSTGRES_TEST_USER: postgres
           POSTGRES_TEST_PASSWORD: postgres
-          
+
           # Test MinIO Configuration
           MINIO_TEST_USER: testuser
           MINIO_TEST_PASSWORD: testpassword
-          
+
           # Test Typesense Configuration
           TYPESENSE_TEST_API_KEY: test-api-key
-          
+
           # General Test Configuration
           TEST_TYPE: ${{ matrix.test-type }}
           CI: true
           NODE_ENV: test
-          
+
           # Container health check configuration
           COMPOSE_HTTP_TIMEOUT: 300
           DOCKER_CLIENT_TIMEOUT: 300
@@ -66,7 +66,7 @@ jobs:
         run: |
           echo "Running ${{ matrix.test-type }} tests..."
           echo "Setting up test environment variables..."
-          
+
           # Export all test environment variables
           export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
           export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
@@ -79,7 +79,7 @@ jobs:
           export NODE_ENV="${NODE_ENV}"
           export COMPOSE_HTTP_TIMEOUT="${COMPOSE_HTTP_TIMEOUT}"
           export DOCKER_CLIENT_TIMEOUT="${DOCKER_CLIENT_TIMEOUT}"
-          
+
           # Verify environment variables are set
           echo "✅ Test environment variables configured:"
           echo "   - POSTGRES_TEST_DB: ${POSTGRES_TEST_DB}"
@@ -88,7 +88,7 @@ jobs:
           echo "   - TYPESENSE_TEST_API_KEY: [REDACTED]"
           echo "   - TEST_TYPE: ${TEST_TYPE}"
           echo "   - COMPOSE_HTTP_TIMEOUT: ${COMPOSE_HTTP_TIMEOUT}s"
-          
+
           # Function to check container health with detailed logging
           check_container_health() {
             local service_name=$1
@@ -127,7 +127,7 @@ jobs:
             docker compose -f docker-compose.test.yml logs "${service_name}" || true
             return 1
           }
-          
+
           # Run tests based on type with improved error handling
           case "${{ matrix.test-type }}" in
             "unit")
@@ -192,7 +192,7 @@ jobs:
               fi
               ;;
           esac
-      
+
       - name: Collect test results
         if: always()
         env:
@@ -200,23 +200,23 @@ jobs:
           POSTGRES_TEST_DB: mking_test
           POSTGRES_TEST_USER: postgres
           POSTGRES_TEST_PASSWORD: postgres
-          
+
           # Test MinIO Configuration
           MINIO_TEST_USER: testuser
           MINIO_TEST_PASSWORD: testpassword
-          
+
           # Test Typesense Configuration
           TYPESENSE_TEST_API_KEY: test-api-key
-          
+
           # General Test Configuration
           CI: true
           NODE_ENV: test
         run: |
           echo "Collecting test results for ${{ matrix.test-type }}..."
-          
+
           # Ensure test-results directory exists
           mkdir -p test-results coverage
-          
+
           # Export environment variables for docker-compose
           export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
           export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
@@ -226,19 +226,19 @@ jobs:
           export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
           export CI="${CI}"
           export NODE_ENV="${NODE_ENV}"
-          
+
           # Run test results collector with proper environment
           docker compose -f docker-compose.test.yml up --no-deps test-results || echo "Test results collector completed"
-          
+
           # Copy results from containers if they exist
           docker compose -f docker-compose.test.yml logs backend-test > test-results/backend-${{ matrix.test-type }}.log 2>&1 || true
           docker compose -f docker-compose.test.yml logs frontend-test > test-results/frontend-${{ matrix.test-type }}.log 2>&1 || true
-          
+
           # List collected files for debugging
           echo "📋 Collected test results:"
           find test-results -type f -name "*" 2>/dev/null | head -20 || echo "No test result files found"
           find coverage -type f -name "*" 2>/dev/null | head -20 || echo "No coverage files found"
-      
+
       - name: Cleanup test environment
         if: always()
         env:
@@ -246,20 +246,20 @@ jobs:
           POSTGRES_TEST_DB: mking_test
           POSTGRES_TEST_USER: postgres
           POSTGRES_TEST_PASSWORD: postgres
-          
+
           # Test MinIO Configuration
           MINIO_TEST_USER: testuser
           MINIO_TEST_PASSWORD: testpassword
-          
+
           # Test Typesense Configuration
           TYPESENSE_TEST_API_KEY: test-api-key
-          
+
           # General Test Configuration
           CI: true
           NODE_ENV: test
         run: |
           echo "🧹 Cleaning up test environment..."
-          
+
           # Export environment variables for docker-compose
           export POSTGRES_TEST_DB="${POSTGRES_TEST_DB}"
           export POSTGRES_TEST_USER="${POSTGRES_TEST_USER}"
@@ -269,15 +269,15 @@ jobs:
           export TYPESENSE_TEST_API_KEY="${TYPESENSE_TEST_API_KEY}"
           export CI="${CI}"
           export NODE_ENV="${NODE_ENV}"
-          
+
           # Stop and remove all test containers and volumes
           docker compose -f docker-compose.test.yml down -v --remove-orphans || echo "Some containers may have already been removed"
-          
+
           # Clean up Docker system resources
           docker system prune -f || echo "Docker system cleanup completed"
-          
+
           echo "✅ Test environment cleanup completed"
-      
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -287,31 +287,31 @@ jobs:
             test-results/
             coverage/
           retention-days: 30
-  
+
   lint:
     name: Lint and Type Check
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
-      
+
       - name: Get pnpm store directory
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-      
+
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
@@ -319,14 +319,14 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      
+
       - name: Validate lockfile and install dependencies
         run: |
           echo "🔍 Checking lockfile synchronization..."
-          
+
           # Check pnpm version
           echo "📦 PNPM version: $(pnpm --version)"
-          
+
           # Validate lockfile with detailed error reporting
           if ! pnpm install --frozen-lockfile; then
             echo "❌ Lockfile validation failed"
@@ -351,53 +351,55 @@ jobs:
             
             exit 1
           fi
-          
+
           echo "✅ Lockfile is properly synchronized"
-      
+
       - name: Lint backend
         run: pnpm run lint
         working-directory: ./backend
-      
+
       - name: Lint frontend
         run: pnpm run lint
         working-directory: ./frontend
-      
+
       - name: Type check backend
-        run: pnpm run build
+        run: |
+          pnpm run db:generate
+          pnpm run build
         working-directory: ./backend
-      
+
       - name: Type check frontend
         run: pnpm run build
         working-directory: ./frontend
-  
+
   coverage:
     name: Coverage Report
     runs-on: ubuntu-latest
     needs: test
     if: always()
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Download test results
         uses: actions/download-artifact@v4
         with:
           pattern: test-results-*
           merge-multiple: true
           path: ./test-results
-      
+
       - name: Merge coverage reports
         run: |
           echo "Merging coverage reports..."
           mkdir -p merged-coverage
-          
+
           # Install lcov if not present
           if ! command -v lcov &> /dev/null; then
             sudo apt-get update
             sudo apt-get install -y lcov
           fi
-          
+
           # Merge all .lcov files properly
           lcov_files=$(find ./test-results -name "*.lcov")
           if [ -n "$lcov_files" ]; then
@@ -411,9 +413,9 @@ jobs:
               fi
             done
           fi
-          
+
           find ./test-results -name "coverage-final.json" -exec cp {} merged-coverage/ \; || true
-      
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -437,21 +439,21 @@ jobs:
       contents: read
       packages: write
       id-token: write
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -463,7 +465,7 @@ jobs:
             type=ref,event=pr
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
-      
+
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
@@ -474,7 +476,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
@@ -492,11 +494,11 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/develop'
     environment: staging
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Deploy to staging
         run: |
           echo "Deploying to staging environment..."
@@ -509,11 +511,11 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     environment: production
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Deploy to production
         run: |
           echo "Deploying to production environment..."
