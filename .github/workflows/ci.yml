@@ -22,6 +22,23 @@ jobs:
       matrix:
         test-type: [unit, integration, e2e]
 
+    env:
+      # Test Database Configuration
+      POSTGRES_TEST_DB: ${{ secrets.POSTGRES_TEST_DB || 'mking_test' }}
+      POSTGRES_TEST_USER: ${{ secrets.POSTGRES_TEST_USER || 'postgres' }}
+      POSTGRES_TEST_PASSWORD: ${{ secrets.POSTGRES_TEST_PASSWORD || 'test_password_123' }}
+
+      # MinIO Test Configuration
+      MINIO_TEST_USER: ${{ secrets.MINIO_TEST_USER || 'testuser' }}
+      MINIO_TEST_PASSWORD: ${{ secrets.MINIO_TEST_PASSWORD || 'testpassword123' }}
+
+      # Typesense Test Configuration
+      TYPESENSE_TEST_API_KEY: ${{ secrets.TYPESENSE_TEST_API_KEY || 'test_api_key_123' }}
+
+      # Security Test Configuration
+      JWT_TEST_SECRET: ${{ secrets.JWT_TEST_SECRET || 'test_jwt_secret_key_for_testing_only_123456789' }}
+      ENCRYPTION_TEST_KEY: ${{ secrets.ENCRYPTION_TEST_KEY || 'test_encryption_key_32_chars_long' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
