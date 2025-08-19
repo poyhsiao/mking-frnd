@@ -62,7 +62,7 @@ minio:
     - "9001:9001"
   environment:
     MINIO_ROOT_USER: admin
-    MINIO_ROOT_PASSWORD: password123
+    MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
   volumes:
     - minio_data:/data
   command: server /data --console-address ":9001"
@@ -84,8 +84,8 @@ keycloak:
   ports:
     - "8080:8080"
   environment:
-    KEYCLOAK_ADMIN: admin
-    KEYCLOAK_ADMIN_PASSWORD: admin123
+    KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+    KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD is required}
     KC_DB: postgres
     KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
     KC_DB_USERNAME: keycloak
@@ -143,7 +143,7 @@ grafana:
   ports:
     - "3000:3000"
   environment:
-    GF_SECURITY_ADMIN_PASSWORD: admin123
+    GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?GRAFANA_PASSWORD is required}
   volumes:
     - grafana_data:/var/lib/grafana
 ```
@@ -161,7 +161,7 @@ services:
     environment:
       POSTGRES_DB: mking_frnd
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
@@ -186,7 +186,7 @@ services:
       - "9001:9001"
     environment:
       MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: password123
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -198,12 +198,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD is required}
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: password123
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:?KC_DB_PASSWORD is required}
     depends_on:
       - postgres
     command: start-dev
@@ -215,7 +215,7 @@ services:
     environment:
       CLICKHOUSE_DB: plausible
       CLICKHOUSE_USER: plausible
-      CLICKHOUSE_PASSWORD: password123
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:?CLICKHOUSE_PASSWORD is required}
     volumes:
       - clickhouse_data:/var/lib/clickhouse
 
@@ -228,8 +228,8 @@ services:
     environment:
       BASE_URL: http://localhost:8000
       SECRET_KEY_BASE: your-secret-key-base-64-chars-long
-      DATABASE_URL: postgres://plausible:password123@postgres:5432/plausible
-      CLICKHOUSE_DATABASE_URL: http://plausible:password123@clickhouse:8123/plausible
+      DATABASE_URL: postgres://plausible:${PLAUSIBLE_DB_PASSWORD:?PLAUSIBLE_DB_PASSWORD is required}@postgres:5432/plausible
+      CLICKHOUSE_DATABASE_URL: http://plausible:${PLAUSIBLE_CLICKHOUSE_PASSWORD:?PLAUSIBLE_CLICKHOUSE_PASSWORD is required}@clickhouse:8123/plausible
     depends_on:
       - postgres
       - clickhouse
@@ -269,7 +269,7 @@ services:
       SENTRY_POSTGRES_PORT: 5432
       SENTRY_DB_NAME: sentry
       SENTRY_DB_USER: sentry
-      SENTRY_DB_PASSWORD: password123
+      SENTRY_DB_PASSWORD: ${SENTRY_DB_PASSWORD:?SENTRY_DB_PASSWORD is required}
     depends_on:
       - postgres
       - redis

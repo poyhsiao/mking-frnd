@@ -1,0 +1,94 @@
+# Gitleaks configuration file
+# https://github.com/gitleaks/gitleaks
+
+title = "Gitleaks Security Configuration"
+
+[extend]
+# Extend default rules
+path = "https://raw.githubusercontent.com/gitleaks/gitleaks/master/config/gitleaks.toml"
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(?:key|api|token|secret|password)[\s]*[=:][\s]*['"]?[0-9a-zA-Z]{32,}['"]?'''
+entropy = 3.5
+secretGroup = 1
+keywords = [
+    "api",
+    "key",
+    "token",
+    "secret",
+    "password",
+]
+
+[[rules]]
+id = "hardcoded-password"
+description = "Hardcoded password"
+regex = '''(?i)password[\s]*[=:][\s]*['"]?[^\s'"]{8,}['"]?'''
+entropy = 3.0
+secretGroup = 1
+keywords = [
+    "password",
+    "passwd",
+    "pwd",
+]
+
+[[rules]]
+id = "base64-high-entropy"
+description = "Base64 High Entropy String"
+regex = '''[A-Za-z0-9+/]{40,}={0,2}'''
+entropy = 4.5
+secretGroup = 1
+
+[[rules]]
+id = "hex-high-entropy"
+description = "Hex High Entropy String"
+regex = '''[a-fA-F0-9]{32,}'''
+entropy = 3.5
+secretGroup = 1
+
+# Allowlist for false positives
+[allowlist]
+paths = [
+    ".gitleaksignore",
+    ".secrets.baseline",
+    "docs/",
+    "test/",
+    "tests/",
+    "**/test/**",
+    "**/tests/**",
+    "**/*test*",
+    "**/*mock*",
+    "**/*example*",
+    "**/*sample*",
+    "**/node_modules/**",
+    "**/.git/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+]
+
+regexes = [
+    '''(?i)example''',
+    '''(?i)sample''',
+    '''(?i)test''',
+    '''(?i)mock''',
+    '''(?i)placeholder''',
+    '''(?i)dummy''',
+    '''(?i)fake''',
+    '''AKIA[0-9A-Z]{16}''', # AWS Access Key ID format but allow test keys
+]
+
+stopwords = [
+    "example",
+    "sample",
+    "test",
+    "mock",
+    "placeholder",
+    "dummy",
+    "fake",
+    "password",
+    "secret",
+    "key",
+    "token",
+]

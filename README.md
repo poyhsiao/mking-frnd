@@ -120,9 +120,11 @@ cd mking-frnd
 - **API Gateway**: http://localhost:8080
 
 #### 🔧 管理界面
-- **Keycloak 認證**: http://localhost:8081 (admin/admin123)
-- **MinIO 存儲**: http://localhost:9001 (minioadmin/minioadmin123)
-- **Grafana 監控**: http://localhost:3002 (admin/admin123)
+- **Keycloak 認證**: http://localhost:8081 (請使用環境變數設定的憑據)
+- **MinIO 存儲**: http://localhost:9001 (請使用環境變數設定的憑據)
+- **Grafana 監控**: http://localhost:3002 (請使用環境變數設定的憑據)
+
+> ⚠️ **安全提醒**: 請勿在生產環境中使用預設憑據。請參考 `.env.example` 設定強密碼。
 - **Typesense 搜尋**: http://localhost:8108
 
 #### 📊 開發工具
@@ -258,7 +260,7 @@ docker-compose logs -f postgres
 
 ### 系統監控
 
-- **Grafana**: http://localhost:3000 (admin/admin123)
+- **Grafana**: http://localhost:3000 (請使用環境變數設定的憑據)
   - 系統資源監控
   - 應用性能指標
   - 日誌查詢和分析

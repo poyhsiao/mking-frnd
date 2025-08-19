@@ -20,9 +20,23 @@ spec:
       labels:
         app: postgres
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
       containers:
       - name: postgres
         image: postgres:15-alpine
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 999
+          runAsGroup: 999
+          capabilities:
+            drop:
+            - ALL
         ports:
         - containerPort: 5432
           name: postgres
@@ -74,6 +88,12 @@ spec:
           mountPath: /var/lib/postgresql/data
         - name: postgres-init
           mountPath: /docker-entrypoint-initdb.d
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: var-run-volume
+          mountPath: /var/run
+        - name: var-lock-volume
+          mountPath: /var/lock
         resources:
           requests:
             memory: "512Mi"
@@ -106,6 +126,12 @@ spec:
       - name: postgres-init
         configMap:
           name: postgres-init-scripts
+      - name: tmp-volume
+        emptyDir: {}
+      - name: var-run-volume
+        emptyDir: {}
+      - name: var-lock-volume
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

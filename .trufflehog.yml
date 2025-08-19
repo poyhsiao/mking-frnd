@@ -1,0 +1,80 @@
+# TruffleHog configuration file
+# https://github.com/trufflesecurity/trufflehog
+
+# Global configuration
+chunk_size: 8192
+concurrency: 10
+
+# Verification settings
+verify: true
+only_verified: true
+
+# Output settings
+format: json
+no_update: true
+
+# Detectors configuration
+detectors:
+  - name: all
+    enabled: true
+
+# Exclude patterns
+exclude_paths:
+  - "node_modules/"
+  - "dist/"
+  - "build/"
+  - "coverage/"
+  - "*.log"
+  - "*.lock"
+  - "*.min.js"
+  - "*.min.css"
+  - "docker-volumes/"
+  - "tmp/"
+  - "test-results/"
+  - ".git/"
+  - "*.compiled.js"
+  - "*.compiled.js.map"
+  - "pnpm-lock.yaml"
+  - "package-lock.json"
+  - "yarn.lock"
+
+# Exclude specific detectors for false positives
+exclude_detectors:
+  - "Generic"
+  - "URI"
+  - "Email"
+
+# Custom rules for specific file types
+rules:
+  - name: "Ignore test files"
+    path: "**/*.test.*"
+    action: "ignore"
+  
+  - name: "Ignore spec files"
+    path: "**/*.spec.*"
+    action: "ignore"
+    
+  - name: "Ignore example files"
+    path: "**/*.example.*"
+    action: "ignore"
+    
+  - name: "Ignore documentation"
+    path: "docs/**"
+    action: "ignore"
+
+# Allowlist for known safe patterns
+allowlist:
+  paths:
+    - ".env.example"
+    - "docs/"
+    - "README.md"
+    - "CHANGELOG.md"
+  
+  regexes:
+    - "example"
+    - "placeholder"
+    - "your-secret-here"
+    - "change-me"
+    - "replace-with"
+    - "TODO"
+    - "FIXME"

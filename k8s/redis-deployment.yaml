@@ -20,9 +20,23 @@ spec:
       labels:
         app: redis
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
       containers:
       - name: redis
         image: redis:7-alpine
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 999
+          runAsGroup: 999
+          capabilities:
+            drop:
+            - ALL
         ports:
         - containerPort: 6379
           name: redis
@@ -42,6 +56,10 @@ spec:
           mountPath: /data
         - name: redis-config
           mountPath: /etc/redis
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: var-run-volume
+          mountPath: /var/run
         resources:
           requests:
             memory: "256Mi"
@@ -76,6 +94,10 @@ spec:
       - name: redis-config
         configMap:
           name: redis-config
+      - name: tmp-volume
+        emptyDir: {}
+      - name: var-run-volume
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
