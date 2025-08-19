@@ -103,21 +103,144 @@ jobs:
           name: pnpm-audit-${{ matrix.directory }}
           path: pnpm-audit-${{ matrix.directory }}.json
 
+      - name: Validate Snyk Token
+        run: |
+          if [ -z "${{ secrets.SNYK_TOKEN }}" ]; then
+            echo "⚠️ SNYK_TOKEN is not set. Snyk scan will be skipped."
+            echo "SNYK_TOKEN_AVAILABLE=false" >> $GITHUB_ENV
+          else
+            echo "✅ SNYK_TOKEN is available"
+            echo "SNYK_TOKEN_AVAILABLE=true" >> $GITHUB_ENV
+          fi
+
       - name: Run Snyk Security Scan
+        if: env.SNYK_TOKEN_AVAILABLE == 'true'
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=medium --file=${{ matrix.directory }}/package.json --package-manager=pnpm --sarif-file-output=snyk-${{ matrix.directory }}.sarif --exclude-base-image-vulns
+          args: --severity-threshold=medium --package-manager=pnpm --sarif-file-output=snyk-${{ matrix.directory }}.sarif --exclude-base-image-vulns --json-file-output=snyk-${{ matrix.directory }}.json
           command: test
+        working-directory: ./${{ matrix.directory }}
         continue-on-error: true
+
+      - name: Handle Snyk scan failure
+        if: env.SNYK_TOKEN_AVAILABLE == 'false'
+        run: |
+          echo "Creating empty SARIF file due to missing SNYK_TOKEN"
+          cat > snyk-${{ matrix.directory }}.sarif << 'EOF'
+          {
+            "version": "2.1.0",
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "Snyk",
+                    "version": "1.0.0",
+                    "informationUri": "https://snyk.io"
+                  }
+                },
+                "results": [],
+                "invocations": [
+                  {
+                    "executionSuccessful": false,
+                    "exitCode": 1,
+                    "stderr": "Snyk token not available - scan skipped"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+
+      - name: Check if SARIF file was generated
+        run: |
+          echo "Checking for SARIF file generation..."
+
+          # Check if file exists in the matrix directory (when Snyk ran successfully)
+          if [ -f "${{ matrix.directory }}/snyk-${{ matrix.directory }}.sarif" ]; then
+            echo "✅ SARIF file found in ${{ matrix.directory }} directory"
+            ls -la ${{ matrix.directory }}/snyk-${{ matrix.directory }}.sarif
+            echo "File contents preview:"
+            head -20 ${{ matrix.directory }}/snyk-${{ matrix.directory }}.sarif
+            # Move the file to the root directory for upload
+            mv ${{ matrix.directory }}/snyk-${{ matrix.directory }}.sarif ./
+            echo "✅ SARIF file moved to root directory"
+          # Check if file exists in root directory (when Snyk was skipped)
+          elif [ -f "snyk-${{ matrix.directory }}.sarif" ]; then
+            echo "✅ SARIF file found in root directory"
+            ls -la snyk-${{ matrix.directory }}.sarif
+            echo "File contents preview:"
+            head -20 snyk-${{ matrix.directory }}.sarif
+          else
+            echo "❌ SARIF file not found anywhere"
+            echo "Root directory contents:"
+            ls -la
+            echo "${{ matrix.directory }} directory contents:"
+            ls -la ${{ matrix.directory }}/ || echo "Directory not accessible"
+            echo "Searching for any SARIF files:"
+            find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
+            
+            # Create a minimal SARIF file as fallback
+            echo "Creating fallback SARIF file"
+            cat > snyk-${{ matrix.directory }}.sarif << 'EOF'
+          {
+            "version": "2.1.0",
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "Snyk",
+                    "version": "1.0.0",
+                    "informationUri": "https://snyk.io"
+                  }
+                },
+                "results": [],
+                "invocations": [
+                  {
+                    "executionSuccessful": false,
+                    "exitCode": 1,
+                    "stderr": "Snyk scan failed to generate SARIF file"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          fi
+
+      - name: Verify SARIF file before upload
+        run: |
+          echo "Final verification of SARIF file before upload"
+          if [ -f "snyk-${{ matrix.directory }}.sarif" ]; then
+            echo "✅ SARIF file ready for upload"
+            ls -la snyk-${{ matrix.directory }}.sarif
+            echo "File size: $(wc -c < snyk-${{ matrix.directory }}.sarif) bytes"
+            echo "SARIF_FILE_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "❌ SARIF file still missing - upload will be skipped"
+            echo "SARIF_FILE_EXISTS=false" >> $GITHUB_ENV
+          fi
 
       - name: Upload Snyk scan results
         uses: github/codeql-action/upload-sarif@v3.22.12
-        if: always() && hashFiles('snyk-${{ matrix.directory }}.sarif') != ''
+        if: always() && env.SARIF_FILE_EXISTS == 'true'
         with:
           sarif_file: "snyk-${{ matrix.directory }}.sarif"
           category: "snyk-${{ matrix.directory }}"
+        continue-on-error: true
+
+      - name: Upload scan artifacts for debugging
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: snyk-scan-${{ matrix.directory }}-debug
+          path: |
+            snyk-${{ matrix.directory }}.sarif
+            snyk-${{ matrix.directory }}.json
+          retention-days: 7
 
   sast-scan:
     name: Static Application Security Testing
