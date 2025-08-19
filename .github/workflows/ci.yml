@@ -98,7 +98,7 @@ jobs:
             echo "🔍 Checking health of ${service_name}..."
             
             while [ $attempt -le $max_attempts ]; do
-              health_status=$(docker compose -f docker-compose.test.yml ps --format json | jq -r ".[] | select(.Service == \"${service_name}\") | .Health")
+              health_status=$(docker compose -f docker-compose.test.yml ps --format json | jq -s -r ".[] | select(.Service == \"${service_name}\") | .Health")
               
               case "$health_status" in
                 "healthy")
