@@ -8,7 +8,7 @@ import path from 'path';
  *
  * This scenario suite follows BDD methodology to fix the `/app/dist: not found` error
  * in GitHub Actions Docker builds.
- * 
+ *
  * Issue: Docker build fails because:
  * 1. pnpm build command runs from workspace root but doesn't filter to specific packages
  * 2. COPY commands expect /app/dist but actual output is in /app/backend/dist and /app/frontend/dist
@@ -42,7 +42,7 @@ describe('Docker Build Fix - BDD Approach', () => {
             cwd: projectRoot,
             stdio: 'pipe',
             timeout: 300000,
-          }
+          },
         );
       }).not.toThrow(); // This should pass after fix
     });
@@ -56,7 +56,7 @@ describe('Docker Build Fix - BDD Approach', () => {
             cwd: projectRoot,
             stdio: 'pipe',
             timeout: 300000,
-          }
+          },
         );
       }).not.toThrow(); // This should pass after fix
     });
@@ -71,7 +71,7 @@ describe('Docker Build Fix - BDD Approach', () => {
     it('should have backend package.json with correct build script', () => {
       const backendPackageJson = path.join(projectRoot, 'backend/package.json');
       expect(existsSync(backendPackageJson)).toBe(true);
-      
+
       const packageContent = require(backendPackageJson);
       expect(packageContent.scripts.build).toBe('tsc');
     });
@@ -79,7 +79,7 @@ describe('Docker Build Fix - BDD Approach', () => {
     it('should have frontend package.json with correct build script', () => {
       const frontendPackageJson = path.join(projectRoot, 'frontend/package.json');
       expect(existsSync(frontendPackageJson)).toBe(true);
-      
+
       const packageContent = require(frontendPackageJson);
       expect(packageContent.scripts.build).toBe('tsc && vite build');
     });
@@ -95,7 +95,7 @@ describe('Docker Build Fix - BDD Approach', () => {
             cwd: projectRoot,
             stdio: 'pipe',
             timeout: 300000,
-          }
+          },
         );
       }).not.toThrow();
     });
@@ -109,26 +109,24 @@ describe('Docker Build Fix - BDD Approach', () => {
             cwd: projectRoot,
             stdio: 'pipe',
             timeout: 300000,
-          }
+          },
         );
       }).not.toThrow();
     });
 
     it('should have correct dist directory structure in backend image', () => {
       // Verify the built backend image has the correct structure
-      const output = execSync(
-        `docker run --rm ${backendTestImage} ls -la /app/dist`,
-        { encoding: 'utf8' }
-      );
+      const output = execSync(`docker run --rm ${backendTestImage} ls -la /app/dist`, {
+        encoding: 'utf8',
+      });
       expect(output).toContain('index.js');
     });
 
     it('should have correct dist directory structure in frontend image', () => {
       // Verify the built frontend image has the correct structure
-      const output = execSync(
-        `docker run --rm ${frontendTestImage} ls -la /usr/share/nginx/html`,
-        { encoding: 'utf8' }
-      );
+      const output = execSync(`docker run --rm ${frontendTestImage} ls -la /usr/share/nginx/html`, {
+        encoding: 'utf8',
+      });
       expect(output).toContain('index.html');
     });
   });

@@ -23,14 +23,19 @@ export interface ValidationResult {
 export const validateRequest = (rules: ValidationRule[]) => {
   return (req: Request, _res: Response, next: NextFunction): void => {
     const result = validateData(req.body as Record<string, unknown>, rules);
-    
+
     if (!result.isValid) {
-      const error = createError('Validation failed', 422, true, 'VALIDATION_ERROR');
+      const error = createError(
+        'Validation failed',
+        422,
+        true,
+        'VALIDATION_ERROR'
+      );
       error.details = { validation: result.errors };
       next(error);
       return;
     }
-    
+
     next();
   };
 };
@@ -45,7 +50,10 @@ export const validateData = (
     const value = data[rule.field];
 
     // Check required fields
-    if (rule.required && (value === undefined || value === null || value === '')) {
+    if (
+      rule.required &&
+      (value === undefined || value === null || value === '')
+    ) {
       errors.push({
         field: rule.field,
         message: `${rule.field} is required`,
@@ -55,7 +63,10 @@ export const validateData = (
     }
 
     // Skip validation if field is not required and empty
-    if (!rule.required && (value === undefined || value === null || value === '')) {
+    if (
+      !rule.required &&
+      (value === undefined || value === null || value === '')
+    ) {
       continue;
     }
 
@@ -83,7 +94,10 @@ export const validateData = (
           }
           break;
         case 'email':
-          if (typeof value !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          if (
+            typeof value !== 'string' ||
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+          ) {
             errors.push({
               field: rule.field,
               message: `${rule.field} must be a valid email address`,
@@ -139,7 +153,10 @@ export const validateData = (
       if (customResult !== true) {
         errors.push({
           field: rule.field,
-          message: typeof customResult === 'string' ? customResult : `${rule.field} is invalid`,
+          message:
+            typeof customResult === 'string'
+              ? customResult
+              : `${rule.field} is invalid`,
           value,
         });
       }

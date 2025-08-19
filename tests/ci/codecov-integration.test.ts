@@ -22,17 +22,17 @@ describe('Codecov Integration Tests', () => {
     it('should run coverage upload after test completion', () => {
       const testJob = ciConfig?.jobs?.test;
       const steps = testJob?.steps || [];
-      
-      const backendTestIndex = steps.findIndex((step: any) => 
-        step.name?.includes('Run backend tests')
+
+      const backendTestIndex = steps.findIndex((step: any) =>
+        step.name?.includes('Run backend tests'),
       );
-      const frontendTestIndex = steps.findIndex((step: any) => 
-        step.name?.includes('Run frontend tests')
+      const frontendTestIndex = steps.findIndex((step: any) =>
+        step.name?.includes('Run frontend tests'),
       );
-      const codecovIndex = steps.findIndex((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const codecovIndex = steps.findIndex((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      
+
       expect(backendTestIndex).toBeGreaterThan(-1);
       expect(frontendTestIndex).toBeGreaterThan(-1);
       expect(codecovIndex).toBeGreaterThan(-1);
@@ -43,14 +43,12 @@ describe('Codecov Integration Tests', () => {
     it('should have checkout step before codecov upload', () => {
       const testJob = ciConfig?.jobs?.test;
       const steps = testJob?.steps || [];
-      
-      const checkoutIndex = steps.findIndex((step: any) => 
-        step.uses?.includes('actions/checkout')
+
+      const checkoutIndex = steps.findIndex((step: any) => step.uses?.includes('actions/checkout'));
+      const codecovIndex = steps.findIndex((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      const codecovIndex = steps.findIndex((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
-      );
-      
+
       expect(checkoutIndex).toBeGreaterThan(-1);
       expect(codecovIndex).toBeGreaterThan(checkoutIndex);
     });
@@ -59,19 +57,19 @@ describe('Codecov Integration Tests', () => {
   describe('Security Best Practices', () => {
     it('should use secrets for codecov token', () => {
       const testJob = ciConfig?.jobs?.test;
-      const codecovStep = testJob?.steps?.find((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const codecovStep = testJob?.steps?.find((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      
+
       expect(codecovStep.with?.token).toBe('${{ secrets.CODECOV_TOKEN }}');
     });
 
     it('should not expose sensitive information in logs', () => {
       const testJob = ciConfig?.jobs?.test;
-      const codecovStep = testJob?.steps?.find((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const codecovStep = testJob?.steps?.find((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      
+
       // Verbose is OK as it doesn't expose tokens
       expect(codecovStep.with?.verbose).toBe(true);
     });
@@ -80,19 +78,19 @@ describe('Codecov Integration Tests', () => {
   describe('Error Resilience', () => {
     it('should continue CI pipeline even if codecov fails', () => {
       const testJob = ciConfig?.jobs?.test;
-      const codecovStep = testJob?.steps?.find((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const codecovStep = testJob?.steps?.find((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      
+
       expect(codecovStep.with?.fail_ci_if_error).toBe(false);
     });
 
     it('should handle missing coverage reports gracefully', () => {
       const testJob = ciConfig?.jobs?.test;
-      const codecovStep = testJob?.steps?.find((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const codecovStep = testJob?.steps?.find((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      
+
       expect(codecovStep.with?.handle_no_reports_found).toBe(true);
     });
   });
@@ -100,10 +98,10 @@ describe('Codecov Integration Tests', () => {
   describe('Coverage File Validation', () => {
     it('should specify correct coverage file paths', () => {
       const testJob = ciConfig?.jobs?.test;
-      const codecovStep = testJob?.steps?.find((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const codecovStep = testJob?.steps?.find((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      
+
       const files = codecovStep.with?.files;
       expect(files).toContain('./backend/coverage/lcov.info');
       expect(files).toContain('./frontend/coverage/lcov.info');
@@ -111,10 +109,10 @@ describe('Codecov Integration Tests', () => {
 
     it('should have proper flags for organization', () => {
       const testJob = ciConfig?.jobs?.test;
-      const codecovStep = testJob?.steps?.find((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const codecovStep = testJob?.steps?.find((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      
+
       expect(codecovStep.with?.flags).toBe('unittests');
       expect(codecovStep.with?.name).toBe('codecov-umbrella');
     });
@@ -123,20 +121,19 @@ describe('Codecov Integration Tests', () => {
   describe('Performance Optimization', () => {
     it('should use latest stable codecov action version', () => {
       const testJob = ciConfig?.jobs?.test;
-      const codecovStep = testJob?.steps?.find((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const codecovStep = testJob?.steps?.find((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      
+
       const version = codecovStep.uses.split('@')[1];
       expect(version).toMatch(/^v[4-9]/);
     });
 
     it('should run codecov upload only once per workflow', () => {
       const testJob = ciConfig?.jobs?.test;
-      const codecovSteps = testJob?.steps?.filter((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
-      ) || [];
-      
+      const codecovSteps =
+        testJob?.steps?.filter((step: any) => step.uses?.includes('codecov/codecov-action')) || [];
+
       expect(codecovSteps).toHaveLength(1);
     });
   });
@@ -144,13 +141,13 @@ describe('Codecov Integration Tests', () => {
   describe('Monorepo Support', () => {
     it('should handle multiple coverage files from different packages', () => {
       const testJob = ciConfig?.jobs?.test;
-      const codecovStep = testJob?.steps?.find((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const codecovStep = testJob?.steps?.find((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      
+
       const files = codecovStep.with?.files;
       const fileList = files.split(',');
-      
+
       expect(fileList).toHaveLength(2);
       expect(fileList.some((file: string) => file.includes('backend'))).toBe(true);
       expect(fileList.some((file: string) => file.includes('frontend'))).toBe(true);

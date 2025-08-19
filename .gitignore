@@ -249,3 +249,9 @@ dev-debug.log
 .windsurf/
 .trae/
 .kiro/
+
+# Compiled step definitions and test files
+features/step_definitions/compiled/
+**/compiled/
+*.compiled.js
+*.compiled.js.map

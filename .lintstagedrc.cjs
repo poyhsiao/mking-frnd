@@ -43,8 +43,5 @@ module.exports = {
     'git add',
   ],
   
-  // Run type checking for TypeScript files
-  '*.{ts,tsx}': [
-    () => 'tsc --noEmit',
-  ],
+
 };

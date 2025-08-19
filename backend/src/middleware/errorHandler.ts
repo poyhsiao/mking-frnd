@@ -32,20 +32,31 @@ export interface ErrorResponse {
 
 const getErrorCode = (err: AppError): string => {
   if (err.code) return err.code;
-  
+
   const statusCode = err.statusCode || 500;
   switch (statusCode) {
-    case 400: return 'BAD_REQUEST';
-    case 401: return 'UNAUTHORIZED';
-    case 403: return 'FORBIDDEN';
-    case 404: return 'NOT_FOUND';
-    case 409: return 'CONFLICT';
-    case 422: return 'VALIDATION_ERROR';
-    case 429: return 'TOO_MANY_REQUESTS';
-    case 500: return 'INTERNAL_SERVER_ERROR';
-    case 502: return 'BAD_GATEWAY';
-    case 503: return 'SERVICE_UNAVAILABLE';
-    default: return 'UNKNOWN_ERROR';
+    case 400:
+      return 'BAD_REQUEST';
+    case 401:
+      return 'UNAUTHORIZED';
+    case 403:
+      return 'FORBIDDEN';
+    case 404:
+      return 'NOT_FOUND';
+    case 409:
+      return 'CONFLICT';
+    case 422:
+      return 'VALIDATION_ERROR';
+    case 429:
+      return 'TOO_MANY_REQUESTS';
+    case 500:
+      return 'INTERNAL_SERVER_ERROR';
+    case 502:
+      return 'BAD_GATEWAY';
+    case 503:
+      return 'SERVICE_UNAVAILABLE';
+    default:
+      return 'UNKNOWN_ERROR';
   }
 };
 
@@ -65,7 +76,7 @@ interface ValidationErrorInput {
 
 const handlePrismaError = (err: PrismaError): AppError => {
   const error = new Error() as AppError;
-  
+
   switch (err.code) {
     case 'P2002':
       error.message = 'A record with this data already exists';
@@ -90,7 +101,7 @@ const handlePrismaError = (err: PrismaError): AppError => {
       error.code = 'DATABASE_ERROR';
       error.details = { prismaCode: err.code };
   }
-  
+
   return error;
 };
 
@@ -98,14 +109,14 @@ const handleValidationError = (err: ValidationErrorInput): AppError => {
   const error = new Error('Validation failed') as AppError;
   error.statusCode = 422;
   error.code = 'VALIDATION_ERROR';
-  
+
   // Handle different validation error formats
   if (err.details) {
     error.details = { validation: err.details };
   } else if (err.errors) {
     error.details = { validation: err.errors };
   }
-  
+
   return error;
 };
 
@@ -121,8 +132,11 @@ const isPrismaError = (err: unknown): err is PrismaError => {
 };
 
 const isValidationError = (err: unknown): err is ValidationErrorInput => {
-  return typeof err === 'object' && err !== null && 
-         ('details' in err || 'errors' in err || 'isJoi' in err);
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    ('details' in err || 'errors' in err || 'isJoi' in err)
+  );
 };
 
 const hasName = (err: unknown): err is ErrorWithName => {
@@ -137,7 +151,7 @@ export const errorHandler = (
   _next: NextFunction
 ): void => {
   let processedError: AppError;
-  
+
   // Convert unknown error to AppError
   if (err instanceof Error) {
     processedError = err as AppError;
@@ -145,33 +159,50 @@ export const errorHandler = (
     processedError = new Error('Unknown error occurred') as AppError;
     processedError.statusCode = 500;
   }
-  
+
   // Handle specific error types
-  if (hasName(err) && err.name === 'PrismaClientKnownRequestError' && isPrismaError(err)) {
+  if (
+    hasName(err) &&
+    err.name === 'PrismaClientKnownRequestError' &&
+    isPrismaError(err)
+  ) {
     processedError = handlePrismaError(err);
-  } else if (hasName(err) && (err.name === 'ValidationError' || (isValidationError(err) && err.isJoi))) {
+  } else if (
+    hasName(err) &&
+    (err.name === 'ValidationError' || (isValidationError(err) && err.isJoi))
+  ) {
     processedError = handleValidationError(err as ValidationErrorInput);
   } else if (hasName(err) && err.name === 'JsonWebTokenError') {
     processedError = createError('Invalid token', 401, true, 'INVALID_TOKEN');
   } else if (hasName(err) && err.name === 'TokenExpiredError') {
     processedError = createError('Token expired', 401, true, 'TOKEN_EXPIRED');
-  } else if (hasName(err) && err.name === 'SyntaxError' && err.message?.includes('JSON')) {
-    processedError = createError('Invalid JSON format', 400, true, 'INVALID_JSON');
+  } else if (
+    hasName(err) &&
+    err.name === 'SyntaxError' &&
+    err.message?.includes('JSON')
+  ) {
+    processedError = createError(
+      'Invalid JSON format',
+      400,
+      true,
+      'INVALID_JSON'
+    );
   }
-  
+
   const statusCode = processedError.statusCode || 500;
   const message = processedError.message || 'Internal Server Error';
   const errorCode = getErrorCode(processedError);
-  
+
   // Generate request ID for tracking
-  const requestId = req.headers['x-request-id'] as string || 
-                   `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const requestId =
+    (req.headers['x-request-id'] as string) ||
+    `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   // Log error details with appropriate level
   const logLevel = statusCode >= 500 ? 'error' : 'warn';
   const errorName = hasName(err) ? err.name : 'Unknown';
   const errorStack = hasName(err) ? err.stack : undefined;
-  
+
   logger[logLevel]('Request error:', {
     requestId,
     error: {
@@ -211,11 +242,11 @@ export const errorHandler = (
   if (processedError.details) {
     errorResponse.error.details = processedError.details;
   }
-  
+
   if (process.env['NODE_ENV'] === 'development' && errorStack) {
     errorResponse.error.stack = errorStack;
   }
-  
+
   if (requestId) {
     errorResponse.requestId = requestId;
   }

@@ -75,9 +75,9 @@ Given('the "Dependency Vulnerability Scan" job uses "pnpm/action-setup@v4"', fun
   const workflow = readWorkflowFile(SECURITY_WORKFLOW_PATH);
   const job = workflow.jobs['dependency-scan'];
   expect(job).toBeDefined();
-  
-  const pnpmStep = job.steps.find((step: any) => 
-    step.uses && step.uses.includes('pnpm/action-setup@v4')
+
+  const pnpmStep = job.steps.find(
+    (step: any) => step.uses && step.uses.includes('pnpm/action-setup@v4'),
   );
   expect(pnpmStep).toBeDefined();
 });
@@ -90,35 +90,35 @@ Given('the job fails with "ERR_PNPM_META_FETCH_FAIL" error', function () {
 
 When('I upgrade the pnpm/action-setup to v4 with version 9.15.0', function () {
   const workflow = readWorkflowFile(SECURITY_WORKFLOW_PATH);
-  
+
   // Update the pnpm/action-setup version
   const job = workflow.jobs['dependency-scan'];
-  const pnpmStep = job.steps.find((step: any) => 
-    step.uses && step.uses.includes('pnpm/action-setup')
+  const pnpmStep = job.steps.find(
+    (step: any) => step.uses && step.uses.includes('pnpm/action-setup'),
   );
-  
+
   if (pnpmStep) {
     pnpmStep.uses = 'pnpm/action-setup@v4';
     pnpmStep.with = pnpmStep.with || {};
     pnpmStep.with.version = '9.15.0';
   }
-  
+
   writeWorkflowFile(SECURITY_WORKFLOW_PATH, workflow);
 });
 
 When('I update the pnpm version to 9.15.0 in the environment variables', function () {
   const workflow = readWorkflowFile(SECURITY_WORKFLOW_PATH);
-  
+
   // Update environment variables
   workflow.env = workflow.env || {};
   workflow.env.PNPM_VERSION = '9.15.0';
-  
+
   writeWorkflowFile(SECURITY_WORKFLOW_PATH, workflow);
 });
 
 When('I configure the action with proper parameters', function () {
   const workflow = readWorkflowFile(SECURITY_WORKFLOW_PATH);
-  
+
   for (const jobName in workflow.jobs) {
     const job = workflow.jobs[jobName];
     if (job.steps) {
@@ -127,20 +127,20 @@ When('I configure the action with proper parameters', function () {
           step.with = {
             ...step.with,
             version: '9.15.0',
-            run_install: false
+            run_install: false,
           };
         }
       }
     }
   }
-  
+
   writeWorkflowFile(SECURITY_WORKFLOW_PATH, workflow);
 });
 
 Then('the dependency vulnerability scan should run successfully', function () {
   const workflow = readWorkflowFile(SECURITY_WORKFLOW_PATH);
   expect(workflow).toBeDefined();
-  
+
   const version = extractPnpmActionSetupVersion(workflow);
   expect(version).toBe('v4');
 });
@@ -154,35 +154,33 @@ Then('the pnpm installation should complete without errors', function () {
 Then('the workflow should proceed to the audit step', function () {
   const workflow = readWorkflowFile(SECURITY_WORKFLOW_PATH);
   const job = workflow.jobs['dependency-scan'];
-  
-  const auditStep = job.steps.find((step: any) => 
-    step.run && step.run.includes('pnpm audit')
-  );
+
+  const auditStep = job.steps.find((step: any) => step.run && step.run.includes('pnpm audit'));
   expect(auditStep).toBeDefined();
 });
 
 When('I check all workflow files for pnpm action setup usage', function () {
   this.workflowFiles = [
     { path: SECURITY_WORKFLOW_PATH, content: readWorkflowFile(SECURITY_WORKFLOW_PATH) },
-    { path: CI_WORKFLOW_PATH, content: readWorkflowFile(CI_WORKFLOW_PATH) }
+    { path: CI_WORKFLOW_PATH, content: readWorkflowFile(CI_WORKFLOW_PATH) },
   ];
 });
 
 Then('all workflows should use the same updated pnpm action setup version', function () {
-  const versions = this.workflowFiles.map((file: any) => 
-    extractPnpmActionSetupVersion(file.content)
-  ).filter(Boolean);
-  
+  const versions = this.workflowFiles
+    .map((file: any) => extractPnpmActionSetupVersion(file.content))
+    .filter(Boolean);
+
   const uniqueVersions = [...new Set(versions)];
   expect(uniqueVersions).toHaveLength(1);
   expect(uniqueVersions[0]).toBe('v4');
 });
 
 Then('all workflows should use compatible pnpm versions', function () {
-  const versions = this.workflowFiles.map((file: any) => 
-    extractPnpmVersion(file.content)
-  ).filter(Boolean);
-  
+  const versions = this.workflowFiles
+    .map((file: any) => extractPnpmVersion(file.content))
+    .filter(Boolean);
+
   const uniqueVersions = [...new Set(versions)];
   expect(uniqueVersions).toHaveLength(1);
   expect(uniqueVersions[0]).toBe('9.15.0');
@@ -218,9 +216,9 @@ Then('the GitHub Actions workflow should complete successfully', function () {
 Then('the dependency vulnerability scan should generate proper reports', function () {
   const workflow = readWorkflowFile(SECURITY_WORKFLOW_PATH);
   const job = workflow.jobs['dependency-vulnerability-scan'];
-  
-  const reportStep = job.steps.find((step: any) => 
-    step.name && step.name.includes('Security Scan Summary')
+
+  const reportStep = job.steps.find(
+    (step: any) => step.name && step.name.includes('Security Scan Summary'),
   );
   expect(reportStep).toBeDefined();
 });

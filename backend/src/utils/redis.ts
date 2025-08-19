@@ -12,7 +12,7 @@ let redisClient: RedisClientType | null = null;
 export const getRedisClient = (): RedisClientType => {
   if (!redisClient) {
     const redisUrl = process.env['REDIS_URL'] || 'redis://localhost:6379';
-    
+
     redisClient = createClient({
       url: redisUrl,
       socket: {
@@ -32,7 +32,7 @@ export const getRedisClient = (): RedisClientType => {
       logger.info('Redis client disconnected');
     });
   }
-  
+
   return redisClient;
 };
 
@@ -45,23 +45,23 @@ export const checkRedisHealth = async (): Promise<{
   error?: string;
 }> => {
   const startTime = Date.now();
-  
+
   try {
     const client = getRedisClient();
-    
+
     // Connect if not already connected
     if (!client.isOpen) {
       await client.connect();
     }
-    
+
     // Simple ping to check connectivity
     const pong = await client.ping();
-    
+
     const latency = Date.now() - startTime;
-    
+
     if (pong === 'PONG') {
       logger.debug('Redis health check passed', { latency });
-      
+
       return {
         status: 'healthy',
         latency,
@@ -71,13 +71,14 @@ export const checkRedisHealth = async (): Promise<{
     }
   } catch (error) {
     const latency = Date.now() - startTime;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown Redis error';
-    
-    logger.error('Redis health check failed', { 
-      error: errorMessage, 
-      latency 
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown Redis error';
+
+    logger.error('Redis health check failed', {
+      error: errorMessage,
+      latency,
     });
-    
+
     return {
       status: 'unhealthy',
       latency,
@@ -95,8 +96,8 @@ export const disconnectRedis = async (): Promise<void> => {
       await redisClient.disconnect();
       logger.info('Redis connection closed');
     } catch (error) {
-      logger.error('Error closing Redis connection', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Error closing Redis connection', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       redisClient = null;

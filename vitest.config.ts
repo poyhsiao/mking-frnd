@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     // Test environment
     environment: 'node',
-    
+
     // Global test setup
     globals: true,
 
@@ -16,7 +16,7 @@ export default defineConfig({
       '**/test/**/*.{js,ts}',
       '**/tests/**/*.{js,ts}',
     ],
-    
+
     // Exclude patterns
     exclude: [
       '**/node_modules/**',
@@ -29,7 +29,7 @@ export default defineConfig({
       'tmp/',
       'test-results/',
     ],
-    
+
     // Coverage configuration
     coverage: {
       provider: 'v8',
@@ -45,38 +45,36 @@ export default defineConfig({
         '**/__tests__/**',
         '**/*.test.{js,ts}',
         '**/*.spec.{js,ts}',
-        'coverage/**'
+        'coverage/**',
       ],
       thresholds: {
         global: {
           branches: 80,
           functions: 80,
           lines: 80,
-          statements: 80
-        }
-      }
+          statements: 80,
+        },
+      },
     },
-    
+
     // Test timeout
     testTimeout: 10000,
-    
+
     // Hook timeout
     hookTimeout: 10000,
-    
+
     // Teardown timeout
     teardownTimeout: 10000,
-    
+
     // Watch mode
     watch: false,
-    
+
     // Reporter
     reporter: ['verbose'],
-    
+
     // Setup files
-    setupFiles: [
-      './src/test/setup.ts',
-    ],
-    
+    setupFiles: ['./src/test/setup.ts'],
+
     // Pool options
     pool: 'threads',
     poolOptions: {
@@ -86,19 +84,17 @@ export default defineConfig({
         minThreads: 1,
       },
     },
-    
+
     // Retry failed tests
     retry: 2,
-    
+
     // Bail on first failure in CI
     bail: process.env.CI ? 1 : 0,
-    
+
     // Silent mode
     silent: false,
-    
-
   },
-  
+
   // Resolve configuration
   resolve: {
     alias: {
@@ -110,12 +106,12 @@ export default defineConfig({
       '@test': resolve(__dirname, './src/test'),
     },
   },
-  
+
   // Define configuration
   define: {
     __TEST__: true,
   },
-  
+
   // Esbuild options
   esbuild: {
     target: 'node18',

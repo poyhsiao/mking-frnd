@@ -25,19 +25,19 @@ function App(): JSX.Element {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className='min-h-screen bg-gray-50 flex flex-col'>
           <Header />
-          <main className="flex-grow container mx-auto px-4 py-8">
+          <main className='flex-grow container mx-auto px-4 py-8'>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path='/' element={<Home />} />
+              <Route path='/about' element={<About />} />
+              <Route path='*' element={<NotFound />} />
             </Routes>
           </main>
           <Footer />
         </div>
         <Toaster
-          position="top-right"
+          position='top-right'
           toastOptions={{
             duration: 4000,
             style: {

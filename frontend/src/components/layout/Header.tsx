@@ -16,21 +16,21 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
+    <header className='bg-white shadow-sm border-b border-gray-200'>
+      <div className='container mx-auto px-4'>
+        <div className='flex justify-between items-center h-16'>
           {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-blue-600">
+          <div className='flex-shrink-0'>
+            <Link to='/' className='flex items-center'>
+              <span className='text-2xl font-bold text-blue-600'>
                 MKing Friend
               </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {navigation.map((item) => (
+          <nav className='hidden md:flex space-x-8'>
+            {navigation.map(item => (
               <Link
                 key={item.name}
                 to={item.href}
@@ -46,17 +46,17 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className='md:hidden'>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-expanded="false"
+              className='p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500'
+              aria-expanded='false'
             >
-              <span className="sr-only">Open main menu</span>
+              <span className='sr-only'>Open main menu</span>
               {isMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                <XMarkIcon className='h-6 w-6' aria-hidden='true' />
               ) : (
-                <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                <Bars3Icon className='h-6 w-6' aria-hidden='true' />
               )}
             </button>
           </div>
@@ -64,9 +64,9 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
-              {navigation.map((item) => (
+          <div className='md:hidden'>
+            <div className='px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200'>
+              {navigation.map(item => (
                 <Link
                   key={item.name}
                   to={item.href}

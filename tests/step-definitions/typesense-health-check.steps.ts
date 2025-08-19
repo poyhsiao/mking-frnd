@@ -41,9 +41,9 @@ const sleep = (ms: number): Promise<void> => {
 
 const executeCommand = (command: string): string => {
   try {
-    return execSync(command, { 
-      encoding: 'utf8', 
-      timeout: 120000 // 2 minutes timeout
+    return execSync(command, {
+      encoding: 'utf8',
+      timeout: 120000, // 2 minutes timeout
     });
   } catch (error: any) {
     console.error(`Command failed: ${command}`);
@@ -54,38 +54,48 @@ const executeCommand = (command: string): string => {
 
 const getContainerStatus = (containerName: string): string => {
   try {
-    const output = executeCommand(`docker inspect --format='{{.State.Health.Status}}' ${containerName}`);
+    const output = executeCommand(
+      `docker inspect --format='{{.State.Health.Status}}' ${containerName}`,
+    );
     return output.trim();
   } catch (error) {
     return 'unknown';
   }
 };
 
-const waitForContainerHealth = async (containerName: string, expectedStatus: string = 'healthy', maxWaitMs: number = CONFIG.MAX_WAIT_TIME): Promise<boolean> => {
+const waitForContainerHealth = async (
+  containerName: string,
+  expectedStatus: string = 'healthy',
+  maxWaitMs: number = CONFIG.MAX_WAIT_TIME,
+): Promise<boolean> => {
   const startTime = Date.now();
-  
+
   while (Date.now() - startTime < maxWaitMs) {
     const status = getContainerStatus(containerName);
     console.log(`Container ${containerName} status: ${status}`);
-    
+
     if (status === expectedStatus) {
       return true;
     }
-    
+
     if (status === 'unhealthy') {
       throw new Error(`Container ${containerName} is unhealthy`);
     }
-    
+
     await sleep(CONFIG.HEALTH_CHECK_INTERVAL);
   }
-  
+
   return false;
 };
 
-const makeHealthCheckRequest = async (host: string, port: number, endpoint: string = '/health'): Promise<AxiosResponse> => {
+const makeHealthCheckRequest = async (
+  host: string,
+  port: number,
+  endpoint: string = '/health',
+): Promise<AxiosResponse> => {
   const url = `http://${host}:${port}${endpoint}`;
   console.log(`Making health check request to: ${url}`);
-  
+
   return axios.get(url, {
     timeout: 10000,
     validateStatus: () => true, // Don't throw on non-2xx status codes
@@ -93,7 +103,7 @@ const makeHealthCheckRequest = async (host: string, port: number, endpoint: stri
 };
 
 // Before and After hooks
-Before(function() {
+Before(function () {
   testContext = {
     dockerComposeFile: CONFIG.DOCKER_COMPOSE_FILE,
     services: ['postgres-test', 'redis-test', 'minio-test', 'typesense-test'],
@@ -103,11 +113,11 @@ Before(function() {
     typesensePort: CONFIG.TYPESENSE_PORT,
     maxWaitTime: CONFIG.MAX_WAIT_TIME,
   };
-  
+
   console.log('Test context initialized:', testContext);
 });
 
-After(function() {
+After(function () {
   // Cleanup if needed
   console.log('Test completed. Context:', testContext);
 });
@@ -115,13 +125,13 @@ After(function() {
 // Step Definitions
 
 // Background steps
-Given('the CI environment is set up', function() {
+Given('the CI environment is set up', function () {
   // Verify CI environment variables
   expect(process.env['CI']).to.equal('true');
   console.log('CI environment verified');
 });
 
-Given('Docker Compose test configuration is loaded', function() {
+Given('Docker Compose test configuration is loaded', function () {
   // Verify docker-compose.test.yml exists
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   expect(fs.existsSync(composePath)).to.be.true;
@@ -129,7 +139,7 @@ Given('Docker Compose test configuration is loaded', function() {
 });
 
 // Scenario 1: Typesense container starts successfully
-Given('the Typesense container is configured with proper health check', function() {
+Given('the Typesense container is configured with proper health check', function () {
   // Verify health check configuration in docker-compose.test.yml
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   const composeContent = fs.readFileSync(composePath, 'utf8');
@@ -139,72 +149,80 @@ Given('the Typesense container is configured with proper health check', function
   console.log('Typesense health check configuration verified');
 });
 
-When('Docker Compose brings up the test services', async function() {
+When('Docker Compose brings up the test services', async function () {
   console.log('Starting Docker Compose services...');
   testContext.startTime = Date.now();
-  
+
   // Start services in background
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   executeCommand(`docker compose -f ${composePath} up -d`);
   console.log('Docker Compose services started');
 });
 
-Then('the Typesense container should start within {int} seconds', async function(timeoutSeconds: number) {
-  const timeoutMs = timeoutSeconds * 1000;
-  const containerName = 'mking-typesense-test';
-  
-  console.log(`Waiting for ${containerName} to start within ${timeoutSeconds} seconds...`);
-  
-  const isHealthy = await waitForContainerHealth(containerName, 'healthy', timeoutMs);
-  expect(isHealthy).to.be.true;
-  
-  const elapsedTime = (Date.now() - testContext.startTime) / 1000;
-  console.log(`Container started successfully in ${elapsedTime} seconds`);
-});
+Then(
+  'the Typesense container should start within {int} seconds',
+  async function (timeoutSeconds: number) {
+    const timeoutMs = timeoutSeconds * 1000;
+    const containerName = 'mking-typesense-test';
 
-Then('the Typesense container should be marked as healthy', function() {
+    console.log(`Waiting for ${containerName} to start within ${timeoutSeconds} seconds...`);
+
+    const isHealthy = await waitForContainerHealth(containerName, 'healthy', timeoutMs);
+    expect(isHealthy).to.be.true;
+
+    const elapsedTime = (Date.now() - testContext.startTime) / 1000;
+    console.log(`Container started successfully in ${elapsedTime} seconds`);
+  },
+);
+
+Then('the Typesense container should be marked as healthy', function () {
   const containerName = 'mking-typesense-test';
   const status = getContainerStatus(containerName);
   expect(status).to.equal('healthy');
   console.log(`Container ${containerName} is healthy`);
 });
 
-Then('the health check endpoint should respond with status {int}', async function(expectedStatus: number) {
-  testContext.healthCheckResponse = await makeHealthCheckRequest(
-    testContext.typesenseHost,
-    testContext.typesensePort
-  );
-  
-  expect(testContext.healthCheckResponse.status).to.equal(expectedStatus);
-  console.log(`Health check endpoint responded with status ${testContext.healthCheckResponse.status}`);
-});
+Then(
+  'the health check endpoint should respond with status {int}',
+  async function (expectedStatus: number) {
+    testContext.healthCheckResponse = await makeHealthCheckRequest(
+      testContext.typesenseHost,
+      testContext.typesensePort,
+    );
+
+    expect(testContext.healthCheckResponse.status).to.equal(expectedStatus);
+    console.log(
+      `Health check endpoint responded with status ${testContext.healthCheckResponse.status}`,
+    );
+  },
+);
 
 // Scenario 2: Health check endpoint accessibility
-Given('the Typesense container is running', async function() {
+Given('the Typesense container is running', async function () {
   const containerName = 'mking-typesense-test';
   const isHealthy = await waitForContainerHealth(containerName, 'healthy', 60000);
   expect(isHealthy).to.be.true;
   console.log('Typesense container is running and healthy');
 });
 
-When('I make a GET request to the health check endpoint', async function() {
+When('I make a GET request to the health check endpoint', async function () {
   testContext.healthCheckResponse = await makeHealthCheckRequest(
     testContext.typesenseHost,
-    testContext.typesensePort
+    testContext.typesensePort,
   );
   console.log('Health check request completed');
 });
 
-Then('the response status should be {int}', function(expectedStatus: number) {
+Then('the response status should be {int}', function (expectedStatus: number) {
   expect(testContext.healthCheckResponse?.status).to.equal(expectedStatus);
 });
 
-Then('the response should indicate the service is ready', function() {
+Then('the response should indicate the service is ready', function () {
   expect(testContext.healthCheckResponse?.status).to.be.oneOf([200, 204]);
   console.log('Service is ready');
 });
 
-Then('the response time should be less than {int} seconds', function(_maxSeconds: number) {
+Then('the response time should be less than {int} seconds', function (_maxSeconds: number) {
   // This would typically be measured during the request
   // For now, we'll assume if we got a response, it was fast enough
   expect(testContext.healthCheckResponse).to.not.be.undefined;
@@ -212,11 +230,11 @@ Then('the response time should be less than {int} seconds', function(_maxSeconds
 });
 
 // Scenario 3: Dependent services wait for Typesense
-Given('the Typesense container is starting up', function() {
+Given('the Typesense container is starting up', function () {
   console.log('Typesense container is in startup phase');
 });
 
-Given('the backend-test service depends on Typesense', function() {
+Given('the backend-test service depends on Typesense', function () {
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   const composeContent = fs.readFileSync(composePath, 'utf8');
   expect(composeContent).to.include('depends_on');
@@ -225,44 +243,52 @@ Given('the backend-test service depends on Typesense', function() {
   console.log('Backend service dependency on Typesense verified');
 });
 
-When('Docker Compose starts all services', async function() {
+When('Docker Compose starts all services', async function () {
   console.log('Starting all services with dependencies...');
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   executeCommand(`docker compose -f ${composePath} up -d`);
 });
 
-Then('the backend-test service should wait for Typesense to be healthy', async function() {
+Then('the backend-test service should wait for Typesense to be healthy', async function () {
   // Check that backend service doesn't start until Typesense is healthy
   const typesenseHealthy = await waitForContainerHealth('mking-typesense-test', 'healthy', 120000);
   expect(typesenseHealthy).to.be.true;
   console.log('Backend service correctly waited for Typesense');
 });
 
-Then('the backend-test service should not start until Typesense is ready', function() {
+Then('the backend-test service should not start until Typesense is ready', function () {
   // This is verified by the dependency configuration
   console.log('Dependency order verified');
 });
 
-Then('all dependent services should start successfully after Typesense is healthy', async function() {
-  const services = ['mking-typesense-test', 'mking-postgres-test', 'mking-redis-test', 'mking-minio-test'];
-  
-  for (const service of services) {
-    const isHealthy = await waitForContainerHealth(service, 'healthy', 60000);
-    expect(isHealthy).to.be.true;
-    console.log(`Service ${service} is healthy`);
-  }
-});
+Then(
+  'all dependent services should start successfully after Typesense is healthy',
+  async function () {
+    const services = [
+      'mking-typesense-test',
+      'mking-postgres-test',
+      'mking-redis-test',
+      'mking-minio-test',
+    ];
+
+    for (const service of services) {
+      const isHealthy = await waitForContainerHealth(service, 'healthy', 60000);
+      expect(isHealthy).to.be.true;
+      console.log(`Service ${service} is healthy`);
+    }
+  },
+);
 
 // Scenario 4: Initialization delays
-Given('the Typesense container is starting for the first time', function() {
+Given('the Typesense container is starting for the first time', function () {
   console.log('First-time startup scenario');
 });
 
-When('the container is initializing its data structures', function() {
+When('the container is initializing its data structures', function () {
   console.log('Container is initializing...');
 });
 
-Then('the health check should retry with appropriate intervals', function() {
+Then('the health check should retry with appropriate intervals', function () {
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   const composeContent = fs.readFileSync(composePath, 'utf8');
   expect(composeContent).to.include('interval:');
@@ -271,7 +297,7 @@ Then('the health check should retry with appropriate intervals', function() {
   console.log('Health check retry configuration verified');
 });
 
-Then('the health check should wait for the service to be fully ready', function() {
+Then('the health check should wait for the service to be fully ready', function () {
   // Verify health check timing configuration
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   const composeContent = fs.readFileSync(composePath, 'utf8');
@@ -280,22 +306,25 @@ Then('the health check should wait for the service to be fully ready', function(
   console.log('Startup period configuration verified');
 });
 
-Then('the container should not be marked as failed during normal startup time', function() {
+Then('the container should not be marked as failed during normal startup time', function () {
   // This is ensured by the start_period configuration
   console.log('Startup grace period verified');
 });
 
 // Scenario Outline: Health check configuration
-Given('the Typesense container health check is configured with {word} interval', function(_interval: string) {
-  const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
-  const composeContent = fs.readFileSync(composePath, 'utf8');
-  // Check for the actual interval configuration in the typesense-test service
-  const typesenseSection = composeContent.split('typesense-test:')[1];
-  expect(typesenseSection).to.include('interval:');
-  console.log(`Health check interval configuration verified`);
-});
+Given(
+  'the Typesense container health check is configured with {word} interval',
+  function (_interval: string) {
+    const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
+    const composeContent = fs.readFileSync(composePath, 'utf8');
+    // Check for the actual interval configuration in the typesense-test service
+    const typesenseSection = composeContent.split('typesense-test:')[1];
+    expect(typesenseSection).to.include('interval:');
+    console.log(`Health check interval configuration verified`);
+  },
+);
 
-Given('the health check timeout is set to {word}', function(_timeout: string) {
+Given('the health check timeout is set to {word}', function (_timeout: string) {
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   const composeContent = fs.readFileSync(composePath, 'utf8');
   // Check for the actual timeout configuration in the typesense-test service
@@ -304,7 +333,7 @@ Given('the health check timeout is set to {word}', function(_timeout: string) {
   console.log(`Health check timeout configuration verified`);
 });
 
-Given('the health check retries are set to {int}', function(_retries: number) {
+Given('the health check retries are set to {int}', function (_retries: number) {
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   const composeContent = fs.readFileSync(composePath, 'utf8');
   // Check for the actual retries configuration in the typesense-test service
@@ -313,18 +342,18 @@ Given('the health check retries are set to {int}', function(_retries: number) {
   console.log(`Health check retries configuration verified`);
 });
 
-When('the container is starting up', function() {
+When('the container is starting up', function () {
   console.log('Container startup in progress...');
 });
 
-Then('the health check should allow sufficient time for startup', function() {
+Then('the health check should allow sufficient time for startup', function () {
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   const composeContent = fs.readFileSync(composePath, 'utf8');
   expect(composeContent).to.include('start_period:');
   console.log('Sufficient startup time verified');
 });
 
-Then('the configuration should handle temporary network issues', function() {
+Then('the configuration should handle temporary network issues', function () {
   const composePath = path.join(process.cwd(), '..', testContext.dockerComposeFile);
   const composeContent = fs.readFileSync(composePath, 'utf8');
   expect(composeContent).to.include('retries:');

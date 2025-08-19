@@ -69,7 +69,7 @@ const getCpuInfo = (): CpuInfo => {
 export const performHealthCheck = async (): Promise<HealthCheckResult> => {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
-  
+
   logger.debug('Starting health check');
 
   // Check all services in parallel
@@ -80,10 +80,13 @@ export const performHealthCheck = async (): Promise<HealthCheckResult> => {
 
   // Process database health result
   const dbResult: ServiceHealth = {
-    status: databaseHealth.status === 'fulfilled' ? databaseHealth.value.status : 'unhealthy',
+    status:
+      databaseHealth.status === 'fulfilled'
+        ? databaseHealth.value.status
+        : 'unhealthy',
     lastChecked: timestamp,
   };
-  
+
   if (databaseHealth.status === 'fulfilled') {
     if (databaseHealth.value.latency !== undefined) {
       dbResult.latency = databaseHealth.value.latency;
@@ -92,17 +95,21 @@ export const performHealthCheck = async (): Promise<HealthCheckResult> => {
       dbResult.error = databaseHealth.value.error;
     }
   } else {
-    dbResult.error = databaseHealth.reason instanceof Error 
-      ? databaseHealth.reason.message 
-      : 'Database check failed';
+    dbResult.error =
+      databaseHealth.reason instanceof Error
+        ? databaseHealth.reason.message
+        : 'Database check failed';
   }
 
   // Process Redis health result
   const redisResult: ServiceHealth = {
-    status: redisHealth.status === 'fulfilled' ? redisHealth.value.status : 'unhealthy',
+    status:
+      redisHealth.status === 'fulfilled'
+        ? redisHealth.value.status
+        : 'unhealthy',
     lastChecked: timestamp,
   };
-  
+
   if (redisHealth.status === 'fulfilled') {
     if (redisHealth.value.latency !== undefined) {
       redisResult.latency = redisHealth.value.latency;
@@ -111,17 +118,23 @@ export const performHealthCheck = async (): Promise<HealthCheckResult> => {
       redisResult.error = redisHealth.value.error;
     }
   } else {
-    redisResult.error = redisHealth.reason instanceof Error 
-      ? redisHealth.reason.message 
-      : 'Redis check failed';
+    redisResult.error =
+      redisHealth.reason instanceof Error
+        ? redisHealth.reason.message
+        : 'Redis check failed';
   }
 
   // Determine overall status
-  const allHealthy = dbResult.status === 'healthy' && redisResult.status === 'healthy';
-  const anyHealthy = dbResult.status === 'healthy' || redisResult.status === 'healthy';
-  
-  const overallStatus: 'healthy' | 'unhealthy' | 'degraded' = 
-    allHealthy ? 'healthy' : anyHealthy ? 'degraded' : 'unhealthy';
+  const allHealthy =
+    dbResult.status === 'healthy' && redisResult.status === 'healthy';
+  const anyHealthy =
+    dbResult.status === 'healthy' || redisResult.status === 'healthy';
+
+  const overallStatus: 'healthy' | 'unhealthy' | 'degraded' = allHealthy
+    ? 'healthy'
+    : anyHealthy
+      ? 'degraded'
+      : 'unhealthy';
 
   const result: HealthCheckResult = {
     status: overallStatus,
@@ -140,14 +153,14 @@ export const performHealthCheck = async (): Promise<HealthCheckResult> => {
   };
 
   const duration = Date.now() - startTime;
-  
-  logger.info('Health check completed', { 
-    status: overallStatus, 
+
+  logger.info('Health check completed', {
+    status: overallStatus,
     duration,
     services: {
       database: dbResult.status,
       redis: redisResult.status,
-    }
+    },
   });
 
   return result;
@@ -162,16 +175,16 @@ export const performSimpleHealthCheck = async (): Promise<{
 }> => {
   try {
     const result = await performHealthCheck();
-    
+
     return {
       status: result.status === 'unhealthy' ? 'error' : 'ok',
       timestamp: result.timestamp,
     };
   } catch (error) {
-    logger.error('Simple health check failed', { 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    logger.error('Simple health check failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
-    
+
     return {
       status: 'error',
       timestamp: new Date().toISOString(),

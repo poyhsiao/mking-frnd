@@ -34,9 +34,9 @@ describe('Codecov Upload Configuration', () => {
 
     beforeEach(() => {
       const testJob = ciConfig?.jobs?.test;
-      codecovStep = testJob?.steps?.find((step: any) => 
-        step.name?.includes('Upload coverage') || 
-        step.uses?.includes('codecov/codecov-action')
+      codecovStep = testJob?.steps?.find(
+        (step: any) =>
+          step.name?.includes('Upload coverage') || step.uses?.includes('codecov/codecov-action'),
       );
     });
 
@@ -72,13 +72,14 @@ describe('Codecov Upload Configuration', () => {
 
     it('should run only after test completion', () => {
       const testJob = ciConfig?.jobs?.test;
-      const stepIndex = testJob?.steps?.findIndex((step: any) => 
-        step.uses?.includes('codecov/codecov-action')
+      const stepIndex = testJob?.steps?.findIndex((step: any) =>
+        step.uses?.includes('codecov/codecov-action'),
       );
-      const testStepIndex = testJob?.steps?.findIndex((step: any) => 
-        step.name?.includes('Run backend tests') || step.name?.includes('Run frontend tests')
+      const testStepIndex = testJob?.steps?.findIndex(
+        (step: any) =>
+          step.name?.includes('Run backend tests') || step.name?.includes('Run frontend tests'),
       );
-      
+
       expect(stepIndex).toBeGreaterThan(testStepIndex);
     });
   });
@@ -88,7 +89,7 @@ describe('Codecov Upload Configuration', () => {
       // This will be verified by checking vitest config
       const backendConfigPath = join(process.cwd(), 'backend/vitest.ci.config.ts');
       expect(existsSync(backendConfigPath)).toBe(true);
-      
+
       const configContent = readFileSync(backendConfigPath, 'utf8');
       expect(configContent).toContain("'lcov'");
     });
@@ -97,7 +98,7 @@ describe('Codecov Upload Configuration', () => {
       // This will be verified by checking vitest config
       const frontendConfigPath = join(process.cwd(), 'frontend/vitest.ci.config.ts');
       expect(existsSync(frontendConfigPath)).toBe(true);
-      
+
       const configContent = readFileSync(frontendConfigPath, 'utf8');
       expect(configContent).toContain("'lcov'");
     });
@@ -108,9 +109,9 @@ describe('Codecov Upload Configuration', () => {
 
     beforeEach(() => {
       const testJob = ciConfig?.jobs?.test;
-      codecovStep = testJob?.steps?.find((step: any) => 
-        step.name?.includes('Upload coverage') || 
-        step.uses?.includes('codecov/codecov-action')
+      codecovStep = testJob?.steps?.find(
+        (step: any) =>
+          step.name?.includes('Upload coverage') || step.uses?.includes('codecov/codecov-action'),
       );
     });
 

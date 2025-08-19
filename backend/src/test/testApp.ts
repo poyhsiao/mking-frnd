@@ -10,10 +10,12 @@ const app: Express = express();
 app.use(helmet());
 
 // CORS middleware
-app.use(cors({
-  origin: process.env['FRONTEND_URL'] || 'http://localhost:3000',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env['FRONTEND_URL'] || 'http://localhost:3000',
+    credentials: true,
+  })
+);
 
 // Skip logging middleware in tests
 
@@ -37,7 +39,10 @@ app.get('/health', (_req, res) => {
       memory: {
         used: process.memoryUsage().heapUsed,
         total: process.memoryUsage().heapTotal,
-        percentage: Math.round((process.memoryUsage().heapUsed / process.memoryUsage().heapTotal) * 100),
+        percentage: Math.round(
+          (process.memoryUsage().heapUsed / process.memoryUsage().heapTotal) *
+            100
+        ),
       },
       cpu: {
         loadAverage: [0.1, 0.2, 0.3],

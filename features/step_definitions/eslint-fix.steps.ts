@@ -45,14 +45,11 @@ When('I replace {string} types with proper TypeScript types', function (typeStri
 
 When('I run the ESLint command', function () {
   try {
-    eslintOutput = execSync(
-      'pnpm lint',
-      { 
-        cwd: backendPath,
-        encoding: 'utf8',
-        stdio: 'pipe'
-      }
-    );
+    eslintOutput = execSync('pnpm lint', {
+      cwd: backendPath,
+      encoding: 'utf8',
+      stdio: 'pipe',
+    });
     eslintExitCode = 0;
   } catch (error: any) {
     eslintOutput = error.stdout + error.stderr;
@@ -60,10 +57,13 @@ When('I run the ESLint command', function () {
   }
 });
 
-Then('the @typescript-eslint\/explicit-function-return-type warnings should be resolved', function () {
-  expect(eslintOutput).to.not.include('Missing return type on function');
-  expect(eslintOutput).to.not.include('@typescript-eslint/explicit-function-return-type');
-});
+Then(
+  'the @typescript-eslint\/explicit-function-return-type warnings should be resolved',
+  function () {
+    expect(eslintOutput).to.not.include('Missing return type on function');
+    expect(eslintOutput).to.not.include('@typescript-eslint/explicit-function-return-type');
+  },
+);
 
 Then('the @typescript-eslint\/no-unsafe-assignment errors should be resolved', function () {
   expect(eslintOutput).to.not.include('Unsafe assignment of an `any` value');
@@ -82,10 +82,13 @@ Then('the @typescript-eslint\/no-unsafe-member-access errors should be resolved'
   expect(eslintOutput).to.not.include('@typescript-eslint/no-unsafe-member-access');
 });
 
-Then('the @typescript-eslint\/no-redundant-type-constituents errors should be resolved', function () {
-  expect(eslintOutput).to.not.include('overrides all other types in this union type');
-  expect(eslintOutput).to.not.include('@typescript-eslint/no-redundant-type-constituents');
-});
+Then(
+  'the @typescript-eslint\/no-redundant-type-constituents errors should be resolved',
+  function () {
+    expect(eslintOutput).to.not.include('overrides all other types in this union type');
+    expect(eslintOutput).to.not.include('@typescript-eslint/no-redundant-type-constituents');
+  },
+);
 
 Then('the code should be more type-safe and readable', function () {
   // This is a qualitative assertion that the code improvements have been made

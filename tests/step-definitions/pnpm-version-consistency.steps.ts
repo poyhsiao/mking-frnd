@@ -66,7 +66,7 @@ function extractPnpmVersion(workflow: any): string | null {
   if (workflow.env && workflow.env.PNPM_VERSION) {
     return workflow.env.PNPM_VERSION;
   }
-  
+
   // Check step configuration
   for (const jobName in workflow.jobs) {
     const job = workflow.jobs[jobName];
@@ -86,23 +86,23 @@ function extractPnpmVersion(workflow: any): string | null {
 function getAllWorkflowFiles(): WorkflowFile[] {
   const workflowFiles: WorkflowFile[] = [];
   const files = fs.readdirSync(WORKFLOWS_DIR);
-  
+
   for (const file of files) {
     if (file.endsWith('.yml') || file.endsWith('.yaml')) {
       const filePath = path.join(WORKFLOWS_DIR, file);
       const content = readWorkflowFile(filePath);
       const pnpmVersion = extractPnpmVersion(content);
       const actionSetupVersion = extractPnpmActionSetupVersion(content);
-      
+
       workflowFiles.push({
         path: filePath,
         content,
         pnpmVersion,
-        actionSetupVersion
+        actionSetupVersion,
       });
     }
   }
-  
+
   return workflowFiles;
 }
 
@@ -161,23 +161,26 @@ Then('it should fail with "Multiple versions of pnpm specified" error', function
   // This step validates the error condition that would occur
   const packageJson = readPackageJson();
   const workflow = readWorkflowFile(CI_WORKFLOW_PATH);
-  
+
   const packageManagerVersion = extractPackageManagerVersion(packageJson.packageManager || '');
   const workflowVersion = extractPnpmVersion(workflow);
-  
+
   expect(packageManagerVersion).not.toBe(workflowVersion);
   this.versionMismatchDetected = true;
 });
 
-Then('the error should mention version conflict between package.json and GitHub Action config', function () {
-  expect(this.versionMismatchDetected).toBe(true);
-});
+Then(
+  'the error should mention version conflict between package.json and GitHub Action config',
+  function () {
+    expect(this.versionMismatchDetected).toBe(true);
+  },
+);
 
 When('I update the package.json packageManager to "pnpm@9.15.0"', function () {
   const packageJson = readPackageJson();
   packageJson.packageManager = 'pnpm@9.15.0';
   writePackageJson(packageJson);
-  
+
   // Verify the update
   const updatedPackageJson = readPackageJson();
   expect(updatedPackageJson.packageManager).toBe('pnpm@9.15.0');
@@ -185,7 +188,7 @@ When('I update the package.json packageManager to "pnpm@9.15.0"', function () {
 
 When('I ensure all workflows use consistent PNPM version "9.15.0"', function () {
   const workflowFiles = getAllWorkflowFiles();
-  
+
   for (const workflowFile of workflowFiles) {
     const pnpmVersion = extractPnpmVersion(workflowFile.content);
     if (pnpmVersion) {
@@ -198,19 +201,19 @@ Then('the GitHub Actions workflow should run successfully', function () {
   // Validate that version consistency is achieved
   const packageJson = readPackageJson();
   const workflow = readWorkflowFile(CI_WORKFLOW_PATH);
-  
+
   const packageManagerVersion = extractPackageManagerVersion(packageJson.packageManager || '');
   const workflowVersion = extractPnpmVersion(workflow);
-  
+
   expect(packageManagerVersion).toBe(workflowVersion);
 });
 
 Then('there should be no version mismatch errors', function () {
   const packageJson = readPackageJson();
   const workflowFiles = getAllWorkflowFiles();
-  
+
   const packageManagerVersion = extractPackageManagerVersion(packageJson.packageManager || '');
-  
+
   for (const workflowFile of workflowFiles) {
     const workflowVersion = extractPnpmVersion(workflowFile.content);
     if (workflowVersion && packageManagerVersion) {
@@ -223,15 +226,15 @@ Then('there should be no version mismatch errors', function () {
 When('I check the PNPM version configuration in each workflow', function () {
   this.workflowVersions = [];
   const workflowFiles = getAllWorkflowFiles();
-  
+
   for (const workflowFile of workflowFiles) {
     const pnpmVersion = extractPnpmVersion(workflowFile.content);
     const actionSetupVersion = extractPnpmActionSetupVersion(workflowFile.content);
-    
+
     this.workflowVersions.push({
       file: path.basename(workflowFile.path),
       pnpmVersion,
-      actionSetupVersion
+      actionSetupVersion,
     });
   }
 });
@@ -240,7 +243,7 @@ Then('all workflows should use the same PNPM version', function () {
   const pnpmVersions = this.workflowVersions
     .map((wf: any) => wf.pnpmVersion)
     .filter((version: string) => version !== null);
-  
+
   if (pnpmVersions.length > 1) {
     const firstVersion = pnpmVersions[0];
     for (const version of pnpmVersions) {
@@ -253,7 +256,7 @@ Then('all workflows should use compatible pnpm/action-setup versions', function 
   const actionVersions = this.workflowVersions
     .map((wf: any) => wf.actionSetupVersion)
     .filter((version: string) => version !== null);
-  
+
   // All should use v4 for consistency
   for (const version of actionVersions) {
     expect(version).toBe('v4');
@@ -263,11 +266,11 @@ Then('all workflows should use compatible pnpm/action-setup versions', function 
 Then('the package.json packageManager should match the workflow versions', function () {
   const packageJson = readPackageJson();
   const packageManagerVersion = extractPackageManagerVersion(packageJson.packageManager || '');
-  
+
   const workflowVersions = this.workflowVersions
     .map((wf: any) => wf.pnpmVersion)
     .filter((version: string) => version !== null);
-  
+
   for (const workflowVersion of workflowVersions) {
     expect(packageManagerVersion).toBe(workflowVersion);
   }
@@ -343,7 +346,7 @@ Then('the engines field should be consistent with the packageManager field', fun
   const packageJson = readPackageJson();
   const packageManagerVersion = extractPackageManagerVersion(packageJson.packageManager || '');
   const enginesVersion = packageJson.engines?.pnpm;
-  
+
   if (packageManagerVersion && enginesVersion) {
     // Extract major version from packageManager (e.g., "9.15.0" -> "9")
     const majorVersion = packageManagerVersion.split('.')[0];
@@ -384,7 +387,7 @@ Then('I should be able to rollback package.json changes', function () {
     const packageJson = readPackageJson();
     packageJson.packageManager = this.originalPackageManager;
     writePackageJson(packageJson);
-    
+
     const rolledBackPackageJson = readPackageJson();
     expect(rolledBackPackageJson.packageManager).toBe(this.originalPackageManager);
   }

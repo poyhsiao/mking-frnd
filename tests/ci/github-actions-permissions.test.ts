@@ -5,10 +5,10 @@ import * as yaml from 'js-yaml';
 
 /**
  * Test suite for GitHub Actions CI workflow permissions
- * 
+ *
  * This test ensures that the CI workflow has proper permissions
  * to push Docker images to GitHub Container Registry (GHCR)
- * 
+ *
  * The error "denied: installation not allowed to Create organization package"
  * occurs when the workflow lacks the 'packages: write' permission.
  */
@@ -48,11 +48,12 @@ describe('GitHub Actions CI Permissions', () => {
   describe('Docker login configuration', () => {
     it('should use GITHUB_TOKEN for GHCR authentication', () => {
       const buildSteps = ciConfig.jobs.build.steps;
-      const loginStep = buildSteps.find((step: any) => 
-        step.name?.includes('Log in to Container Registry') ||
-        step.uses?.includes('docker/login-action')
+      const loginStep = buildSteps.find(
+        (step: any) =>
+          step.name?.includes('Log in to Container Registry') ||
+          step.uses?.includes('docker/login-action'),
       );
-      
+
       expect(loginStep).toBeDefined();
       expect(loginStep.with?.registry).toBe('ghcr.io');
       expect(loginStep.with?.username).toBe('${{ github.actor }}');
@@ -63,12 +64,12 @@ describe('GitHub Actions CI Permissions', () => {
   describe('Image naming convention', () => {
     it('should use correct GHCR image naming format', () => {
       const buildSteps = ciConfig.jobs.build.steps;
-      const buildPushSteps = buildSteps.filter((step: any) => 
-        step.uses?.includes('docker/build-push-action')
+      const buildPushSteps = buildSteps.filter((step: any) =>
+        step.uses?.includes('docker/build-push-action'),
       );
-      
+
       expect(buildPushSteps.length).toBeGreaterThan(0);
-      
+
       buildPushSteps.forEach((step: any) => {
         const tags = step.with?.tags;
         if (typeof tags === 'string') {

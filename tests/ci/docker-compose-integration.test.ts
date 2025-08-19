@@ -6,10 +6,10 @@ import * as yaml from 'js-yaml';
 
 /**
  * BDD Test Suite: Docker Compose Integration Tests Configuration
- * 
+ *
  * This test suite validates the Docker Compose test configuration
  * to prevent mounting errors and ensure proper test environment setup.
- * 
+ *
  * Background:
  * - GitHub Actions was failing with "failed to create mountpoint" error
  * - The error occurred because database directories didn't exist
@@ -55,8 +55,9 @@ describe('Docker Compose Integration Tests Configuration', () => {
 
       it('should mount database initialization directory', () => {
         const postgresService = dockerComposeConfig.services['postgres-test'];
-        const initMount = postgresService.volumes.find((volume: string) => 
-          volume.includes('/docker-entrypoint-initdb.d') && !volume.includes('seeds')
+        const initMount = postgresService.volumes.find(
+          (volume: string) =>
+            volume.includes('/docker-entrypoint-initdb.d') && !volume.includes('seeds'),
         );
         expect(initMount).toBeDefined();
         expect(initMount).toContain('./database/init:/docker-entrypoint-initdb.d:ro');
@@ -64,8 +65,8 @@ describe('Docker Compose Integration Tests Configuration', () => {
 
       it('should not mount separate test seeds directory (consolidated into init)', () => {
         const postgresService = dockerComposeConfig.services['postgres-test'];
-        const seedsMount = postgresService.volumes.find((volume: string) => 
-          volume.includes('test-seeds')
+        const seedsMount = postgresService.volumes.find((volume: string) =>
+          volume.includes('test-seeds'),
         );
         expect(seedsMount).toBeUndefined();
       });
@@ -109,20 +110,18 @@ describe('Docker Compose Integration Tests Configuration', () => {
       it('should have valid SQL syntax in init files', () => {
         const initDir = path.join(projectRoot, 'database', 'init');
         const files = fs.readdirSync(initDir).filter(file => file.endsWith('.sql'));
-        
+
         files.forEach(file => {
           const filePath = path.join(initDir, file);
           const content = fs.readFileSync(filePath, 'utf8');
-          
+
           // Basic SQL validation
           expect(content.trim()).not.toBe('');
           expect(content).not.toContain('syntax error');
-          
+
           // Should contain PostgreSQL-specific commands
           expect(
-            content.includes('CREATE') || 
-            content.includes('INSERT') || 
-            content.includes('SELECT')
+            content.includes('CREATE') || content.includes('INSERT') || content.includes('SELECT'),
           ).toBe(true);
         });
       });
@@ -130,21 +129,21 @@ describe('Docker Compose Integration Tests Configuration', () => {
       it('should have valid SQL syntax in all init files including test data', () => {
         const initDir = path.join(projectRoot, 'database', 'init');
         const files = fs.readdirSync(initDir).filter(file => file.endsWith('.sql'));
-        
+
         files.forEach(file => {
           const filePath = path.join(initDir, file);
           const content = fs.readFileSync(filePath, 'utf8');
-          
+
           // Basic SQL validation
           expect(content.trim()).not.toBe('');
           expect(content).not.toContain('syntax error');
-          
+
           // Should contain SQL operations
           expect(
-            content.includes('INSERT') || 
-            content.includes('CREATE') ||
-            content.includes('UPDATE') ||
-            content.includes('SELECT')
+            content.includes('INSERT') ||
+              content.includes('CREATE') ||
+              content.includes('UPDATE') ||
+              content.includes('SELECT'),
           ).toBe(true);
         });
       });
@@ -189,9 +188,9 @@ describe('Docker Compose Integration Tests Configuration', () => {
         const backendService = dockerComposeConfig.services['backend-test'];
         if (backendService && backendService.depends_on) {
           expect(
-            Array.isArray(backendService.depends_on) 
+            Array.isArray(backendService.depends_on)
               ? backendService.depends_on.includes('postgres-test')
-              : backendService.depends_on['postgres-test'] !== undefined
+              : backendService.depends_on['postgres-test'] !== undefined,
           ).toBe(true);
         }
       });
@@ -220,13 +219,13 @@ describe('Docker Compose Integration Tests Configuration', () => {
             POSTGRES_TEST_PASSWORD: 'test_password',
             MINIO_TEST_USER: 'test_user',
             MINIO_TEST_PASSWORD: 'test_password',
-            TYPESENSE_TEST_API_KEY: 'test_api_key'
+            TYPESENSE_TEST_API_KEY: 'test_api_key',
           };
-          
+
           execSync('docker-compose -f docker-compose.test.yml config', {
             cwd: projectRoot,
             env,
-            stdio: 'pipe'
+            stdio: 'pipe',
           });
         }).not.toThrow();
       });

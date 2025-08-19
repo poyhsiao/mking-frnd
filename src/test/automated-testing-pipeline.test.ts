@@ -2,7 +2,7 @@
  * Automated Testing Pipeline Configuration Tests
  * Task 1.1: Automated testing pipeline configuration
  * Following BDD methodology with pytest-bdd best practices
- * 
+ *
  * @description Comprehensive test suite for automated testing pipeline
  * @author Backend Engineer
  * @date 2025-01-13
@@ -17,10 +17,10 @@ import { parse as parseYaml } from 'yaml';
 
 /**
  * Test Suite: Automated Testing Pipeline Configuration
- * 
+ *
  * This test suite validates the automated testing pipeline configuration
  * following BDD principles and pytest-bdd best practices:
- * 
+ *
  * 1. Test Organization: Feature-based test organization
  * 2. Step Reusability: Common steps defined for reuse
  * 3. Scenario Coverage: Comprehensive scenario coverage
@@ -57,7 +57,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
     it('When I check the pipeline configuration', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
       const config = parseYaml(ciConfig);
-      
+
       // Validate pipeline structure
       expect(config).toHaveProperty('name');
       expect(config).toHaveProperty('on');
@@ -68,11 +68,11 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
     it('Then the pipeline should have comprehensive testing stages', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
       const config = parseYaml(ciConfig);
-      
+
       // Validate required jobs
       expect(config.jobs).toHaveProperty('test');
       expect(config.jobs).toHaveProperty('build');
-      
+
       // Validate test job configuration
       const testJob = config.jobs.test;
       expect(testJob).toHaveProperty('services');
@@ -92,7 +92,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
       const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
       const backendPackageJson = JSON.parse(readFileSync(backendPackageJsonPath, 'utf-8'));
       const frontendPackageJson = JSON.parse(readFileSync(frontendPackageJsonPath, 'utf-8'));
-      
+
       // Validate test scripts exist
       expect(backendPackageJson.scripts).toHaveProperty('test');
       expect(backendPackageJson.scripts).toHaveProperty('test:ci');
@@ -102,7 +102,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
 
     it('When I check coverage configuration', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate coverage reporting
       expect(ciConfig).toContain('codecov');
       expect(ciConfig).toContain('coverage');
@@ -111,7 +111,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
 
     it('Then the pipeline should enforce quality gates', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate linting and type checking
       expect(ciConfig).toContain('Lint backend');
       expect(ciConfig).toContain('Lint frontend');
@@ -129,7 +129,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
   describe('Scenario: Test Environment Setup and Isolation', () => {
     it('Given I have test environment configuration', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate environment setup
       expect(ciConfig).toContain('Setup test environment');
       expect(ciConfig).toContain('DATABASE_URL');
@@ -139,7 +139,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
     it('When I check service dependencies', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
       const config = parseYaml(ciConfig);
-      
+
       // Validate service health checks
       const testJob = config.jobs.test;
       expect(testJob.services.postgres.options).toContain('health-cmd');
@@ -148,7 +148,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
 
     it('Then each test should run in isolated environment', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate database migrations
       expect(ciConfig).toContain('Run database migrations');
       expect(ciConfig).toContain('prisma migrate deploy');
@@ -166,14 +166,14 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
       // Validate test files exist
       const testDir = resolve(projectRoot, 'src/test');
       const backendTestDir = resolve(projectRoot, 'backend/src/test');
-      
+
       expect(existsSync(testDir)).toBe(true);
       expect(existsSync(backendTestDir)).toBe(true);
     });
 
     it('When I execute automated tests', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate test execution steps
       expect(ciConfig).toContain('Run backend tests');
       expect(ciConfig).toContain('Run frontend tests');
@@ -182,7 +182,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
 
     it('Then the results should be properly reported', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate test result artifacts
       expect(ciConfig).toContain('Upload test results');
       expect(ciConfig).toContain('test-results/');
@@ -201,14 +201,14 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
     it('Given I have CI/CD pipeline configured', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
       const config = parseYaml(ciConfig);
-      
+
       expect(config).toHaveProperty('on');
     });
 
     it('When I check trigger configuration', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
       const config = parseYaml(ciConfig);
-      
+
       // Validate trigger events
       expect(config.on).toHaveProperty('push');
       expect(config.on).toHaveProperty('pull_request');
@@ -218,7 +218,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
     it('Then it should run on appropriate events', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
       const config = parseYaml(ciConfig);
-      
+
       // Validate branch targeting
       expect(config.on.push.branches).toContain('main');
       expect(config.on.push.branches).toContain('develop');
@@ -236,7 +236,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
   describe('Scenario: Test Performance and Optimization', () => {
     it('Given I have caching configuration', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate caching setup
       expect(ciConfig).toContain('Setup pnpm cache');
       expect(ciConfig).toContain('cache@v3');
@@ -262,10 +262,10 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
 
     it('Then tests should run efficiently', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate timeout configurations
       expect(ciConfig).toContain('frozen-lockfile');
-      
+
       // Check for Docker layer caching
       expect(ciConfig).toContain('cache-from: type=gha');
       expect(ciConfig).toContain('cache-to: type=gha');
@@ -281,7 +281,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
   describe('Scenario: Security and Compliance Testing', () => {
     it('Given I have dependency security checks', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate lockfile security
       expect(ciConfig).toContain('frozen-lockfile');
       expect(ciConfig).toContain('Validate lockfile');
@@ -292,22 +292,22 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
       // Check for common security scanning tools or steps in the CI config
       expect(
         ciConfig.match(/(npm|yarn) audit/) ||
-        ciConfig.includes('snyk') ||
-        ciConfig.includes('trivy') ||
-        ciConfig.includes('security scan')
+          ciConfig.includes('snyk') ||
+          ciConfig.includes('trivy') ||
+          ciConfig.includes('security scan'),
       ).toBeTruthy();
 
       // Optionally, check for reporting of scan results
       expect(
         ciConfig.includes('upload-artifact') ||
-        ciConfig.includes('report') ||
-        ciConfig.includes('comment')
+          ciConfig.includes('report') ||
+          ciConfig.includes('comment'),
       ).toBeTruthy();
     });
 
     it('Then the pipeline should validate security compliance', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate secure token handling
       expect(ciConfig).toContain('secrets.CODECOV_TOKEN');
       expect(ciConfig).toContain('secrets.GITHUB_TOKEN');
@@ -323,7 +323,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
   describe('Scenario: Multi-Environment Deployment Testing', () => {
     it('Given I have staging environment configuration', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate staging deployment
       expect(ciConfig).toContain('deploy-staging');
       expect(ciConfig).toContain('environment: staging');
@@ -331,7 +331,7 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
 
     it('When I check production deployment', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
-      
+
       // Validate production deployment
       expect(ciConfig).toContain('deploy-production');
       expect(ciConfig).toContain('environment: production');
@@ -340,11 +340,11 @@ describe('Feature: Automated Testing Pipeline Configuration', () => {
     it('Then each environment should have appropriate testing', () => {
       const ciConfig = readFileSync(ciConfigPath, 'utf-8');
       const config = parseYaml(ciConfig);
-      
+
       // Validate deployment dependencies
       expect(config.jobs['deploy-staging'].needs).toContain('build');
       expect(config.jobs['deploy-production'].needs).toContain('build');
-      
+
       // Validate branch restrictions
       expect(config.jobs['deploy-staging'].if).toContain('develop');
       expect(config.jobs['deploy-production'].if).toContain('main');
@@ -366,7 +366,7 @@ class TestPipelineHelper {
     if (!existsSync(configPath)) {
       throw new Error(`CI configuration file not found: ${configPath}`);
     }
-    
+
     const content = readFileSync(configPath, 'utf-8');
     return parseYaml(content);
   }
@@ -380,14 +380,11 @@ class TestPipelineHelper {
     if (!existsSync(packageJsonPath)) {
       return false;
     }
-    
+
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
     const scripts = packageJson.scripts || {};
-    
-    return (
-      'test' in scripts &&
-      'test:ci' in scripts
-    );
+
+    return 'test' in scripts && 'test:ci' in scripts;
   }
 
   /**

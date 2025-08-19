@@ -37,14 +37,17 @@ Given('the GitHub Actions workflow uses jq to parse health status', function () 
 Given('the postgres-test service is running', function () {
   try {
     // Ensure postgres-test is running
-    execSync('export POSTGRES_TEST_PASSWORD=postgres && docker compose -f docker-compose.test.yml up -d postgres-test', {
-      stdio: 'pipe',
-      timeout: 30000
-    });
-    
+    execSync(
+      'export POSTGRES_TEST_PASSWORD=postgres && docker compose -f docker-compose.test.yml up -d postgres-test',
+      {
+        stdio: 'pipe',
+        timeout: 30000,
+      },
+    );
+
     // Wait a moment for the service to start
     execSync('sleep 5');
-    
+
     context.serviceName = 'postgres-test';
   } catch (error) {
     throw new Error(`Failed to start postgres-test service: ${error}`);
@@ -55,7 +58,7 @@ When('I execute the docker compose ps command with JSON format', function () {
   try {
     context.dockerComposeOutput = execSync(
       'docker compose -f docker-compose.test.yml ps --format json',
-      { encoding: 'utf8', timeout: 10000 }
+      { encoding: 'utf8', timeout: 10000 },
     );
   } catch (error) {
     throw new Error(`Failed to execute docker compose ps: ${error}`);
@@ -64,7 +67,7 @@ When('I execute the docker compose ps command with JSON format', function () {
 
 Then('the output should be valid JSON', function () {
   expect(context.dockerComposeOutput).to.not.be.undefined;
-  
+
   // Try to parse as JSON
   try {
     JSON.parse(context.dockerComposeOutput!);
@@ -98,45 +101,44 @@ Then('the Service field should match {string}', function (expectedService: strin
 // Scenario 2: jq command handles different health states correctly
 Given('the postgres-test service is in {string} state', function (expectedState: string) {
   context.serviceName = 'postgres-test';
-  
+
   // Wait for the service to reach the expected state or timeout
   let attempts = 0;
   const maxAttempts = 30;
-  
+
   while (attempts < maxAttempts) {
     try {
-      const output = execSync(
-        'docker compose -f docker-compose.test.yml ps --format json',
-        { encoding: 'utf8', timeout: 5000 }
-      );
-      
+      const output = execSync('docker compose -f docker-compose.test.yml ps --format json', {
+        encoding: 'utf8',
+        timeout: 5000,
+      });
+
       const healthCommand = `echo '${output}' | jq -s -r ".[] | select(.Service == \"postgres-test\") | .Health"`;
       const currentHealth = execSync(healthCommand, { encoding: 'utf8', timeout: 5000 }).trim();
-      
+
       if (currentHealth === expectedState) {
         context.dockerComposeOutput = output;
         context.healthStatus = currentHealth;
         return;
       }
-      
+
       if (expectedState === 'healthy' && currentHealth === 'starting') {
         // Wait longer for healthy state
         execSync('sleep 5');
         attempts++;
         continue;
       }
-      
+
       // For other states, accept current state
       context.dockerComposeOutput = output;
       context.healthStatus = currentHealth;
       return;
-      
     } catch (error) {
       attempts++;
       execSync('sleep 2');
     }
   }
-  
+
   throw new Error(`Service did not reach ${expectedState} state within timeout`);
 });
 
@@ -164,22 +166,24 @@ Then('no jq parsing errors should occur', function () {
 Given('the docker compose ps output contains multiple services', function () {
   try {
     // Start multiple services
-    execSync('export POSTGRES_TEST_PASSWORD=postgres && export MINIO_TEST_PASSWORD=testpassword && docker compose -f docker-compose.test.yml up -d postgres-test minio-test', {
-      stdio: 'pipe',
-      timeout: 60000
-    });
-    
+    execSync(
+      'export POSTGRES_TEST_PASSWORD=postgres && export MINIO_TEST_PASSWORD=testpassword && docker compose -f docker-compose.test.yml up -d postgres-test minio-test',
+      {
+        stdio: 'pipe',
+        timeout: 60000,
+      },
+    );
+
     execSync('sleep 10'); // Wait for services to start
-    
+
     context.dockerComposeOutput = execSync(
       'docker compose -f docker-compose.test.yml ps --format json',
-      { encoding: 'utf8', timeout: 10000 }
+      { encoding: 'utf8', timeout: 10000 },
     );
-    
+
     // Verify we have multiple services
     const services = JSON.parse(`[${context.dockerComposeOutput.trim().split('\n').join(',')}]`);
     expect(services.length).to.be.greaterThan(1);
-    
   } catch (error) {
     throw new Error(`Failed to start multiple services: ${error}`);
   }
@@ -197,7 +201,7 @@ When('I filter for the postgres-test service using jq', function () {
 
 Then('only the postgres-test service data should be returned', function () {
   expect(context.jqResult).to.not.be.empty;
-  
+
   // Parse the result and verify it's only postgres-test
   const result = JSON.parse(context.jqResult!);
   expect(result.Service).to.equal('postgres-test');
@@ -249,18 +253,17 @@ Given('the GitHub Actions workflow contains the health check function', function
 When('the check_container_health function is called for postgres-test', function () {
   // Simulate the function call by extracting and testing the jq command
   context.serviceName = 'postgres-test';
-  
+
   try {
     // Get current docker compose output
     context.dockerComposeOutput = execSync(
       'docker compose -f docker-compose.test.yml ps --format json',
-      { encoding: 'utf8', timeout: 10000 }
+      { encoding: 'utf8', timeout: 10000 },
     );
-    
+
     // Test the exact command from GitHub Actions (fixed version)
     const githubActionsCommand = `echo '${context.dockerComposeOutput}' | jq -s -r ".[] | select(.Service == \"${context.serviceName}\") | .Health"`;
     context.jqResult = execSync(githubActionsCommand, { encoding: 'utf8', timeout: 5000 }).trim();
-    
   } catch (error) {
     context.jqError = error.toString();
     throw new Error(`GitHub Actions jq command failed: ${error}`);

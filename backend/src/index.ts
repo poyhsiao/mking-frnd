@@ -6,7 +6,10 @@ import { createLogger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import { requestLogger } from './middleware/requestLogger';
-import { performHealthCheck, performSimpleHealthCheck } from './services/healthService';
+import {
+  performHealthCheck,
+  performSimpleHealthCheck,
+} from './services/healthService';
 
 // Load environment variables
 dotenv.config();
@@ -29,17 +32,21 @@ app.get('/health', (_req, res): void => {
   void (async (): Promise<void> => {
     try {
       const healthResult = await performHealthCheck();
-      
+
       // Set appropriate HTTP status based on health
-      const statusCode = healthResult.status === 'healthy' ? 200 : 
-                        healthResult.status === 'degraded' ? 200 : 503;
-      
+      const statusCode =
+        healthResult.status === 'healthy'
+          ? 200
+          : healthResult.status === 'degraded'
+            ? 200
+            : 503;
+
       res.status(statusCode).json(healthResult);
     } catch (error) {
-      logger.error('Health check failed', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Health check failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
-      
+
       res.status(503).json({
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
@@ -54,14 +61,14 @@ app.get('/health/simple', (_req, res): void => {
   void (async (): Promise<void> => {
     try {
       const healthResult = await performSimpleHealthCheck();
-      
+
       const statusCode = healthResult.status === 'ok' ? 200 : 503;
       res.status(statusCode).json(healthResult);
     } catch (error) {
-      logger.error('Simple health check failed', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Simple health check failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
-      
+
       res.status(503).json({
         status: 'error',
         timestamp: new Date().toISOString(),

@@ -32,8 +32,13 @@ function readDockerComposeConfig(): any {
 // Helper function to check container health via Docker Compose
 function checkContainerHealth(serviceName: string): string {
   try {
-    const output = execSync(`docker compose -f docker-compose.test.yml ps --format json`, { encoding: 'utf8' });
-    const services = output.trim().split('\n').map(line => JSON.parse(line));
+    const output = execSync(`docker compose -f docker-compose.test.yml ps --format json`, {
+      encoding: 'utf8',
+    });
+    const services = output
+      .trim()
+      .split('\n')
+      .map(line => JSON.parse(line));
     const service = services.find(s => s.Service === serviceName);
     return service ? service.Health : 'unknown';
   } catch (error) {
@@ -43,7 +48,10 @@ function checkContainerHealth(serviceName: string): string {
 }
 
 // Helper function to wait for service to be healthy
-async function waitForServiceHealth(serviceName: string, maxAttempts: number = 30): Promise<string> {
+async function waitForServiceHealth(
+  serviceName: string,
+  maxAttempts: number = 30,
+): Promise<string> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const health = checkContainerHealth(serviceName);
     if (health === 'healthy') {
@@ -90,20 +98,22 @@ Then('the healthcheck should test the {string} endpoint', function (endpoint: st
   const backendService = testContext.dockerComposeConfig.services['backend-test'];
   const healthcheck = backendService.healthcheck;
   expect(healthcheck).to.have.property('test');
-  
+
   // Check if the test command includes the health endpoint
-  const testCommand = Array.isArray(healthcheck.test) ? healthcheck.test.join(' ') : healthcheck.test;
+  const testCommand = Array.isArray(healthcheck.test)
+    ? healthcheck.test.join(' ')
+    : healthcheck.test;
   expect(testCommand).to.include(endpoint);
 });
 
 Then('the healthcheck should use appropriate intervals and timeouts', function () {
   const backendService = testContext.dockerComposeConfig.services['backend-test'];
   const healthcheck = backendService.healthcheck;
-  
+
   expect(healthcheck).to.have.property('interval');
   expect(healthcheck).to.have.property('timeout');
   expect(healthcheck).to.have.property('start_period');
-  
+
   // Validate reasonable values (intervals should be in seconds format like "30s")
   expect(healthcheck.interval).to.match(/^\d+s$/);
   expect(healthcheck.timeout).to.match(/^\d+s$/);
@@ -112,7 +122,7 @@ Then('the healthcheck should use appropriate intervals and timeouts', function (
 Then('the healthcheck should have proper retry configuration', function () {
   const backendService = testContext.dockerComposeConfig.services['backend-test'];
   const healthcheck = backendService.healthcheck;
-  
+
   expect(healthcheck).to.have.property('retries');
   expect(healthcheck.retries).to.be.a('number');
   expect(healthcheck.retries).to.be.greaterThan(0);
@@ -121,11 +131,11 @@ Then('the healthcheck should have proper retry configuration', function () {
 // Health endpoint tests
 Given('the backend service is running', async function () {
   testContext.backendUrl = getBackendUrl();
-  
+
   // Wait for the service to be available
   let attempts = 0;
   const maxAttempts = 10;
-  
+
   while (attempts < maxAttempts) {
     try {
       await axios.get(`${testContext.backendUrl}/health`, { timeout: 5000 });
@@ -195,14 +205,20 @@ Given('the service has proper health check configuration', function () {
   // This should be verified by the previous health check configuration tests
 });
 
-When('the check_container_health function is called for {string}', async function (serviceName: string) {
-  testContext.containerHealth = await waitForServiceHealth(serviceName, 5); // Shorter wait for tests
-});
+When(
+  'the check_container_health function is called for {string}',
+  async function (serviceName: string) {
+    testContext.containerHealth = await waitForServiceHealth(serviceName, 5); // Shorter wait for tests
+  },
+);
 
-Then('the health status should be detected as {string} or {string}', function (status1: string, status2: string) {
-  expect(testContext.containerHealth).to.exist;
-  expect([status1, status2]).to.include(testContext.containerHealth);
-});
+Then(
+  'the health status should be detected as {string} or {string}',
+  function (status1: string, status2: string) {
+    expect(testContext.containerHealth).to.exist;
+    expect([status1, status2]).to.include(testContext.containerHealth);
+  },
+);
 
 Then('the health status should not be {string}', function (unwantedStatus: string) {
   expect(testContext.containerHealth).to.exist;
@@ -249,7 +265,7 @@ Then('the response should contain the requested path', function () {
 When('I make requests to various non-existent routes', async function () {
   const routes = ['/non-existent-1', '/non-existent-2', '/invalid/path'];
   const responses = [];
-  
+
   for (const route of routes) {
     try {
       const response = await axios.get(`${testContext.backendUrl}${route}`);
@@ -260,14 +276,14 @@ When('I make requests to various non-existent routes', async function () {
       }
     }
   }
-  
+
   testContext.errorLogs = responses.map(r => JSON.stringify(r.data));
 });
 
 Then('all error responses should have consistent structure', function () {
   expect(testContext.errorLogs).to.exist;
   expect(testContext.errorLogs!.length).to.be.greaterThan(0);
-  
+
   testContext.errorLogs!.forEach(logEntry => {
     const data = JSON.parse(logEntry);
     expect(data).to.have.property('success');
@@ -278,7 +294,7 @@ Then('all error responses should have consistent structure', function () {
 
 Then('all error responses should include service identification', function () {
   expect(testContext.errorLogs).to.exist;
-  
+
   testContext.errorLogs!.forEach(logEntry => {
     const data = JSON.parse(logEntry);
     expect(data).to.have.property('service');
@@ -287,7 +303,7 @@ Then('all error responses should include service identification', function () {
 
 Then('all error responses should include request details', function () {
   expect(testContext.errorLogs).to.exist;
-  
+
   testContext.errorLogs!.forEach(logEntry => {
     const data = JSON.parse(logEntry);
     expect(data).to.have.property('request');
@@ -333,7 +349,7 @@ Then('the log should include request information', function () {
 Then('the log should include stack trace in development mode', function () {
   expect(testContext.errorResponse).to.exist;
   expect(testContext.errorResponse!.data).to.have.property('error');
-  
+
   // In development mode, stack trace should be present
   if (process.env.NODE_ENV !== 'production') {
     expect(testContext.errorResponse!.data.error).to.have.property('stack');
@@ -343,7 +359,7 @@ Then('the log should include stack trace in development mode', function () {
 Then('the log should not expose sensitive information', function () {
   expect(testContext.errorResponse).to.exist;
   const responseStr = JSON.stringify(testContext.errorResponse!.data);
-  
+
   // Check that common sensitive patterns are not exposed
   expect(responseStr).to.not.include('password');
   expect(responseStr).to.not.include('secret');
@@ -352,13 +368,16 @@ Then('the log should not expose sensitive information', function () {
 });
 
 // Integration tests
-Given('all dependency services are configured \\(postgres-test, redis-test, minio-test, typesense-test)', function () {
-  const services = testContext.dockerComposeConfig.services;
-  expect(services).to.have.property('postgres-test');
-  expect(services).to.have.property('redis-test');
-  expect(services).to.have.property('minio-test');
-  expect(services).to.have.property('typesense-test');
-});
+Given(
+  'all dependency services are configured \\(postgres-test, redis-test, minio-test, typesense-test)',
+  function () {
+    const services = testContext.dockerComposeConfig.services;
+    expect(services).to.have.property('postgres-test');
+    expect(services).to.have.property('redis-test');
+    expect(services).to.have.property('minio-test');
+    expect(services).to.have.property('typesense-test');
+  },
+);
 
 When('I start the backend-test service with Docker Compose', async function () {
   // Assume the service is already started by the test environment
@@ -368,13 +387,13 @@ When('I start the backend-test service with Docker Compose', async function () {
 Then('the service should wait for dependencies to be healthy', function () {
   const backendService = testContext.dockerComposeConfig.services['backend-test'];
   expect(backendService).to.have.property('depends_on');
-  
+
   const dependsOn = backendService.depends_on;
   expect(dependsOn).to.have.property('postgres-test');
   expect(dependsOn).to.have.property('redis-test');
   expect(dependsOn).to.have.property('minio-test');
   expect(dependsOn).to.have.property('typesense-test');
-  
+
   // Check that dependencies have condition: service_healthy
   Object.values(dependsOn).forEach((dep: any) => {
     expect(dep).to.have.property('condition', 'service_healthy');
@@ -404,8 +423,14 @@ Given('the GitHub Actions workflow is running E2E tests', function () {
 
 Given('all services are configured with proper health checks', function () {
   const services = testContext.dockerComposeConfig.services;
-  const serviceNames = ['postgres-test', 'redis-test', 'minio-test', 'typesense-test', 'backend-test'];
-  
+  const serviceNames = [
+    'postgres-test',
+    'redis-test',
+    'minio-test',
+    'typesense-test',
+    'backend-test',
+  ];
+
   serviceNames.forEach(serviceName => {
     if (services[serviceName]) {
       expect(services[serviceName]).to.have.property('healthcheck');
@@ -419,8 +444,14 @@ When('the workflow starts all test services', async function () {
 });
 
 Then('all services should become healthy', async function () {
-  const serviceNames = ['postgres-test', 'redis-test', 'minio-test', 'typesense-test', 'backend-test'];
-  
+  const serviceNames = [
+    'postgres-test',
+    'redis-test',
+    'minio-test',
+    'typesense-test',
+    'backend-test',
+  ];
+
   for (const serviceName of serviceNames) {
     const health = await waitForServiceHealth(serviceName, 10);
     expect(health).to.equal('healthy');
@@ -461,7 +492,7 @@ When('errors occur in the application', async function () {
 
 Then('error responses should not expose internal details in production', function () {
   expect(testContext.errorResponse).to.exist;
-  
+
   if (process.env.NODE_ENV === 'production') {
     const responseStr = JSON.stringify(testContext.errorResponse!.data);
     expect(responseStr).to.not.include('stack');
@@ -489,7 +520,7 @@ Then('error responses should be properly formatted JSON', function () {
 Then('sensitive information should not be leaked in error messages', function () {
   expect(testContext.errorResponse).to.exist;
   const responseStr = JSON.stringify(testContext.errorResponse!.data);
-  
+
   // Check for common sensitive patterns
   const sensitivePatterns = [
     /password/i,
@@ -497,9 +528,9 @@ Then('sensitive information should not be leaked in error messages', function ()
     /token/i,
     /api[_-]?key/i,
     /database[_-]?url/i,
-    /connection[_-]?string/i
+    /connection[_-]?string/i,
   ];
-  
+
   sensitivePatterns.forEach(pattern => {
     expect(responseStr).to.not.match(pattern);
   });

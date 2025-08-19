@@ -17,9 +17,9 @@ let testContext: TestContext;
 Given('I have a monorepo project with backend and frontend', function () {
   testContext = {
     projectRoot: path.resolve(__dirname, '../..'),
-    backendPath: path.resolve(__dirname, '../../backend')
+    backendPath: path.resolve(__dirname, '../../backend'),
   };
-  
+
   // Verify project structure exists
   expect(fs.existsSync(testContext.projectRoot)).to.be.true;
   expect(fs.existsSync(testContext.backendPath)).to.be.true;
@@ -29,7 +29,7 @@ Given('I have a monorepo project with backend and frontend', function () {
 Given('the backend has its own TypeScript configuration', function () {
   const backendTsConfig = path.join(testContext.backendPath, 'tsconfig.json');
   expect(fs.existsSync(backendTsConfig)).to.be.true;
-  
+
   // Verify the configuration is valid JSON
   const config = JSON.parse(fs.readFileSync(backendTsConfig, 'utf8'));
   expect(config).to.have.property('compilerOptions');
@@ -67,14 +67,14 @@ When('I compile TypeScript files', function () {
     const output = execSync('npx tsc --noEmit', {
       cwd: testContext.backendPath,
       encoding: 'utf8',
-      timeout: 30000
+      timeout: 30000,
     });
     testContext.compilationResult = { success: true, output };
   } catch (error: any) {
     testContext.compilationResult = {
       success: false,
       output: error.stdout || '',
-      error: error.stderr || error.message
+      error: error.stderr || error.message,
     };
   }
 });
@@ -84,14 +84,14 @@ When('I execute the test suite with coverage', function () {
     const output = execSync('npm run test:coverage', {
       cwd: testContext.backendPath,
       encoding: 'utf8',
-      timeout: 60000
+      timeout: 60000,
     });
     testContext.testResult = { success: true, output };
   } catch (error: any) {
     testContext.testResult = {
       success: false,
       output: error.stdout || '',
-      error: error.stderr || error.message
+      error: error.stderr || error.message,
     };
   }
 });
@@ -100,11 +100,11 @@ When('the root tsconfig.json is not available', function () {
   // Temporarily rename root tsconfig.json to simulate unavailability
   const rootTsConfig = path.join(testContext.projectRoot, 'tsconfig.json');
   const backupPath = path.join(testContext.projectRoot, 'tsconfig.json.backup');
-  
+
   if (fs.existsSync(rootTsConfig)) {
     fs.renameSync(rootTsConfig, backupPath);
   }
-  
+
   // Cleanup function to restore the file after test
   this.addCleanup(() => {
     if (fs.existsSync(backupPath)) {
@@ -118,14 +118,14 @@ When('running tests with vitest', function () {
     const output = execSync('npx vitest --config=vitest.ci.config.ts --run', {
       cwd: testContext.backendPath,
       encoding: 'utf8',
-      timeout: 60000
+      timeout: 60000,
     });
     testContext.testResult = { success: true, output };
   } catch (error: any) {
     testContext.testResult = {
       success: false,
       output: error.stdout || '',
-      error: error.stderr || error.message
+      error: error.stderr || error.message,
     };
   }
 });
@@ -141,15 +141,17 @@ Then('the compilation should succeed without external dependencies', function ()
 Then('the rootDir should be correctly resolved', function () {
   expect(testContext.compilationResult).to.exist;
   expect(testContext.compilationResult!.success).to.be.true;
-  
+
   // Check that no rootDir related errors occurred
-  const output = testContext.compilationResult!.output + (testContext.compilationResult!.error || '');
+  const output =
+    testContext.compilationResult!.output + (testContext.compilationResult!.error || '');
   expect(output).to.not.include('rootDir');
 });
 
 Then('no "Cannot find module \'../tsconfig.json\'" error should occur', function () {
   expect(testContext.compilationResult).to.exist;
-  const output = testContext.compilationResult!.output + (testContext.compilationResult!.error || '');
+  const output =
+    testContext.compilationResult!.output + (testContext.compilationResult!.error || '');
   expect(output).to.not.include("Cannot find module '../tsconfig.json'");
 });
 
@@ -165,7 +167,7 @@ Then('the tests should run without configuration errors', function () {
     console.log('Test error:', testContext.testResult!.error);
     console.log('Test output:', testContext.testResult!.output);
   }
-  
+
   // Allow tests to fail but configuration should not cause errors
   const output = testContext.testResult!.output + (testContext.testResult!.error || '');
   expect(output).to.not.include('Error: Cannot find module');
@@ -188,8 +190,9 @@ Then('the backend should still compile successfully', function () {
 Then('all type checking should work correctly', function () {
   expect(testContext.compilationResult).to.exist;
   expect(testContext.compilationResult!.success).to.be.true;
-  
-  const output = testContext.compilationResult!.output + (testContext.compilationResult!.error || '');
+
+  const output =
+    testContext.compilationResult!.output + (testContext.compilationResult!.error || '');
   expect(output).to.not.include('error TS');
 });
 

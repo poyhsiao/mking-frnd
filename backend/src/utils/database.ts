@@ -12,7 +12,10 @@ let prisma: PrismaClient | null = null;
 export const getPrismaClient = (): PrismaClient => {
   if (!prisma) {
     prisma = new PrismaClient({
-      log: process.env['NODE_ENV'] === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+      log:
+        process.env['NODE_ENV'] === 'development'
+          ? ['query', 'info', 'warn', 'error']
+          : ['error'],
     });
   }
   return prisma;
@@ -27,30 +30,33 @@ export const checkDatabaseHealth = async (): Promise<{
   error?: string;
 }> => {
   const startTime = Date.now();
-  
+
   try {
     const client = getPrismaClient();
-    
+
     // Simple query to check connectivity
-    await client.$queryRaw<[{ health_check: number }]>`SELECT 1 as health_check`;
-    
+    await client.$queryRaw<
+      [{ health_check: number }]
+    >`SELECT 1 as health_check`;
+
     const latency = Date.now() - startTime;
-    
+
     logger.debug('Database health check passed', { latency });
-    
+
     return {
       status: 'healthy',
       latency,
     };
   } catch (error) {
     const latency = Date.now() - startTime;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
-    
-    logger.error('Database health check failed', { 
-      error: errorMessage, 
-      latency 
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown database error';
+
+    logger.error('Database health check failed', {
+      error: errorMessage,
+      latency,
     });
-    
+
     return {
       status: 'unhealthy',
       latency,
@@ -68,8 +74,8 @@ export const disconnectDatabase = async (): Promise<void> => {
       await prisma.$disconnect();
       logger.info('Database connection closed');
     } catch (error) {
-      logger.error('Error closing database connection', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Error closing database connection', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       prisma = null;
